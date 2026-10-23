@@ -114,6 +114,9 @@ const devChannelRepo = isHourlyChannel
       ? 'orca-adhoc'
       : null
 const appId = 'dev.tenure.app'
+// tenure: the frozen Python engine (tenure repo desktop/build_engine.py) ships as resources/engine.
+const tenureEngineDir = join(__dirname, '..', '..', 'build', 'desktop', 'dist', 'tenure-engine')
+const tenureEngineResources = existsSync(tenureEngineDir) ? [{ from: tenureEngineDir, to: 'engine' }] : []
 const featureWallResources = {
   from: 'resources/onboarding/feature-wall',
   to: 'onboarding/feature-wall'
@@ -246,11 +249,14 @@ module.exports = {
   productName: 'tenure',
   protocols: [{ name: 'tenure', schemes: ['orca'] }],
   toolsets: { appimage: '1.0.3' },
-  ...(devChannelBuildVersion
-    ? { extraMetadata: { version: devChannelBuildVersion } }
-    : localBuildVersion
-      ? { extraMetadata: { version: localBuildVersion } }
-      : {}),
+  // Why name: NSIS installs per-user to Programs\<package name>; 'orca' would land on top of an
+  // installed upstream Orca and overwrite its files.
+  extraMetadata: {
+    name: 'tenure',
+    ...((devChannelBuildVersion ?? localBuildVersion)
+      ? { version: devChannelBuildVersion ?? localBuildVersion }
+      : {})
+  },
   directories: {
     buildResources: 'resources/build'
   },
@@ -581,6 +587,7 @@ module.exports = {
     extraResources: [
       ...commonExtraResources,
       ...windowsRuntimeResources,
+      ...tenureEngineResources,
       winSpeechNativeResource,
       {
         from: 'resources/win32/bin/orca.cmd',
@@ -612,7 +619,7 @@ module.exports = {
     ]
   },
   nsis: {
-    artifactName: 'orca-windows-setup.${ext}',
+    artifactName: 'tenure-windows-setup.${ext}',
     shortcutName: '${productName}',
     uninstallDisplayName: '${productName}',
     createDesktopShortcut: 'always',

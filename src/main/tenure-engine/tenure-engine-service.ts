@@ -34,6 +34,13 @@ export class TenureEngineService {
   }
   private readonly listeners = new Set<(state: TenureEngineState) => void>()
 
+  /** The engine's island page with its token, or null until the engine is ready. */
+  islandUrl(): string | null {
+    return this.origin && this.token
+      ? `${this.origin}/?t=${encodeURIComponent(this.token)}#/island`
+      : null
+  }
+
   getState(): TenureEngineState {
     return this.state
   }

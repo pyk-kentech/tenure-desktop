@@ -16,5 +16,11 @@ export const tenureEngineApi = {
       callback(state)
     ipcRenderer.on('tenureEngine:update', listener)
     return () => ipcRenderer.removeListener('tenureEngine:update', listener)
+  },
+  onReveal: (callback: (target: { hash: string }) => void): (() => void) => {
+    const listener = (_event: Electron.IpcRendererEvent, target: { hash: string }) =>
+      callback(target)
+    ipcRenderer.on('tenureEngine:reveal', listener)
+    return () => ipcRenderer.removeListener('tenureEngine:reveal', listener)
   }
 } satisfies PreloadApi['tenureEngine']

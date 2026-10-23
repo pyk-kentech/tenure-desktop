@@ -1,6 +1,7 @@
 import { app, BrowserWindow, ipcMain } from 'electron'
 import type { TenureEngineRequest } from '../../shared/tenure-engine-types'
 import { TenureEngineService } from './tenure-engine-service'
+import { startTenureIsland } from './tenure-island-window'
 
 let service: TenureEngineService | null = null
 
@@ -27,5 +28,6 @@ export function startTenureEngine(): TenureEngineService {
   // Why will-quit: before-quit can still be vetoed by the renderer, and the engine must outlive a veto.
   app.once('will-quit', () => engine.stop())
   engine.start()
+  startTenureIsland(engine)
   return engine
 }

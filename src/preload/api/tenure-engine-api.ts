@@ -9,4 +9,5 @@ export type TenureEngineApi = {
   restart: () => Promise<TenureEngineState>
   request: (req: TenureEngineRequest) => Promise<TenureEngineResponse>
   onUpdate: (callback: (state: TenureEngineState) => void) => () => void
+  onReveal: (callback: (target: { hash: string }) => void) => () => void
 }
