@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { Plug, Files, GitBranch, ListChecks, Workflow } from 'lucide-react'
+import { Plug, Files, GitBranch, ListChecks, Workflow, Repeat } from 'lucide-react'
 import { useAppStore } from '@/store'
 import { useRepoById } from '@/store/selectors'
 import { isFolderRepo } from '../../../../shared/repo-kind'
@@ -107,6 +107,12 @@ export function useRightSidebarActivityItems({
         title: translate('auto.components.right.sidebar.index.0314901467', 'Source Control'),
         shortcut: sourceControlShortcut === 'Unassigned' ? '' : sourceControlShortcut,
         gitOnly: true
+      },
+      {
+        id: 'tenure',
+        icon: Repeat,
+        title: translate('tenure.flow.title', 'Flows'),
+        shortcut: ''
       },
       {
         id: 'checks',

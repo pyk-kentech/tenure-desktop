@@ -5,6 +5,7 @@ import { DetachedHeadBadge } from '@/components/DetachedHeadBadge'
 import { RepoBadgeMark } from '@/components/repo/RepoBadgeLabel'
 import { Badge } from '@/components/ui/badge'
 import CacheTimer from './CacheTimer'
+import { WorktreeCardTenureBadge } from './WorktreeCardTenureBadge'
 import { WorktreeHostContextBadge } from './WorktreeHostContextBadge'
 import { CONFLICT_OPERATION_LABELS } from './WorktreeCardHelpers'
 import { TruncatedSidebarLabel } from './truncated-sidebar-label'
@@ -98,6 +99,8 @@ export function WorktreeCardMetaRow({
         )}
 
         {cacheStartedAt != null && <CacheTimer startedAt={cacheStartedAt} ttlMs={cacheTtlMs} />}
+
+        <WorktreeCardTenureBadge path={card.worktree.path} />
       </div>
 
       {showMetaRowDetails && (

@@ -21113,6 +21113,54 @@
       "week": "week",
       "clickRestart": "Click to restart"
     },
-    "brand": "tenure"
+    "brand": "tenure",
+    "flow": {
+      "title": "Flows",
+      "noWorkspace": "Select a workspace to see its flows.",
+      "new": "New flow",
+      "stop": "Stop",
+      "resume": "Resume",
+      "round": "Round {{value0}}",
+      "summary": "Result summary",
+      "noEntries": "No agent calls yet.",
+      "preparing": "Preparing the next step",
+      "startTitle": "Start a flow here",
+      "taskPlaceholder": "What should be built or fixed? The agents implement, review and fix in rounds.",
+      "force": "Start even with uncommitted changes",
+      "mock": "Practice run (mock, calls no agent)",
+      "cancel": "Cancel",
+      "start": "Start",
+      "step": {
+        "implement": "Implement",
+        "review": "Review",
+        "fix": "Fix",
+        "test": "Test",
+        "design": "Design",
+        "report": "Summary"
+      },
+      "status": {
+        "running": "Running",
+        "approved": "Approved",
+        "unapproved": "Not approved",
+        "failed": "Failed",
+        "stopped": "Stopped"
+      },
+      "verdict": {
+        "approved": "Approved",
+        "changes": "Changes requested"
+      },
+      "wf": {
+        "auto": "Auto",
+        "quick": "Quick (implement + short review)",
+        "race": "Race (two drafts, keep the better)",
+        "classic": "Debate (design debate first)"
+      },
+      "card": {
+        "working": "Flow running",
+        "blocked": "Flow needs you",
+        "failed": "Flow failed",
+        "done": "Flow done"
+      }
+    }
   }
 }

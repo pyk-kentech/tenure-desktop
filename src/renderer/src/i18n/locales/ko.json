@@ -20831,6 +20831,54 @@
       "week": "주",
       "clickRestart": "눌러서 다시 시작"
     },
-    "brand": "tenure"
+    "brand": "tenure",
+    "flow": {
+      "title": "흐름",
+      "noWorkspace": "작업공간을 고르면 그 흐름이 보입니다.",
+      "new": "새 흐름",
+      "stop": "중지",
+      "resume": "이어하기",
+      "round": "{{value0}}회차",
+      "summary": "결과 요약",
+      "noEntries": "아직 에이전트 호출이 없습니다.",
+      "preparing": "다음 단계를 준비하는 중",
+      "startTitle": "여기서 흐름 시작",
+      "taskPlaceholder": "무엇을 만들거나 고칠까요? 에이전트가 구현 → 리뷰 → 고치기를 회차마다 돕니다.",
+      "force": "커밋 안 된 변경이 있어도 시작",
+      "mock": "연습 실행 (mock, 에이전트를 부르지 않음)",
+      "cancel": "취소",
+      "start": "시작",
+      "step": {
+        "implement": "구현",
+        "review": "리뷰",
+        "fix": "고치기",
+        "test": "테스트",
+        "design": "설계",
+        "report": "요약"
+      },
+      "status": {
+        "running": "진행 중",
+        "approved": "승인 완료",
+        "unapproved": "미승인 종료",
+        "failed": "실패",
+        "stopped": "중지됨"
+      },
+      "verdict": {
+        "approved": "승인",
+        "changes": "고칠 것 있음"
+      },
+      "wf": {
+        "auto": "자동 선택",
+        "quick": "빠른 (구현 + 짧은 리뷰)",
+        "race": "경쟁 초안 (둘이 따로 만들고 나은 쪽)",
+        "classic": "토론 (설계 토론부터)"
+      },
+      "card": {
+        "working": "흐름 진행",
+        "blocked": "흐름 기다림",
+        "failed": "흐름 실패",
+        "done": "흐름 끝"
+      }
+    }
   }
 }

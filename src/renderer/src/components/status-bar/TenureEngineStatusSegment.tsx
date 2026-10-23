@@ -68,10 +68,10 @@ export function TenureEngineStatusSegment({
   const slots = state?.limits?.slots
   const dot =
     state?.status === 'ready'
-      ? 'bg-emerald-500'
+      ? 'bg-status-success'
       : state?.status === 'failed'
-        ? 'bg-red-500'
-        : 'bg-yellow-500'
+        ? 'bg-destructive'
+        : 'bg-agent-working'
   const limits = state?.limits
   return (
     <Tooltip>
