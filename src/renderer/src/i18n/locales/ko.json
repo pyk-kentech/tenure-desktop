@@ -20817,5 +20817,20 @@
     "restartLocal": "로컬 데몬 다시 시작",
     "killAllLocal": "모든 로컬 세션 종료",
     "killFailed": "터미널을 종료할 수 없습니다. 마지막으로 관찰된 세션이 유지됩니다."
+  },
+  "tenure": {
+    "engine": {
+      "label": "tenure 엔진",
+      "ready": "연결됨",
+      "starting": "시작 중",
+      "failed": "실패",
+      "stopped": "꺼짐",
+      "unknown": "모름",
+      "agents": "에이전트",
+      "fiveHour": "5시간",
+      "week": "주",
+      "clickRestart": "눌러서 다시 시작"
+    },
+    "brand": "tenure"
   }
 }

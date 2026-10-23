@@ -21099,5 +21099,20 @@
     "restartLocal": "Restart local daemon",
     "killAllLocal": "Kill all local sessions",
     "killFailed": "The terminal could not be ended. Last-observed sessions are retained."
+  },
+  "tenure": {
+    "engine": {
+      "label": "tenure engine",
+      "ready": "Connected",
+      "starting": "Starting",
+      "failed": "Failed",
+      "stopped": "Stopped",
+      "unknown": "unknown",
+      "agents": "Agents",
+      "fiveHour": "5h",
+      "week": "week",
+      "clickRestart": "Click to restart"
+    },
+    "brand": "tenure"
   }
 }

@@ -267,7 +267,9 @@ export default function Landing(): React.JSX.Element {
               className="size-12"
             />
           </div>
-          <h1 className="text-4xl font-bold text-foreground tracking-tight">tenure</h1>
+          <h1 className="text-4xl font-bold text-foreground tracking-tight">
+            {translate('tenure.brand', 'tenure')}
+          </h1>
 
           {preflightIssues.length > 0 && <PreflightBanner issues={preflightIssues} repos={repos} />}
 
