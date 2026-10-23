@@ -4,6 +4,7 @@ import { useAppStore } from '@/store'
 import { formatDiffComments } from '@/lib/diff-comments-format'
 import { NotesSendMenu, type NotesSendMenuScope } from './NotesSendMenu'
 import { translate } from '@/i18n/i18n'
+import { sendDiffNotesToTenureFlow } from '@/lib/tenure-flow-notes'
 
 // Why: a keyboard open request the menu never got to consume (e.g. the user
 // navigated away before it mounted) must not reopen the menu on a later remount.
@@ -100,6 +101,7 @@ export function DiffNotesSendMenu({
       openRequestExpiresAt={openRequestExpiresAt}
       onOpenRequestHandled={handleOpenRequestHandled}
       onDelivered={(notes) => void clearDeliveredDiffComments(worktreeId, notes)}
+      onTenureSend={(notes) => sendDiffNotesToTenureFlow(worktreeId, notes)}
     />
   )
 }

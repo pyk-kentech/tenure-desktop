@@ -61,6 +61,7 @@ export type NotesSendMenuProps<TNote> = {
   openRequestExpiresAt?: number | null
   onOpenRequestHandled?: () => void
   onDelivered: (notes: readonly TNote[]) => void
+  onTenureSend?: (notes: readonly TNote[]) => Promise<{ ok: boolean; message: string }>
 }
 
 export function buildNotesSendTargetModeId(modeIdParts: readonly string[]): string {
@@ -87,7 +88,8 @@ export function NotesSendMenu<TNote extends DiffCommentDeliverySnapshot>({
   openRequestNonce = null,
   openRequestExpiresAt = null,
   onOpenRequestHandled,
-  onDelivered
+  onDelivered,
+  onTenureSend
 }: NotesSendMenuProps<TNote>): React.JSX.Element {
   const openAgentSendPopoverTargetMode = useAppStore((s) => s.openAgentSendPopoverTargetMode)
   const closeAgentSendPopoverTargetMode = useAppStore((s) => s.closeAgentSendPopoverTargetMode)
@@ -279,6 +281,7 @@ export function NotesSendMenu<TNote extends DiffCommentDeliverySnapshot>({
                     launchSource="notes_send"
                     onPromptDelivered={() => markDelivered(scope.notes)}
                     onPromptHandedOff={holdInFlight(scope.notes)}
+                    onSendToTenureFlow={onTenureSend ? () => onTenureSend(scope.notes) : undefined}
                   />
                 </DropdownMenuSubContent>
               </DropdownMenuSub>
@@ -297,6 +300,9 @@ export function NotesSendMenu<TNote extends DiffCommentDeliverySnapshot>({
               }
             }}
             onPromptHandedOff={holdInFlight(defaultScope?.notes ?? [])}
+            onSendToTenureFlow={
+              onTenureSend && defaultScope ? () => onTenureSend(defaultScope.notes) : undefined
+            }
           />
         )}
       </DropdownMenuContent>

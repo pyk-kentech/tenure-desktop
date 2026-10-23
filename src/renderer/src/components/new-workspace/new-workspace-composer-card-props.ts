@@ -114,6 +114,8 @@ export type NewWorkspaceComposerCardProps = {
   onCreate: () => void
   note: string
   onNoteChange: (value: string) => void
+  tenureFlow?: boolean
+  onTenureFlowChange?: (value: boolean) => void
   setupConfig: SetupConfig | null
   requiresExplicitSetupChoice: boolean
   setupDecision: 'run' | 'skip' | null

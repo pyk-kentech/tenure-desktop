@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { tenureCall, type TenureRunDetail, type TenureRunSummary } from './tenure-flow-api'
 import { TenureFlowStartForm } from './TenureFlowStartForm'
 import { TenureFlowTimeline } from './TenureFlowTimeline'
+import { TenureFlowDrafts } from './TenureFlowDrafts'
 import { flowStateLabel, TenureFlowStateDot } from './tenure-flow-labels'
 
 const LIVE_POLL_MS = 2000
@@ -174,6 +175,19 @@ export default function TenureFlowPanel(): React.JSX.Element {
               <div className="rounded border border-destructive/40 bg-destructive/10 px-2 py-1 text-xs">
                 {detail.state.error}
               </div>
+            ) : null}
+            {detail.state.race ? (
+              <TenureFlowDrafts
+                race={detail.state.race}
+                project={path}
+                runId={runId!}
+                canPick={
+                  !detail.live &&
+                  (detail.state.status === 'done_approved' ||
+                    detail.state.status === 'done_unapproved')
+                }
+                onPicked={() => void loadDetail()}
+              />
             ) : null}
             <TenureFlowTimeline detail={detail} project={path} runId={runId!} />
           </div>

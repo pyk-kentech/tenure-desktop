@@ -24,6 +24,7 @@ import {
 import type { RuntimeStatus } from '../../../shared/runtime-types'
 import type { TuiAgent } from '../../../shared/tui-agent'
 import { NewWorkspaceComposerAdvancedSection } from './new-workspace/NewWorkspaceComposerAdvancedSection'
+import { NewWorkspaceComposerTenureFlowSection } from './new-workspace/NewWorkspaceComposerTenureFlowSection'
 import { NewWorkspaceComposerAgentSection } from './new-workspace/NewWorkspaceComposerAgentSection'
 import { NewWorkspaceComposerFooter } from './new-workspace/NewWorkspaceComposerFooter'
 import { NewWorkspaceComposerNameSection } from './new-workspace/NewWorkspaceComposerNameSection'
@@ -339,6 +340,14 @@ export default function NewWorkspaceComposerCard(
           defaultTuiAgent={defaultTuiAgent}
           handleSetDefaultAgent={handleSetDefaultAgent}
         />
+        {props.onTenureFlowChange ? (
+          <NewWorkspaceComposerTenureFlowSection
+            tenureFlow={props.tenureFlow === true}
+            onTenureFlowChange={props.onTenureFlowChange}
+            note={props.note}
+            onNoteChange={props.onNoteChange}
+          />
+        ) : null}
         <NewWorkspaceComposerAdvancedSection
           {...props}
           onSparseEditingChange={setSparseEditing}

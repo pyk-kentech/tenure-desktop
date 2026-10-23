@@ -21160,6 +21160,24 @@
         "blocked": "Flow needs you",
         "failed": "Flow failed",
         "done": "Flow done"
+      },
+      "draft": {
+        "noDiff": "No changes.",
+        "picked": "Switched. Previous state kept as {{value0}}.",
+        "title": "Race drafts",
+        "blocking": "{{value0}} blocking",
+        "kept": "kept",
+        "pick": "Use this"
+      },
+      "notes": {
+        "sending": "Sending notes to the flow...",
+        "send": "Send to tenure flow (fix round)",
+        "noEngine": "tenure engine is not available.",
+        "sent": "Notes sent. The flow starts a fix round."
+      },
+      "composer": {
+        "toggle": "Start a tenure flow instead of an agent",
+        "failed": "Could not start the flow: {{value0}}"
       }
     }
   }

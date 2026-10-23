@@ -22,6 +22,24 @@ export type TenureRunEntry = {
   verdict?: { status: string; must_fix?: number } | null
 }
 
+export type TenureDraft = {
+  branch: string
+  approved: boolean
+  blocking: number | null
+  tests: string | null
+  lines: number
+  files: number
+  reviewer: string
+}
+
+export type TenureRace = {
+  drafters: string[]
+  drafts: Record<string, TenureDraft>
+  winner?: string
+  picked?: string
+  reason?: string
+}
+
 export type TenureRunDetail = {
   project: string
   live: boolean
@@ -35,6 +53,7 @@ export type TenureRunDetail = {
     error?: string | null
     report?: string | null
     workflow?: { name?: string } | null
+    race?: TenureRace | null
   }
   entries: TenureRunEntry[]
   current_call: { agent: string; step: string; elapsed_sec: number } | null

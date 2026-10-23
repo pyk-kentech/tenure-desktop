@@ -30,6 +30,7 @@ import { useWorktreeAgentRows } from '@/components/sidebar/useWorktreeAgentRows'
 import type { LaunchSource } from '../../../../shared/telemetry-events'
 import { agentRowDisplayDotState } from '@/lib/agent-row-dot-state'
 import { translate } from '@/i18n/i18n'
+import { Repeat } from 'lucide-react'
 
 type OrderedSendTarget = {
   target: NotesSendAgentTarget
@@ -43,7 +44,8 @@ export function ReviewNotesSendMenuContent({
   promptDelivery = 'submit-after-ready',
   launchSource = 'notes_send',
   onPromptDelivered,
-  onPromptHandedOff
+  onPromptHandedOff,
+  onSendToTenureFlow
 }: {
   worktreeId: string
   groupId: string
@@ -53,6 +55,8 @@ export function ReviewNotesSendMenuContent({
   onPromptDelivered?: () => void
   /** Given each send's own result the moment its prompt is handed to an agent. */
   onPromptHandedOff?: (delivered: Promise<unknown>) => void
+  /** tenure: attach these notes to the workspace's last finished flow and start a fix round. */
+  onSendToTenureFlow?: () => Promise<{ ok: boolean; message: string }>
 }): React.JSX.Element {
   const hasPrompt = prompt.trim().length > 0
 
@@ -211,6 +215,27 @@ export function ReviewNotesSendMenuContent({
         onPromptHandedOff={onPromptHandedOff}
         disabled={!hasPrompt}
       />
+      {onSendToTenureFlow ? (
+        <>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            disabled={!hasPrompt}
+            onSelect={() => {
+              const pending = toast.loading(
+                translate('tenure.flow.notes.sending', 'Sending notes to the flow...')
+              )
+              void onSendToTenureFlow().then((result) =>
+                result.ok
+                  ? toast.success(result.message, { id: pending })
+                  : toast.error(result.message, { id: pending })
+              )
+            }}
+          >
+            <Repeat className="size-3.5" />
+            {translate('tenure.flow.notes.send', 'Send to tenure flow (fix round)')}
+          </DropdownMenuItem>
+        </>
+      ) : null}
     </>
   )
 }

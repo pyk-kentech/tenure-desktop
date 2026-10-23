@@ -240,7 +240,8 @@ export function useQuickCreationExecution(input: QuickCreationExecutionInput) {
         promptDelivery,
         quickTelemetry,
         suppressTerminalFocusOnCompletion: createMultiple,
-        setupOnly: options?.setupOnly === true
+        setupOnly: options?.setupOnly === true,
+        tenureFlow: options?.tenureFlow === true
       })
 
       if (isSubmissionCancelled()) {

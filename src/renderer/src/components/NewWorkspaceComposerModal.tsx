@@ -203,7 +203,10 @@ function QuickTabBody({
     cardProps.agentRows?.detectionTarget
   )
   const launchSelection = observation.selectionFor(quickAgent, quickAgentSurface)
-  const createDisabled = formDisabled || !launchSelection.ready
+  const [tenureFlow, setTenureFlow] = useState(false)
+  const createDisabled = tenureFlow
+    ? formDisabled || !cardProps.note.trim()
+    : formDisabled || !launchSelection.ready
 
   const handleQuickAgentChange = useCallback(
     (agent: TuiAgent | null, surface?: AgentLaunchSurface) => {
@@ -223,11 +226,16 @@ function QuickTabBody({
     if (createDisabled) {
       return
     }
+    if (tenureFlow) {
+      // Why: the flow replaces the agent launch; the workspace opens with a plain shell.
+      await submitQuick(null, { setupOnly: false, tenureFlow: true })
+      return
+    }
     await submitQuick(quickAgent, {
       setupOnly: quickSetupOnly,
       launchChoice: launchSelection.choice
     })
-  }, [createDisabled, quickAgent, launchSelection.choice, quickSetupOnly, submitQuick])
+  }, [createDisabled, quickAgent, launchSelection.choice, quickSetupOnly, submitQuick, tenureFlow])
   // Why: Add Project layers over the composer as a nested dialog instead of
   // replacing it in the activeModal slot — closing the composer mid-flow (and
   // losing the typed name/prompt) was the old, abrupt behavior. Once opened it
@@ -344,6 +352,8 @@ function QuickTabBody({
         quickSetupOnly={quickSetupOnly}
         onQuickSetupOnlySelect={handleQuickSetupOnlySelect}
         {...cardProps}
+        tenureFlow={tenureFlow}
+        onTenureFlowChange={setTenureFlow}
         createDisabled={createDisabled}
         agentSurfaceRows={
           cardProps.agentRows

@@ -20878,6 +20878,24 @@
         "blocked": "흐름 기다림",
         "failed": "흐름 실패",
         "done": "흐름 끝"
+      },
+      "draft": {
+        "noDiff": "바뀐 것이 없습니다.",
+        "picked": "바꿨습니다. 이전 상태는 {{value0}} 에 남겼습니다.",
+        "title": "경쟁 초안",
+        "blocking": "막는 지적 {{value0}}",
+        "kept": "채택",
+        "pick": "이걸로"
+      },
+      "notes": {
+        "sending": "흐름에 메모를 보내는 중…",
+        "send": "tenure 흐름으로 보내기 (고치기 회차)",
+        "noEngine": "tenure 엔진을 쓸 수 없습니다.",
+        "sent": "메모를 보냈습니다. 흐름이 고치기 회차를 시작합니다."
+      },
+      "composer": {
+        "toggle": "에이전트 대신 tenure 흐름으로 시작",
+        "failed": "흐름을 시작하지 못했습니다: {{value0}}"
       }
     }
   }

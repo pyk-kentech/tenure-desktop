@@ -1,4 +1,5 @@
 import { useAppStore } from '@/store'
+import { startTenureFlowInNewWorkspace } from './tenure-flow-workspace-start'
 import { ensureAgentStartupInTerminal } from '@/lib/new-workspace'
 import { queueWorkspaceActivationTerminalFocus } from '@/lib/workspace-activation-terminal-focus'
 import { seedAgentTabStateAfterWorktreeCreate } from '@/lib/worktree-creation-agent-seeds'
@@ -19,6 +20,12 @@ export async function completeWorktreeCreation(args: {
   const { request } = args
   // Why: clearing synchronously after activation lets React commit the panel-to-terminal swap in one frame.
   useAppStore.getState().removePendingWorktreeCreation(args.creationId, { cleanupVm: false })
+  if (request.tenureFlow) {
+    const path = useAppStore.getState().getKnownWorktreeById(args.worktreeId)?.path
+    if (path) {
+      void startTenureFlowInNewWorkspace(path, request.note, args.focusOnCompletion).catch(() => {})
+    }
+  }
   if (!args.structuredLaunchAccepted) {
     seedAgentTabStateAfterWorktreeCreate({
       request,
