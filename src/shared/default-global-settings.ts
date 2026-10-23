@@ -9,7 +9,7 @@ import { DEFAULT_APP_ICON_ID } from './app-icon'
 import { DEFAULT_OPEN_IN_APPLICATIONS } from './open-in-applications'
 import { DEFAULT_DISABLED_TUI_AGENTS } from './tui-agent-selection'
 import { DEFAULT_TUI_AGENT_ARGS, DEFAULT_TUI_AGENT_ENV } from './tui-agent-launch-defaults'
-import { UI_LANGUAGE_SYSTEM } from './ui-language'
+import { UI_LANGUAGE_KOREAN } from './ui-language'
 import {
   DEFAULT_LEFT_SIDEBAR_TINT_COLOR,
   DEFAULT_LEFT_SIDEBAR_TINT_OPACITY
@@ -45,7 +45,7 @@ export function buildDefaultSettings(args: {
     leftSidebarAppearanceMode: 'default',
     leftSidebarTintColor: DEFAULT_LEFT_SIDEBAR_TINT_COLOR,
     leftSidebarTintOpacity: DEFAULT_LEFT_SIDEBAR_TINT_OPACITY,
-    uiLanguage: UI_LANGUAGE_SYSTEM,
+    uiLanguage: UI_LANGUAGE_KOREAN,
     uiLanguagePortugueseMigrationApplied: true,
     appIcon: DEFAULT_APP_ICON_ID,
     appFontFamily: args.appFontFamily,
@@ -227,7 +227,8 @@ export function buildDefaultSettings(args: {
     agentDefaultArgs: { ...DEFAULT_TUI_AGENT_ARGS },
     agentDefaultEnv: { ...DEFAULT_TUI_AGENT_ENV },
     agentYoloDefaultsMigrated: true,
-    agentStatusHooksEnabled: true,
+    // Why (tenure): global hook install stays off; users must not get ~/.claude or ~/.codex edits.
+    agentStatusHooksEnabled: false,
     agentWorkspaceTrustEnabled: true,
     codexTerminalServerIsolation: true,
     codexSharedServerWarning: true,

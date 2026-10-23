@@ -22,6 +22,8 @@ import { UpdaterDownloadInstall } from './updater-download-install'
 import { configureMacShipItScheduling } from './macos-shipit-scheduling'
 import type { PreQuitCleanupFailureMode, UpdateInstallMode } from './updater-state'
 
+const TENURE_UPDATES_DISABLED = true
+
 export type UpdaterSetupOptions = {
   getLastUpdateCheckAt?: () => number | null
   onBeforeQuit?: () => void | Promise<void>
@@ -136,7 +138,8 @@ export class UpdaterSetup extends UpdaterDownloadInstall {
       this.sendErrorStatus(`The server update did not complete: ${serveHandoffFailure}`, true)
     }
 
-    if (!app.isPackaged) {
+    // Why (tenure): the upstream feed is stablyai/orca; tenure ships its own releases later (DESIGN.md 36.23 M40).
+    if (!app.isPackaged || TENURE_UPDATES_DISABLED) {
       return
     }
 

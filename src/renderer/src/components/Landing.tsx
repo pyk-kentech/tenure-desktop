@@ -27,6 +27,8 @@ type ShortcutItem = {
 // Do not deep-link to /stargazers: GitHub 404s that page for users without repo write access.
 const ORCA_GITHUB_URL = 'https://github.com/stablyai/orca'
 
+const TENURE_HIDE_UPSTREAM_STAR = true
+
 type StarButtonProps = {
   hasRepos: boolean
   state: LandingStarState
@@ -81,8 +83,8 @@ function GitHubStarButton({
     await window.api.starNag.complete()
   }
 
-  // Hide once the user has already starred and added a repo.
-  if (state === 'hidden' || (state === 'starred' && hasRepos)) {
+  // Why (tenure): no prompt to star the upstream repo.
+  if (TENURE_HIDE_UPSTREAM_STAR || state === 'hidden' || (state === 'starred' && hasRepos)) {
     return null
   }
 
@@ -266,7 +268,7 @@ export default function Landing(): React.JSX.Element {
             />
           </div>
           <h1 className="text-4xl font-bold text-foreground tracking-tight">
-            {translate('auto.components.Landing.6ca6ff404e', 'ORCA')}
+            tenure
           </h1>
 
           {preflightIssues.length > 0 && <PreflightBanner issues={preflightIssues} repos={repos} />}

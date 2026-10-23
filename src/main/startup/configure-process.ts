@@ -222,7 +222,7 @@ export function configureDevUserDataPath(isDev: boolean): void {
     return
   }
   // Why: without a dev-only path, pnpm dev overwrites the packaged app's runtime pointer under userData and breaks the orca CLI.
-  app.setPath('userData', join(app.getPath('appData'), 'orca-dev'))
+  app.setPath('userData', join(app.getPath('appData'), 'tenure-dev'))
 }
 
 function areSameE2EHomePath(left: string, right: string): boolean {
@@ -251,8 +251,8 @@ export function configureOrcaUserDataPathEnv(): void {
 
 export function shouldInstallManagedHooks(isDev: boolean): boolean {
   void isDev
-  // Why: managed hooks now target Orca-owned Codex homes, not ~/.codex, so keep install on for all agents until each gets its own seam.
-  return true
+  // Why (tenure): never write hooks into the user's global CLI config; tenure attaches hooks per launch instead.
+  return false
 }
 
 export function installDevParentDisconnectQuit(isDev: boolean): void {

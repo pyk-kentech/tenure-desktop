@@ -55,7 +55,7 @@ export async function initializeReadyRuntimeServices(): Promise<void> {
   installFirstWorkRenameHookSubscription()
   await initializeMainProcessPlugins(runtime)
   state.starNag = new StarNagService(store, state.stats!)
-  state.starNag.start()
+  // Why (tenure): no prompts to star the upstream repo.
   state.starNag.registerIpcHandlers()
   state.agentBrowserBridge = new AgentBrowserBridge(browserManager, {
     onTabsChanged: (worktreeId) => runtime.notifyMobileSessionTabsChanged(worktreeId)
