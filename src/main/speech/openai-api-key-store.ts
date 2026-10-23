@@ -1,3 +1,4 @@
+import { APP_HOME_DIRNAME } from '../../shared/app-home-dirs'
 import { getSecretStore } from '../../shared/secret-store'
 import { readCredentialFileProtection } from '../credential-file-protection'
 import {
@@ -16,7 +17,7 @@ const OPENAI_SPEECH_TOKEN_FILE = 'openai-speech-token.enc'
 let cachedOpenAiSpeechApiKey: string | null = null
 
 function getOrcaDir(): string {
-  return join(homedir(), '.orca')
+  return join(homedir(), APP_HOME_DIRNAME)
 }
 
 function ensureOrcaDir(): void {

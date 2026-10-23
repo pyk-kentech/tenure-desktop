@@ -1,3 +1,4 @@
+import { APP_HOME_DIRNAME } from '../../shared/app-home-dirs'
 import { existsSync, mkdirSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
@@ -5,7 +6,7 @@ import { join } from 'node:path'
 export const LEGACY_WORKSPACE_ID = 'legacy'
 
 function getOrcaDir(): string {
-  return join(homedir(), '.orca')
+  return join(homedir(), APP_HOME_DIRNAME)
 }
 
 function getLegacyTokenPath(): string {

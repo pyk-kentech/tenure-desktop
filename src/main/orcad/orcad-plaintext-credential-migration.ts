@@ -4,6 +4,7 @@
  * Why every store and not only Linear: each wrote plaintext under the same unsealable store.
  * GitHub and GitLab are not here because Orca never stores their tokens; `gh`/`glab` own them.
  */
+import { APP_HOME_DIRNAME } from '../../shared/app-home-dirs'
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
@@ -46,7 +47,7 @@ function encFilesIn(dir: string): string[] {
 
 /** Where every integration store keeps its files, whatever ORCA_USER_DATA says. */
 export function orcadCredentialRoot(): string {
-  return join(homedir(), '.orca')
+  return join(homedir(), APP_HOME_DIRNAME)
 }
 
 function listPlaintextCredentialTargets(): PlaintextCredentialTarget[] {

@@ -1,3 +1,4 @@
+import { APP_HOME_DIRNAME } from '../../shared/app-home-dirs'
 import { randomUUID } from 'node:crypto'
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs'
 import { readdir, readFile, rm } from 'node:fs/promises'
@@ -10,7 +11,7 @@ const OWNER_FILE_PATTERN = /^owner-([\da-f-]{36})\.json$/i
 type GrokHookOwner = { token: string; pid: number }
 
 function ownerDirectory(): string {
-  return join(homedir(), '.orca', 'agent-hooks', 'grok-owners')
+  return join(homedir(), APP_HOME_DIRNAME, 'agent-hooks', 'grok-owners')
 }
 
 function ownerPath(directory = ownerDirectory()): string {

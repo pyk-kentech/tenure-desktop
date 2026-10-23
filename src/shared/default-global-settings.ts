@@ -159,7 +159,8 @@ export function buildDefaultSettings(args: {
     nestedWorkerMaxDepth: 1,
     showArtifactsButton: false,
     showSkillsButton: false,
-    showMobileButton: true,
+    // Why (tenure): the mobile companion pairs through upstream Orca's cloud; hide its entry by default.
+    showMobileButton: false,
     showPinnedWorktreesInGroups: false,
     ctrlTabOrderMode: 'mru',
     // Why: Orca-first keeps core shortcuts working from a focused terminal; TUI-ownership users opt in.

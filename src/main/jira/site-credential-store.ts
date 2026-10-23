@@ -1,3 +1,4 @@
+import { APP_HOME_DIRNAME } from '../../shared/app-home-dirs'
 import { existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
@@ -27,7 +28,7 @@ export function getCredentialError(siteId: string): string | undefined {
 }
 
 function getOrcaDir(): string {
-  return join(homedir(), '.orca')
+  return join(homedir(), APP_HOME_DIRNAME)
 }
 
 function getSiteFilePath(): string {

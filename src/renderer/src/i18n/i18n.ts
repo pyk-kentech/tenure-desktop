@@ -1,3 +1,4 @@
+import { applyProductName } from '../../../shared/tenure-fork-build'
 import i18next, {
   type BackendModule,
   type i18n as I18nInstance,
@@ -100,7 +101,7 @@ i18n.store.on('added', advanceTranslationResourceVersion)
 i18n.store.on('removed', advanceTranslationResourceVersion)
 
 export function translate(key: string, fallback: string, options?: TOptions): string {
-  const value = i18n.t(key, { defaultValue: fallback, ...options })
+  const value = applyProductName(i18n.t(key, { defaultValue: fallback, ...options }))
   return isPseudoLocalizationLocale(i18n.language) ? pseudoLocalizeString(value) : value
 }
 

@@ -1,3 +1,4 @@
+import { APP_HOME_DIRNAME } from '../../shared/app-home-dirs'
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import {
@@ -25,7 +26,7 @@ import {
 } from './keybinding-file-parser'
 
 export function getUserKeybindingsPath(homePath: string): string {
-  return join(homePath, '.orca', 'keybindings.json')
+  return join(homePath, APP_HOME_DIRNAME, 'keybindings.json')
 }
 
 export function readKeybindingFile(

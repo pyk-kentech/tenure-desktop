@@ -1,6 +1,7 @@
 // Why: jcode config paths and the [hooks] table contract. jcode loads lifecycle
 // hooks from ~/.jcode/config.toml (or $JCODE_HOME/config.toml); Orca writes its
 // managed observer hooks there so sessions launched outside Orca still report.
+import { APP_HOME_DIRNAME } from '../../shared/app-home-dirs'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
 
@@ -44,7 +45,7 @@ export function getJcodeManagedScriptPath(): string {
 }
 
 export function getSharedJcodeScriptPath(scriptFileName: string): string {
-  return join(homedir(), '.orca', 'agent-hooks', scriptFileName)
+  return join(homedir(), APP_HOME_DIRNAME, 'agent-hooks', scriptFileName)
 }
 
 // Why quoted: jcode executes hook commands directly (no shell), but it tokenizes the

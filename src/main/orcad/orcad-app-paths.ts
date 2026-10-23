@@ -7,6 +7,7 @@
  * beside, or resolves resources against. The failure surfaces far from here, as a missing
  * file rather than a missing implementation.
  */
+import { APP_DATA_DIRNAME, APP_HOME_DIRNAME } from '../../shared/app-home-dirs'
 import { realpathSync } from 'node:fs'
 import { homedir, tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
@@ -26,7 +27,7 @@ export function resolveUserDataPath(): string {
     return explicit
   }
   const xdg = env('XDG_DATA_HOME')
-  return xdg ? join(xdg, 'Orca') : join(homedir(), '.orca')
+  return xdg ? join(xdg, APP_DATA_DIRNAME) : join(homedir(), APP_HOME_DIRNAME)
 }
 
 /** Electron's `'appData'` definition, computed without Electron. */
