@@ -1,3 +1,4 @@
+import { IS_TENURE_FORK_BUILD } from '../shared/tenure-fork-build'
 import { net } from 'electron'
 import { compareVersions, isValidVersion } from './updater-fallback'
 
@@ -8,6 +9,10 @@ export type NudgeConfig = {
 }
 
 export async function fetchNudge(): Promise<NudgeConfig | null> {
+  // Why (tenure): nudges come from upstream Orca's site and describe its releases, not tenure's.
+  if (IS_TENURE_FORK_BUILD) {
+    return null
+  }
   try {
     const res = await net.fetch('https://onorca.dev/whats-new/nudge.json', {
       signal: AbortSignal.timeout(5000)

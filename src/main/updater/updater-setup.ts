@@ -1,3 +1,4 @@
+import { RELEASES_REPO } from '../../shared/tenure-fork-build'
 import { app, powerMonitor } from 'electron'
 import type { BrowserWindow } from 'electron'
 import type { ReleaseBuild, ReleaseChannel } from '../../shared/release-channel'
@@ -21,8 +22,6 @@ import { AUTO_UPDATE_CHECK_INTERVAL_MS } from './updater-state'
 import { UpdaterDownloadInstall } from './updater-download-install'
 import { configureMacShipItScheduling } from './macos-shipit-scheduling'
 import type { PreQuitCleanupFailureMode, UpdateInstallMode } from './updater-state'
-
-const TENURE_UPDATES_DISABLED = true
 
 export type UpdaterSetupOptions = {
   getLastUpdateCheckAt?: () => number | null
@@ -138,8 +137,7 @@ export class UpdaterSetup extends UpdaterDownloadInstall {
       this.sendErrorStatus(`The server update did not complete: ${serveHandoffFailure}`, true)
     }
 
-    // Why (tenure): the upstream feed is stablyai/orca; tenure ships its own releases later (DESIGN.md 36.23 M40).
-    if (!app.isPackaged || TENURE_UPDATES_DISABLED) {
+    if (!app.isPackaged) {
       return
     }
 
@@ -163,7 +161,7 @@ export class UpdaterSetup extends UpdaterDownloadInstall {
     if (this.activeUpdateSource === 'release') {
       autoUpdater.setFeedURL({
         provider: 'generic',
-        url: 'https://github.com/stablyai/orca/releases/latest/download'
+        url: `https://github.com/${RELEASES_REPO}/releases/latest/download`
       })
     }
     if (this.autoUpdaterInitialized) {

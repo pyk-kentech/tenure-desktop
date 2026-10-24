@@ -11,3 +11,6 @@ const UPSTREAM_PRODUCT_NAME = /(?<![A-Za-z])Orca(?![A-Za-z])/g
 export function applyProductName(text: string): string {
   return IS_TENURE_FORK_BUILD ? text.replace(UPSTREAM_PRODUCT_NAME, 'tenure') : text
 }
+
+/** GitHub repo whose releases carry the installer and latest.yml (DESIGN.md 36.23 releases). */
+export const RELEASES_REPO = IS_TENURE_FORK_BUILD ? 'pyk-kentech/tenure' : 'stablyai/orca'

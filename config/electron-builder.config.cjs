@@ -825,8 +825,8 @@ module.exports = {
   npmRebuild: true,
   publish: {
     provider: 'github',
-    owner: 'stablyai',
-    repo: devChannelRepo ?? 'orca',
+    owner: 'pyk-kentech',
+    repo: devChannelRepo ?? 'tenure',
     // Why draft on the main repo: `--publish always` otherwise creates a
     // public GitHub release as soon as the first platform uploads, and
     // /releases/latest serves a missing Windows exe. release-cut undrafts
