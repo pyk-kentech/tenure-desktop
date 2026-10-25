@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { ProjectedAgentMenuItems } from './QuickLaunchButton'
+import { TenureRelayMenuItem } from '../tenure-relay/TenureRelayMenuItem'
 import TabBarCreateEntry from './TabBarCreateEntry'
 import { TabStripScrollIndicator } from './TabStripScrollIndicator'
 import { TabStripTooltipProvider } from './TabStripTooltipProvider'
@@ -279,6 +280,7 @@ export function renderTabBarSurface({
             <>
               <DropdownMenuSeparator />
               <ProjectedAgentMenuItems model={agentMenu} runLaunch={launchAgentRow} />
+              <TenureRelayMenuItem worktreeId={worktreeId} groupId={resolvedGroupId} />
             </>
           ) : null}
         </DropdownMenuContent>

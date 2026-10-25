@@ -48,6 +48,9 @@ const AddProjectFromFolderDialog = lazy(
 const DiagramViewerModal = lazy(() => import('../components/editor/DiagramViewerModal'))
 const ProjectAddedDialog = lazy(() => import('../components/sidebar/ProjectAddedDialog'))
 const NodeDistMirrorDialog = lazy(() => import('../components/settings/NodeDistMirrorDialog'))
+const TenureRelayLaunchDialog = lazy(
+  () => import('../components/tenure-relay/TenureRelayLaunchDialog')
+)
 const AiVaultSessionHistoryDialog = lazy(
   () => import('../components/right-sidebar/AiVaultSessionHistoryDialog')
 )
@@ -216,6 +219,12 @@ export function AppRootSurfaces(props: {
         {activeModal === 'node-dist-mirror' ? (
           <ModalBoundary boundaryId="modal.node-dist-mirror" resetKey>
             <NodeDistMirrorDialog />
+          </ModalBoundary>
+        ) : null}
+        {/* tenure: the tab bar's menu opens it, and the menu unmounts before it would show. */}
+        {activeModal === 'tenure-relay' ? (
+          <ModalBoundary boundaryId="modal.tenure-relay" resetKey>
+            <TenureRelayLaunchDialog />
           </ModalBoundary>
         ) : null}
         {/* Why: chat rows are virtualized, so the viewer must outlive the message that opened it. */}

@@ -206,9 +206,11 @@ function QuickTabBody({
   const launchSelection = observation.selectionFor(quickAgent, quickAgentSurface)
   const [tenureFlow, setTenureFlow] = useState(false)
   const [tenureRelay, setTenureRelay] = useState<TenureRelayOptions | null>(null)
-  const createDisabled =
-    tenureFlow || tenureRelay
-      ? formDisabled || !cardProps.note.trim()
+  // Why the relay needs no note: its coordinator waits for the task in its own terminal.
+  const createDisabled = tenureFlow
+    ? formDisabled || !cardProps.note.trim()
+    : tenureRelay
+      ? formDisabled
       : formDisabled || !launchSelection.ready
 
   const handleQuickAgentChange = useCallback(

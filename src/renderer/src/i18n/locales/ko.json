@@ -20903,10 +20903,16 @@
       "coordinator": "지휘자",
       "worker": "일꾼",
       "rounds": "최대 회차",
-      "modelPlaceholder": "모델 (비우면 Codex 설정)",
-      "effortConfig": "Codex 설정",
-      "taskPlaceholder": "무엇을 만들거나 고칠까요? 지휘자가 회차로 나눠 일꾼에게 맡깁니다.",
-      "hint": "지휘자는 파일을 고치지 않습니다. 옆에 일꾼 Codex 를 띄워 회차마다 일을 맡기고 결과를 확인합니다. 지휘자를 멈추면 중계도 멈춥니다."
+      "keepConfig": "Codex 설정",
+      "noCap": "없음",
+      "taskOptional": "과제 (선택). 비워 두면 지휘자 창에서 과제·링크·파일을 직접 주면 됩니다.",
+      "hint": "지휘자는 파일을 고치지 않습니다. 옆에 일꾼 Codex 를 띄워 회차마다 일을 맡기고 결과를 확인합니다. 과제를 비워 두면 지휘자 창에서 과제·링크·파일을 주면 됩니다. 지휘자를 멈추면 중계도 멈춥니다.",
+      "menuItem": "지휘자 + 일꾼 (tenure)…",
+      "dialogTitle": "지휘자 + 일꾼",
+      "dialogDescription": "이 작업공간의 새 탭에 지휘자 Codex 를 띄웁니다.",
+      "start": "지휘자 시작",
+      "launchFailed": "지휘자 Codex 를 띄우지 못했습니다.",
+      "remoteUnsupported": "중계는 아직 로컬 작업공간에서만 됩니다."
     }
   }
 }

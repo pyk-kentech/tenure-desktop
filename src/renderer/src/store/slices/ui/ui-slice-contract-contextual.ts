@@ -55,6 +55,8 @@ export type UISliceContextual = {
     | 'diagram-viewer'
     | 'agent-session-history'
     | 'node-dist-mirror'
+    /** tenure: start a coordinator + worker relay in an existing workspace (DESIGN.md 36.25). */
+    | 'tenure-relay'
   modalData: Record<string, unknown>
   openModal: (modal: UISliceContextual['activeModal'], data?: Record<string, unknown>) => void
   closeModal: () => void

@@ -15,12 +15,17 @@ const base = {
   telemetrySource: undefined as never
 }
 
-describe('quick composer startup: tenure relay (DESIGN.md 36.24)', () => {
+describe('quick composer startup: tenure relay (DESIGN.md 36.24, 36.25)', () => {
   it('launches the coordinator Codex with its flags, the cap env and the coordinator prompt', () => {
     const { startupPlan, backendStartup } = buildQuickComposerStartup({
       ...base,
       agent: 'codex',
-      tenureRelay: { ...DEFAULT_TENURE_RELAY_OPTIONS, coordinatorModel: 'gpt-5.5', maxRounds: 4 }
+      tenureRelay: {
+        ...DEFAULT_TENURE_RELAY_OPTIONS,
+        coordinatorModel: 'gpt-5.5',
+        coordinatorEffort: 'high',
+        maxRounds: 4
+      }
     })
     expect(startupPlan?.launchCommand).toContain(
       "'-m' 'gpt-5.5' '-c' 'model_reasoning_effort=high'"
@@ -36,13 +41,16 @@ describe('quick composer startup: tenure relay (DESIGN.md 36.24)', () => {
     expect(backendStartup?.env?.[TENURE_RELAY_MAX_ROUNDS_ENV]).toBe('4')
   })
 
-  it('normalizes the options it is given', () => {
+  it('starts without a task or cap by default', () => {
     const { startupPlan } = buildQuickComposerStartup({
       ...base,
+      prompt: '',
       agent: 'codex',
-      tenureRelay: { ...DEFAULT_TENURE_RELAY_OPTIONS, maxRounds: 999 }
+      tenureRelay: DEFAULT_TENURE_RELAY_OPTIONS
     })
-    expect(startupPlan?.env?.[TENURE_RELAY_MAX_ROUNDS_ENV]).toBe('20')
+    expect(startupPlan?.launchCommand).toContain('기다린다')
+    expect(startupPlan?.launchCommand).not.toContain("'-m'")
+    expect(startupPlan?.env?.[TENURE_RELAY_MAX_ROUNDS_ENV]).toBeUndefined()
   })
 
   it('leaves a plain Codex launch untouched', () => {

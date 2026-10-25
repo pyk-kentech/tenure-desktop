@@ -4,56 +4,49 @@ import {
   DEFAULT_TENURE_RELAY_OPTIONS,
   normalizeTenureRelayOptions,
   TENURE_RELAY_DONE_MARKER,
+  TENURE_RELAY_MAX_ROUNDS_ENV,
   tenureRelayCodexArgs,
+  tenureRelayLaunch,
   tenureRelayWorkerCommand
 } from './tenure-relay'
 
-describe('tenure relay (DESIGN.md 36.24)', () => {
+describe('tenure relay (DESIGN.md 36.24, 36.25)', () => {
   it('adds no Codex flags when model and effort are left to the Codex config', () => {
     expect(tenureRelayCodexArgs('', '')).toEqual([])
-    expect(tenureRelayCodexArgs('gpt-5.5', 'high')).toEqual([
+    expect(tenureRelayCodexArgs('gpt-daybreak-blue-latest', 'ultra')).toEqual([
       '-m',
-      'gpt-5.5',
+      'gpt-daybreak-blue-latest',
       '-c',
-      'model_reasoning_effort=high'
+      'model_reasoning_effort=ultra'
     ])
   })
 
-  it('normalizes input: drops unsafe model ids, clamps rounds', () => {
-    const normalized = normalizeTenureRelayOptions({
-      coordinatorModel: ' gpt-5.5 ',
-      coordinatorEffort: 'bogus' as never,
-      workerModel: 'gpt; rm -rf /',
-      workerEffort: 'low',
-      maxRounds: 99
-    })
-    expect(normalized).toEqual({
-      coordinatorModel: 'gpt-5.5',
-      coordinatorEffort: '',
+  it('normalizes input: any listed effort passes, unsafe values drop, no cap by default', () => {
+    expect(
+      normalizeTenureRelayOptions({
+        coordinatorModel: ' gpt-6.1-sol ',
+        coordinatorEffort: 'max',
+        workerModel: 'gpt; rm -rf /',
+        workerEffort: 'ultra -c x=1',
+        maxRounds: null
+      })
+    ).toEqual({
+      coordinatorModel: 'gpt-6.1-sol',
+      coordinatorEffort: 'max',
       workerModel: '',
-      workerEffort: 'low',
-      maxRounds: 20
+      workerEffort: '',
+      maxRounds: null
     })
-    expect(
-      normalizeTenureRelayOptions({
-        ...DEFAULT_TENURE_RELAY_OPTIONS,
-        maxRounds: 0
-      }).maxRounds
-    ).toBe(5)
-    expect(
-      normalizeTenureRelayOptions({
-        ...DEFAULT_TENURE_RELAY_OPTIONS,
-        maxRounds: Number.NaN
-      }).maxRounds
-    ).toBe(5)
+    const rounds = (maxRounds: number | null) =>
+      normalizeTenureRelayOptions({ ...DEFAULT_TENURE_RELAY_OPTIONS, maxRounds }).maxRounds
+    expect(rounds(0)).toBeNull()
+    expect(rounds(Number.NaN)).toBeNull()
+    expect(rounds(30)).toBe(30)
+    expect(rounds(5000)).toBe(1000)
   })
 
-  it('builds a one-line coordinator prompt with the worker command, cap and done marker', () => {
-    const options = {
-      ...DEFAULT_TENURE_RELAY_OPTIONS,
-      workerModel: 'gpt-5.2-codex',
-      maxRounds: 3
-    }
+  it('builds a one-line coordinator prompt with the worker command and done marker', () => {
+    const options = { ...DEFAULT_TENURE_RELAY_OPTIONS, workerModel: 'gpt-5.2-codex' }
     const prompt = buildTenureRelayCoordinatorPrompt({
       task: 'say "hi" CLI',
       options,
@@ -68,9 +61,41 @@ describe('tenure relay (DESIGN.md 36.24)', () => {
       'codex --full-auto -m gpt-5.2-codex'
     )
     expect(tenureRelayWorkerCommand(options, '-c x="y"')).toBe('codex -m gpt-5.2-codex')
-    expect(prompt).toContain('최대 3회차')
+    expect(prompt).not.toContain('tenure_relay_round_cap')
     expect(prompt).toContain(`${TENURE_RELAY_DONE_MARKER}:`)
     // Windows PowerShell 5.1 splits a native argument at embedded double quotes.
     expect(prompt).not.toContain('"')
+  })
+
+  it('tells the coordinator to wait for the task when none is given', () => {
+    const prompt = buildTenureRelayCoordinatorPrompt({
+      task: '  ',
+      options: DEFAULT_TENURE_RELAY_OPTIONS,
+      cliCommand: 'orca'
+    })
+    expect(prompt).not.toContain('과제:')
+    expect(prompt).toContain('기다린다')
+    expect(prompt).toContain('링크·첨부 파일')
+  })
+
+  it('adds the round cap to prompt and env only when one is set', () => {
+    const base = { task: 't', cliCommand: 'orca', baseArgs: '--full-auto', baseEnv: { A: '1' } }
+    const free = tenureRelayLaunch({ ...base, options: DEFAULT_TENURE_RELAY_OPTIONS })
+    expect(free.agentEnv).toEqual({ A: '1' })
+    expect(free.agentArgs).toBe('--full-auto')
+    expect(free.prompt).not.toContain('tenure_relay_round_cap')
+
+    const capped = tenureRelayLaunch({
+      ...base,
+      options: {
+        ...DEFAULT_TENURE_RELAY_OPTIONS,
+        coordinatorModel: 'gpt-6-astra',
+        coordinatorEffort: 'xhigh',
+        maxRounds: 12
+      }
+    })
+    expect(capped.agentEnv).toEqual({ A: '1', [TENURE_RELAY_MAX_ROUNDS_ENV]: '12' })
+    expect(capped.agentArgs).toBe('--full-auto -m gpt-6-astra -c model_reasoning_effort=xhigh')
+    expect(capped.prompt).toContain('최대 12회차')
   })
 })

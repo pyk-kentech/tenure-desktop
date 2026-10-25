@@ -70,8 +70,8 @@ export function NewWorkspaceComposerTenureFlowSection({
           placeholder={
             relayOn
               ? translate(
-                  'tenure.relay.taskPlaceholder',
-                  'What should be built or fixed? The coordinator splits it into rounds for the worker.'
+                  'tenure.relay.taskOptional',
+                  'Task (optional). Leave empty to give the task, links and files to the coordinator in its terminal.'
                 )
               : translate(
                   'tenure.flow.taskPlaceholder',

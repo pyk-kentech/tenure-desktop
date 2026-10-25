@@ -1,11 +1,13 @@
 /**
- * tenure relay (DESIGN.md 36.24): the new-workspace composer's "coordinator + worker" mode launches
- * the coordinator Codex with its model/effort flags, the round-cap env and the coordinator prompt.
- * Codex is a fake that only records how it was started; no real agent runs.
+ * tenure relay (DESIGN.md 36.24, 36.25): the coordinator Codex starts with the picked model and
+ * effort, the round cap only when one is set, and the coordinator prompt; from the new-workspace
+ * dialog and from an existing workspace's new-tab menu, with or without a task. Codex is a fake
+ * that only records how it was started; no real agent runs.
  */
-import { chmodSync, existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
+import { chmodSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
+import type { Locator, Page } from '@stablyai/playwright-test'
 import { test, expect } from './helpers/orca-app'
 import { openSidebarWorkspaceComposer } from './helpers/sidebar-project-dialog'
 import { waitForActiveWorktree, waitForSessionReady } from './helpers/store'
@@ -47,7 +49,8 @@ test.use({ orcaAppExtraEnv: { TENURE_E2E_CODEX_LEDGER: spawnLedgerPath } })
 
 type LedgerEntry = { args: string[]; cap: string | null }
 
-function readLedger(): LedgerEntry[] {
+/** Coordinator launches only: model-list probes also start the fake Codex. */
+function coordinatorLaunches(): LedgerEntry[] {
   if (!existsSync(spawnLedgerPath)) {
     return []
   }
@@ -55,14 +58,15 @@ function readLedger(): LedgerEntry[] {
     .split('\n')
     .filter(Boolean)
     .map((line) => JSON.parse(line) as LedgerEntry)
+    .filter((entry) => (entry.args.at(-1) ?? '').includes('너는 tenure 지휘자다'))
 }
 
-test('coordinator + worker mode starts the coordinator Codex with flags, cap and prompt', async ({
-  orcaPage
-}, testInfo) => {
-  await waitForSessionReady(orcaPage)
-  await waitForActiveWorktree(orcaPage)
-  await orcaPage.evaluate(
+async function useFakeCodex(page: Page): Promise<void> {
+  // Why: both tests share the ledger file; each reads only its own launches.
+  rmSync(spawnLedgerPath, { force: true })
+  await waitForSessionReady(page)
+  await waitForActiveWorktree(page)
+  await page.evaluate(
     async ({ command, windowsShell }) => {
       await window.__store!.getState().updateSettings({
         // Why English: the tenure build defaults to Korean; this spec matches English labels.
@@ -74,38 +78,71 @@ test('coordinator + worker mode starts the coordinator Codex with flags, cap and
     },
     { command: fakeCodexCommand, windowsShell: FAKE_AGENT_WINDOWS_SHELL }
   )
+}
 
+async function pick(page: Page, scope: Locator, index: number, option: string): Promise<void> {
+  await scope.getByRole('combobox').nth(index).click()
+  await page.getByRole('option', { name: option, exact: true }).click()
+}
+
+test('new-workspace dialog: picked model and effort, optional cap, task', async ({
+  orcaPage
+}, testInfo) => {
+  await useFakeCodex(orcaPage)
   await openSidebarWorkspaceComposer(orcaPage)
   const dialog = orcaPage.getByRole('dialog', { name: /Create (Workspace|Worktree)/i })
   await dialog.getByText('Start a coordinator + worker relay (two Codex)').click()
-  const models = dialog.getByPlaceholder('Model (empty = Codex setting)')
-  await models.first().fill('gpt-5.5')
-  await models.nth(1).fill('gpt-5.2-codex')
-  await dialog.locator('input[type="number"]').fill('3')
-  await dialog
-    .getByPlaceholder(
-      'What should be built or fixed? The coordinator splits it into rounds for the worker.'
-    )
-    .fill('할일 CLI 만들기')
+  const coordinator = dialog.locator('[data-tenure-relay-side="coordinator"]')
+  const worker = dialog.locator('[data-tenure-relay-side="worker"]')
+  await pick(orcaPage, coordinator, 0, 'GPT-5.5')
+  await pick(orcaPage, coordinator, 1, 'High')
+  await pick(orcaPage, worker, 0, 'GPT-5.2 Codex')
+  await dialog.locator('input[type="number"]').fill('7')
+  await dialog.getByPlaceholder(/^Task \(optional\)/).fill('할일 CLI 만들기')
   await orcaPage.screenshot({ path: testInfo.outputPath('relay-composer.png') })
   await dialog.getByRole('button', { name: /^Create/ }).click()
 
-  await expect.poll(() => readLedger().length, { timeout: 60_000 }).toBeGreaterThan(0)
-  const [entry] = readLedger()
+  await expect.poll(() => coordinatorLaunches().length, { timeout: 60_000 }).toBeGreaterThan(0)
+  const [entry] = coordinatorLaunches()
   await testInfo.attach('codex-spawn.json', {
     body: JSON.stringify(entry, null, 2),
     contentType: 'application/json'
   })
-  expect(entry.cap).toBe('3')
+  expect(entry.cap).toBe('7')
   expect(entry.args).toEqual(
     expect.arrayContaining(['-m', 'gpt-5.5', '-c', 'model_reasoning_effort=high'])
   )
   const prompt = entry.args.at(-1) ?? ''
-  expect(prompt).toContain('너는 tenure 지휘자다')
   expect(prompt).toContain('과제: 할일 CLI 만들기')
   expect(prompt).toContain('skills get orchestration')
   // The whole prompt must reach Codex as one argument, worker command included.
   expect(prompt).toContain('terminal split --command <일꾼 명령>')
   expect(prompt).toContain('-m gpt-5.2-codex]')
-  expect(prompt).toContain('최대 3회차')
+  expect(prompt).toContain('최대 7회차')
+})
+
+test('existing workspace: new-tab menu starts a coordinator without task or cap', async ({
+  orcaPage
+}, testInfo) => {
+  await useFakeCodex(orcaPage)
+  await orcaPage.getByRole('button', { name: 'New tab' }).first().click()
+  await orcaPage.getByRole('menuitem', { name: /Coordinator \+ worker \(tenure\)/ }).click()
+  const dialog = orcaPage.getByRole('dialog', { name: 'Coordinator + worker' })
+  await expect(dialog).toBeVisible()
+  await orcaPage.screenshot({ path: testInfo.outputPath('relay-dialog.png') })
+  await dialog.getByRole('button', { name: 'Start coordinator' }).click()
+  await expect(dialog).toHaveCount(0)
+
+  await expect.poll(() => coordinatorLaunches().length, { timeout: 60_000 }).toBeGreaterThan(0)
+  const [entry] = coordinatorLaunches()
+  await testInfo.attach('codex-spawn.json', {
+    body: JSON.stringify(entry, null, 2),
+    contentType: 'application/json'
+  })
+  expect(entry.cap).toBeNull()
+  expect(entry.args).not.toContain('-m')
+  const prompt = entry.args.at(-1) ?? ''
+  expect(prompt).not.toContain('과제:')
+  expect(prompt).toContain('기다린다')
+  expect(prompt).not.toContain('tenure_relay_round_cap')
 })

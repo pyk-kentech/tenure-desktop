@@ -21185,10 +21185,16 @@
       "coordinator": "Coordinator",
       "worker": "Worker",
       "rounds": "Max rounds",
-      "modelPlaceholder": "Model (empty = Codex setting)",
-      "effortConfig": "Codex setting",
-      "taskPlaceholder": "What should be built or fixed? The coordinator splits it into rounds for the worker.",
-      "hint": "The coordinator does not edit files. It opens a worker Codex beside itself, hands it each round and checks the result. Stop the coordinator to stop the relay."
+      "keepConfig": "Codex setting",
+      "noCap": "No cap",
+      "taskOptional": "Task (optional). Leave empty to give the task, links and files to the coordinator in its terminal.",
+      "hint": "The coordinator does not edit files. It opens a worker Codex beside itself, hands it each round and checks the result. Leave the task empty to give it the task, links and files in its own terminal. Stop the coordinator to stop the relay.",
+      "menuItem": "Coordinator + worker (tenure)…",
+      "dialogTitle": "Coordinator + worker",
+      "dialogDescription": "Starts a coordinator Codex in a new tab of this workspace.",
+      "start": "Start coordinator",
+      "launchFailed": "Could not start the coordinator Codex.",
+      "remoteUnsupported": "The relay runs only in local workspaces for now."
     }
   }
 }
