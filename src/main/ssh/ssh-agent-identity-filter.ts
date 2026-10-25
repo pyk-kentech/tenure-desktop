@@ -10,6 +10,7 @@ import {
   type SigningRequestOptions
 } from 'ssh2'
 import { resolveSshConfigHomePath } from './config/ssh-config-path-expansion'
+import { toSsh2PrivateKeyContents } from './ssh-pkcs8-key'
 
 type AgentPublicKey = ParsedKey | Buffer | string | PublicKeyEntry
 
@@ -70,7 +71,10 @@ class IdentityFilteredAgent extends BaseAgent<ParsedKey | Buffer | string> {
 
 function parseIdentityKeyFile(filePath: string): ParsedKey | undefined {
   try {
-    const parsed = utils.parseKey(readFileSync(filePath)) as ParsedKey | ParsedKey[] | Error
+    const parsed = utils.parseKey(toSsh2PrivateKeyContents(readFileSync(filePath))) as
+      | ParsedKey
+      | ParsedKey[]
+      | Error
     if (parsed instanceof Error) {
       return undefined
     }

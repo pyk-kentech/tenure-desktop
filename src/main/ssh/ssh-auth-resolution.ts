@@ -5,6 +5,7 @@ import type { SshResolvedConfig } from './config/ssh-g-config-resolution'
 import { createIdentityFilteredAgent } from './ssh-agent-identity-filter'
 import { resolveSshConfigHomePath } from './config/ssh-config-path-expansion'
 import { isOpenSshConfigBackedTarget } from './system-transport/system-ssh-args'
+import { toSsh2PrivateKeyContents } from './ssh-pkcs8-key'
 
 // Why: ssh2 only tries keys that are explicitly provided. Users with keys in
 // standard locations (e.g. ~/.ssh/id_ed25519) but no SSH agent running would
@@ -35,7 +36,7 @@ export function findDefaultKeyFile(): PrivateKeyFile | undefined {
       if (!existsSync(resolved)) {
         continue
       }
-      const contents = readFileSync(resolved)
+      const contents = toSsh2PrivateKeyContents(readFileSync(resolved))
       return { path: keyPath, contents }
     } catch {
       continue
@@ -121,7 +122,7 @@ export function resolveIdentityFilePaths(
 function readPrivateKey(keyPath: string): PrivateKeyFile | undefined {
   try {
     const resolvedPath = resolveSshConfigHomePath(keyPath)
-    return { path: keyPath, contents: readFileSync(resolvedPath) }
+    return { path: keyPath, contents: toSsh2PrivateKeyContents(readFileSync(resolvedPath)) }
   } catch {
     return undefined
   }
