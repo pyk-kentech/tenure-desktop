@@ -86,9 +86,10 @@ export function useQuickCreationExecution(input: QuickCreationExecutionInput) {
       repoId: string,
       options?: QuickSubmitOptions
     ): Promise<void> => {
+      const relayOptions = options?.tenureRelay
       const prepared = await prepareQuickSubmit(
         smartGitHubResolution,
-        requestedAgent,
+        relayOptions ? 'codex' : requestedAgent,
         workspaceNameSeed
       )
 
@@ -129,13 +130,15 @@ export function useQuickCreationExecution(input: QuickCreationExecutionInput) {
         telemetry: quickTelemetry
       } = buildQuickComposerStartup({
         agent,
-        prompt: quickPrompt,
+        // Why the note: the relay's task is what the user typed, never a linked item's draft.
+        prompt: relayOptions ? trimmedNote : quickPrompt,
         draftPrompt: quickDraftPrompt,
         settings,
         launchHost: selectedRepoAgentLaunchFact,
         shell: selectedRepoStartupShell,
         isRemote: selectedRepoIsRemote,
-        telemetrySource
+        telemetrySource,
+        tenureRelay: relayOptions
       })
 
       const startupPolicySettlement = await settleComposerSubmit(
@@ -172,23 +175,25 @@ export function useQuickCreationExecution(input: QuickCreationExecutionInput) {
         }
       }
 
-      const promptDelivery = quickDraftPrompt ? 'draft' : 'auto-submit'
+      const promptDelivery = quickDraftPrompt && !relayOptions ? 'draft' : 'auto-submit'
       // Why: the verdict is persisted on the request as data and re-entered once the worktree exists.
-      const agentLaunchRoute = !agent
-        ? 'terminal-tui'
-        : (options?.launchChoice?.route ??
-          resolveAgentSessionLaunchRoute(useAppStore.getState(), {
-            agent,
-            workspace: {
-              kind: selectedRepoIsGit ? 'git-worktree' : 'folder',
-              repoId,
-              executionHostId: ephemeralVmRecipe
-                ? 'runtime:pending-ephemeral-vm'
-                : (workspaceRunContext?.hostId ?? selectedRepoExecutionHostId ?? undefined)
-            },
-            prompt: quickDraftPrompt ?? quickPrompt,
-            promptDelivery
-          }))
+      // Why relay is terminal-only: the coordinator splits its own pane for the worker.
+      const agentLaunchRoute =
+        !agent || relayOptions
+          ? 'terminal-tui'
+          : (options?.launchChoice?.route ??
+            resolveAgentSessionLaunchRoute(useAppStore.getState(), {
+              agent,
+              workspace: {
+                kind: selectedRepoIsGit ? 'git-worktree' : 'folder',
+                repoId,
+                executionHostId: ephemeralVmRecipe
+                  ? 'runtime:pending-ephemeral-vm'
+                  : (workspaceRunContext?.hostId ?? selectedRepoExecutionHostId ?? undefined)
+              },
+              prompt: quickDraftPrompt ?? quickPrompt,
+              promptDelivery
+            }))
       const structuredLaunch = agentLaunchRoute === 'structured-native-chat'
 
       const request = buildQuickCreationRequest({

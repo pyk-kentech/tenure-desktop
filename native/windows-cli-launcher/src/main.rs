@@ -19,6 +19,7 @@ use std::path::{Path, PathBuf};
 use std::process::{exit, Command};
 
 const SERVER_CONFIG_FILENAME: &str = "orca-launcher.cfg";
+const APP_EXECUTABLE_NAMES: [&str; 2] = ["Orca.exe", "tenure.exe"];
 
 #[cfg(windows)]
 mod administrator_status;
@@ -51,13 +52,18 @@ fn main() {
         ))
     };
 
-    let electron_path = app_directory.join("Orca.exe");
-    if !electron_path.is_file() {
+    // Why the list: the tenure fork ships the same launcher with the app
+    // executable renamed to tenure.exe; Orca.exe stays first for upstream.
+    let Some(electron_path) = APP_EXECUTABLE_NAMES
+        .iter()
+        .map(|name| app_directory.join(name))
+        .find(|path| path.is_file())
+    else {
         fail(&format!(
             "Unable to locate Orca.exe next to \"{}\"",
             resources_directory.display()
-        ));
-    }
+        ))
+    };
 
     let cli_path: PathBuf = resources_directory
         .join("app.asar.unpacked")

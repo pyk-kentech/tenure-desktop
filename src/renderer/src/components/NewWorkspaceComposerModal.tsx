@@ -1,4 +1,5 @@
 import type { AgentLaunchSurface } from '@/lib/agent-session-launch-plan'
+import type { TenureRelayOptions } from '../../../shared/tenure-relay'
 import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useAppStore } from '@/store'
 import { lazyWithRetry } from '@/lib/lazy-with-retry'
@@ -204,9 +205,11 @@ function QuickTabBody({
   )
   const launchSelection = observation.selectionFor(quickAgent, quickAgentSurface)
   const [tenureFlow, setTenureFlow] = useState(false)
-  const createDisabled = tenureFlow
-    ? formDisabled || !cardProps.note.trim()
-    : formDisabled || !launchSelection.ready
+  const [tenureRelay, setTenureRelay] = useState<TenureRelayOptions | null>(null)
+  const createDisabled =
+    tenureFlow || tenureRelay
+      ? formDisabled || !cardProps.note.trim()
+      : formDisabled || !launchSelection.ready
 
   const handleQuickAgentChange = useCallback(
     (agent: TuiAgent | null, surface?: AgentLaunchSurface) => {
@@ -231,11 +234,24 @@ function QuickTabBody({
       await submitQuick(null, { setupOnly: false, tenureFlow: true })
       return
     }
+    if (tenureRelay) {
+      // Why codex: the relay's coordinator is always a Codex terminal (DESIGN.md 36.24).
+      await submitQuick('codex', { setupOnly: false, tenureRelay })
+      return
+    }
     await submitQuick(quickAgent, {
       setupOnly: quickSetupOnly,
       launchChoice: launchSelection.choice
     })
-  }, [createDisabled, quickAgent, launchSelection.choice, quickSetupOnly, submitQuick, tenureFlow])
+  }, [
+    createDisabled,
+    quickAgent,
+    launchSelection.choice,
+    quickSetupOnly,
+    submitQuick,
+    tenureFlow,
+    tenureRelay
+  ])
   // Why: Add Project layers over the composer as a nested dialog instead of
   // replacing it in the activeModal slot — closing the composer mid-flow (and
   // losing the typed name/prompt) was the old, abrupt behavior. Once opened it
@@ -354,6 +370,8 @@ function QuickTabBody({
         {...cardProps}
         tenureFlow={tenureFlow}
         onTenureFlowChange={setTenureFlow}
+        tenureRelay={tenureRelay}
+        onTenureRelayChange={setTenureRelay}
         createDisabled={createDisabled}
         agentSurfaceRows={
           cardProps.agentRows

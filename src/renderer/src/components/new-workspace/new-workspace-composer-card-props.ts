@@ -1,4 +1,5 @@
 import type { AgentComboboxSurfaceRows } from '@/components/agent/agent-combobox-surface-items'
+import type { TenureRelayOptions } from '../../../../shared/tenure-relay'
 import type { ComposerAgentRows } from '@/hooks/composer-state/composer-agent-rows-target'
 import type RepoCombobox from '@/components/repo/RepoCombobox'
 import type { NewWorkspaceProjectOption } from '@/lib/new-workspace-project-options'
@@ -116,6 +117,8 @@ export type NewWorkspaceComposerCardProps = {
   onNoteChange: (value: string) => void
   tenureFlow?: boolean
   onTenureFlowChange?: (value: boolean) => void
+  tenureRelay?: TenureRelayOptions | null
+  onTenureRelayChange?: (value: TenureRelayOptions | null) => void
   setupConfig: SetupConfig | null
   requiresExplicitSetupChoice: boolean
   setupDecision: 'run' | 'skip' | null

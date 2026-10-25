@@ -21179,6 +21179,16 @@
         "toggle": "Start a tenure flow instead of an agent",
         "failed": "Could not start the flow: {{value0}}"
       }
+    },
+    "relay": {
+      "toggle": "Start a coordinator + worker relay (two Codex)",
+      "coordinator": "Coordinator",
+      "worker": "Worker",
+      "rounds": "Max rounds",
+      "modelPlaceholder": "Model (empty = Codex setting)",
+      "effortConfig": "Codex setting",
+      "taskPlaceholder": "What should be built or fixed? The coordinator splits it into rounds for the worker.",
+      "hint": "The coordinator does not edit files. It opens a worker Codex beside itself, hands it each round and checks the result. Stop the coordinator to stop the relay."
     }
   }
 }

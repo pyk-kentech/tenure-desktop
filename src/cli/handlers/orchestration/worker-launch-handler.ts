@@ -8,6 +8,7 @@ import { callOrchestrationMutation } from './mutation-request'
 import { getOptionalPositiveIntegerValueFlag } from './numeric-flags'
 import { isDevCliInvocation } from './runtime-compatibility'
 import { resolveCoordinatorTerminalHandle } from './terminal-identity'
+import { assertTenureRelayRoundAvailable } from './tenure-relay-round-cap'
 import { formatWorkerStart } from './worker-output'
 import { renderResolvedOrchestrationCommand } from '../../orchestration-mutation-recovery'
 
@@ -33,6 +34,10 @@ export const ORCHESTRATION_WORKER_LAUNCH_HANDLER: Record<string, CommandHandler>
     const taskTitle = getOptionalStringFlag(flags, 'task-title')
     const deps = getOptionalStringFlag(flags, 'deps')
     const parent = getOptionalStringFlag(flags, 'parent')
+    if (spec) {
+      // Why only --spec: it creates the Task; --task starts one task-create already counted.
+      await assertTenureRelayRoundAvailable(flags, cwd, client)
+    }
     const result = await callOrchestrationMutation<{
       runId: string
       taskId: string

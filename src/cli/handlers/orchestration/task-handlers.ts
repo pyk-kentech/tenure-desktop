@@ -5,6 +5,7 @@ import { RuntimeClientError } from '../../runtime-client'
 import { abbreviateOrchestrationTasks } from '../../../shared/orchestration-task-summary'
 import { callOrchestrationMutation } from './mutation-request'
 import { resolveCoordinatorTerminalHandle, runScopedSessionCaller } from './terminal-identity'
+import { assertTenureRelayRoundAvailable } from './tenure-relay-round-cap'
 
 const TASK_STATUS_VALUES = [
   'pending',
@@ -17,6 +18,7 @@ const TASK_STATUS_VALUES = [
 
 export const ORCHESTRATION_TASK_HANDLERS: Record<string, CommandHandler> = {
   'orchestration task-create': async ({ flags, client, cwd, json }) => {
+    await assertTenureRelayRoundAvailable(flags, cwd, client)
     const callerTerminalHandle = await resolveCoordinatorTerminalHandle(flags, cwd, client)
     const result = await callOrchestrationMutation<{ task: { id: string; status: string } }>(
       client,

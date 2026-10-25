@@ -344,6 +344,8 @@ export default function NewWorkspaceComposerCard(
           <NewWorkspaceComposerTenureFlowSection
             tenureFlow={props.tenureFlow === true}
             onTenureFlowChange={props.onTenureFlowChange}
+            tenureRelay={props.tenureRelay ?? null}
+            onTenureRelayChange={props.onTenureRelayChange}
             note={props.note}
             onNoteChange={props.onNoteChange}
           />

@@ -11,6 +11,13 @@ import {
 } from '../../../../shared/tui-agent-launch-defaults'
 import { tuiAgentToAgentKind } from '@/lib/telemetry'
 import {
+  buildTenureRelayCoordinatorPrompt,
+  normalizeTenureRelayOptions,
+  TENURE_RELAY_MAX_ROUNDS_ENV,
+  tenureRelayCodexArgs,
+  type TenureRelayOptions
+} from '../../../../shared/tenure-relay'
+import {
   requireExecutionHostPlatform,
   type ExecutionHostPlatformFact
 } from '@/lib/execution-host-facts'
@@ -25,6 +32,8 @@ export type QuickComposerStartupInput = {
   shell: AgentStartupShell | null | undefined
   isRemote: boolean
   telemetrySource: WorktreeCreationRequest['telemetrySource']
+  /** tenure relay (DESIGN.md 36.24): the agent is the coordinator Codex and `prompt` is its task. */
+  tenureRelay?: TenureRelayOptions | null
 }
 
 export type QuickComposerStartup = {
@@ -34,7 +43,38 @@ export type QuickComposerStartup = {
 }
 
 export function buildQuickComposerStartup(input: QuickComposerStartupInput): QuickComposerStartup {
-  const { agent, draftPrompt, prompt, settings } = input
+  const { agent, settings } = input
+  const relayOptions = agent === 'codex' ? (input.tenureRelay ?? null) : null
+  const relay = relayOptions
+    ? {
+        options: normalizeTenureRelayOptions(relayOptions),
+        // Why: dev builds put orca-dev on the terminal PATH; packaged builds put orca.
+        cliCommand: import.meta.env.DEV ? 'orca-dev' : 'orca'
+      }
+    : null
+  const draftPrompt = relay ? null : input.draftPrompt
+  const prompt = relay
+    ? buildTenureRelayCoordinatorPrompt({
+        task: input.prompt,
+        options: relay.options,
+        cliCommand: relay.cliCommand,
+        workerBaseArgs: resolveTuiAgentLaunchArgs('codex', settings?.agentDefaultArgs)
+      })
+    : input.prompt
+  const baseArgs =
+    agent === null ? '' : resolveTuiAgentLaunchArgs(agent, settings?.agentDefaultArgs)
+  const baseEnv = agent === null ? {} : resolveTuiAgentLaunchEnv(agent, settings?.agentDefaultEnv)
+  const agentArgs = relay
+    ? [
+        baseArgs,
+        ...tenureRelayCodexArgs(relay.options.coordinatorModel, relay.options.coordinatorEffort)
+      ]
+        .filter(Boolean)
+        .join(' ')
+    : baseArgs
+  const agentEnv = relay
+    ? { ...baseEnv, [TENURE_RELAY_MAX_ROUNDS_ENV]: String(relay.options.maxRounds) }
+    : baseEnv
   const draftLaunchPlan =
     agent === null || !draftPrompt
       ? null
@@ -42,8 +82,8 @@ export function buildQuickComposerStartup(input: QuickComposerStartupInput): Qui
           agent,
           draft: draftPrompt,
           cmdOverrides: settings?.agentCmdOverrides ?? {},
-          agentArgs: resolveTuiAgentLaunchArgs(agent, settings?.agentDefaultArgs),
-          agentEnv: resolveTuiAgentLaunchEnv(agent, settings?.agentDefaultEnv),
+          agentArgs,
+          agentEnv,
           platform: requireExecutionHostPlatform(input.launchHost),
           shell: input.shell ?? undefined,
           isRemote: input.isRemote
@@ -66,8 +106,8 @@ export function buildQuickComposerStartup(input: QuickComposerStartupInput): Qui
       agent,
       prompt,
       cmdOverrides: settings?.agentCmdOverrides ?? {},
-      agentArgs: resolveTuiAgentLaunchArgs(agent, settings?.agentDefaultArgs),
-      agentEnv: resolveTuiAgentLaunchEnv(agent, settings?.agentDefaultEnv),
+      agentArgs,
+      agentEnv,
       platform: requireExecutionHostPlatform(input.launchHost),
       shell: input.shell ?? undefined,
       isRemote: input.isRemote,

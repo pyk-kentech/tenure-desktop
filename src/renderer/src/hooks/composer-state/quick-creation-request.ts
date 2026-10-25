@@ -1,4 +1,5 @@
 import type { AgentStartedTelemetry } from '@/lib/worktree-startup-payload'
+import type { TenureRelayOptions } from '../../../../shared/tenure-relay'
 import type { WorktreeCreationRequest } from '@/lib/pending-worktree-creation'
 import type { AgentStartupPlan } from '@/lib/tui-agent-startup'
 import type { LinkedWorkItemSummary } from '@/lib/new-workspace'
@@ -59,6 +60,8 @@ export type QuickCreationRequestInput = {
 export type QuickSubmitOptions = {
   setupOnly?: boolean
   tenureFlow?: boolean
+  /** tenure relay (DESIGN.md 36.24): launch the coordinator Codex instead of the picked agent. */
+  tenureRelay?: TenureRelayOptions
   launchChoice?: AgentLaunchChoice
 }
 

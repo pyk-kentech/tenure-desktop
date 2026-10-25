@@ -20897,6 +20897,16 @@
         "toggle": "에이전트 대신 tenure 흐름으로 시작",
         "failed": "흐름을 시작하지 못했습니다: {{value0}}"
       }
+    },
+    "relay": {
+      "toggle": "지휘자 + 일꾼 중계로 시작 (Codex 두 개)",
+      "coordinator": "지휘자",
+      "worker": "일꾼",
+      "rounds": "최대 회차",
+      "modelPlaceholder": "모델 (비우면 Codex 설정)",
+      "effortConfig": "Codex 설정",
+      "taskPlaceholder": "무엇을 만들거나 고칠까요? 지휘자가 회차로 나눠 일꾼에게 맡깁니다.",
+      "hint": "지휘자는 파일을 고치지 않습니다. 옆에 일꾼 Codex 를 띄워 회차마다 일을 맡기고 결과를 확인합니다. 지휘자를 멈추면 중계도 멈춥니다."
     }
   }
 }
