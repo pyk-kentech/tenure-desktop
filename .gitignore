@@ -36,6 +36,8 @@ native/windows-registry/bin/
 native/windows-security/build/
 native/windows-security/bin/
 .build/windows-security/
+# tenure: seeded by config/scripts/tenure-seed-orcad-prebuilds.mjs
+.build/windows-process-tree/
 
 # pnpm
 .pnpm-store/

@@ -150,8 +150,25 @@ function verifyTarget(resourcesDir, templateDir, target, value, schemaVersion) {
   requireExactNames(listFiles(targetDir), inventory, `${target} file inventory`)
 }
 
+/**
+ * tenure (DESIGN.md 36.26): a tenure desktop build ships the targets it could build on one PC and
+ * names them in TENURE_ORCAD_TARGETS; a target left out is refused as unavailable at deploy time.
+ * Unset, packaging checks every target as upstream does.
+ */
+function tenurePackagedOrcadTargets(env = process.env) {
+  const listed = (env.TENURE_ORCAD_TARGETS ?? '').split(',').filter(Boolean)
+  if (listed.length === 0) {
+    return ORCAD_TEMPLATE_TARGETS
+  }
+  const unknown = listed.filter((target) => !ORCAD_TEMPLATE_TARGETS.includes(target))
+  if (unknown.length > 0) {
+    throw new Error(`[verify-packaged-orcad-template] unknown TENURE_ORCAD_TARGETS: ${unknown}`)
+  }
+  return listed
+}
+
 /** `targets` narrows the inventory for a CI-only partial template; packaging checks them all. */
-function verifyPackagedOrcadTemplate(resourcesDir, targets = ORCAD_TEMPLATE_TARGETS) {
+function verifyPackagedOrcadTemplate(resourcesDir, targets = tenurePackagedOrcadTargets()) {
   const templateDir = join(resourcesDir, 'orcad-template')
   const manifest = requireRecord(readManifest(templateDir), 'manifest')
   if (![TEMPLATE_SCHEMA_VERSION, 4].includes(manifest.schemaVersion)) {
