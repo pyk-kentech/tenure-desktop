@@ -1,3 +1,4 @@
+import { IS_TENURE_FORK_BUILD } from '../../shared/tenure-fork-build'
 import { existsSync, readFileSync, unlinkSync } from 'node:fs'
 import { join } from 'node:path'
 import {
@@ -33,6 +34,10 @@ function getLegacyCodexProfileTomlPath(): string {
 }
 
 export function cleanupLegacySystemManagedHooks(): Promise<void> {
+  // Why (tenure): it edits ~/.codex and would also strip an installed upstream Orca's entries.
+  if (IS_TENURE_FORK_BUILD) {
+    return Promise.resolve()
+  }
   // Why: shares the real-home lane with the ~/.codex reconcile; both
   // write the user's ~/.codex/hooks.json and its trust in config.toml.
   return runExclusivelyForCodexTrustConfig(

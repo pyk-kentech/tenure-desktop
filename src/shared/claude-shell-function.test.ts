@@ -231,7 +231,20 @@ it('prints no Orca text from the PowerShell function and creates a missing accou
 
 it('escapes its arguments for the resolved PowerShell binary before splatting them', () => {
   expect(getPowerShellClaudeShellFunction()).toContain(
-    '$claudeArgs = @(__OrcaEscapeNativeArgs $binary.Source $args)'
+    '$claudeArgs = @(__OrcaEscapeNativeArgs $binary.Source $orcaArgs)'
+  )
+})
+
+it('tenure: attaches the per-launch hook settings in every wrapper, skipping a user --settings', () => {
+  expect(getPowerShellClaudeShellFunction()).toContain(
+    "$orcaArgs = @('--settings', $env:ORCA_CLAUDE_HOOK_SETTINGS) + $orcaArgs"
+  )
+  expect(getPowerShellClaudeShellFunction()).toContain("($orcaArgs -notcontains '--settings')")
+  expect(getPosixClaudeShellFunction()).toContain(
+    'set -- --settings "$ORCA_CLAUDE_HOOK_SETTINGS" "$@"'
+  )
+  expect(getFishClaudeShellFunction()).toContain(
+    'set argv --settings "$ORCA_CLAUDE_HOOK_SETTINGS" $argv'
   )
 })
 

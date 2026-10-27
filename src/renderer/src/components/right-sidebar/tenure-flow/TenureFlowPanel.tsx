@@ -189,7 +189,12 @@ export default function TenureFlowPanel(): React.JSX.Element {
                 onPicked={() => void loadDetail()}
               />
             ) : null}
-            <TenureFlowTimeline detail={detail} project={path} runId={runId!} />
+            <TenureFlowTimeline
+              detail={detail}
+              project={path}
+              runId={runId!}
+              worktreeId={worktree.id}
+            />
           </div>
         ) : null}
       </div>

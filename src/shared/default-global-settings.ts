@@ -228,8 +228,9 @@ export function buildDefaultSettings(args: {
     agentDefaultArgs: { ...DEFAULT_TUI_AGENT_ARGS },
     agentDefaultEnv: { ...DEFAULT_TUI_AGENT_ENV },
     agentYoloDefaultsMigrated: true,
-    // Why (tenure): global hook install stays off; users must not get ~/.claude or ~/.codex edits.
-    agentStatusHooksEnabled: false,
+    // Why (tenure): status ingest stays on; user-global config writes are refused in main
+    // (agent-hooks/user-global-config-guard.ts) and Claude gets hooks per launch via --settings.
+    agentStatusHooksEnabled: true,
     agentWorkspaceTrustEnabled: true,
     codexTerminalServerIsolation: true,
     codexSharedServerWarning: true,

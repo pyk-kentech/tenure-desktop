@@ -42,6 +42,7 @@ export type TenureRace = {
 
 export type TenureRunDetail = {
   project: string
+  run_dir: string
   live: boolean
   state: {
     run_id: string

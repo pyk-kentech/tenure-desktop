@@ -1,3 +1,4 @@
+import { refuseUserGlobalAgentConfigWrite } from './user-global-config-guard'
 import { APP_HOME_DIRNAME } from '../../shared/app-home-dirs'
 import {
   existsSync,
@@ -303,6 +304,9 @@ export function writeHooksJson(
   // atomic write + rolling backup below stay shared instead of being reimplemented.
   options?: { preserveMode?: boolean; defaultMode?: number; serialized?: string }
 ): void {
+  if (refuseUserGlobalAgentConfigWrite(configPath)) {
+    return
+  }
   const writePath = resolveHooksJsonWritePath(configPath)
   const dir = dirname(writePath)
   mkdirSync(dir, { recursive: true })

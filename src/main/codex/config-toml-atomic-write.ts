@@ -1,3 +1,4 @@
+import { refuseUserGlobalAgentConfigWrite } from '../agent-hooks/user-global-config-guard'
 import { randomUUID } from 'node:crypto'
 import {
   existsSync,
@@ -13,6 +14,9 @@ import { renameFileWithWindowsRetry } from '../codex-accounts/fs-utils'
 import { writeRollingFileBackup } from '../rolling-file-backup'
 
 export function writeTomlConfigAtomically(configPath: string, contents: string): void {
+  if (refuseUserGlobalAgentConfigWrite(configPath)) {
+    return
+  }
   const writePath = resolveTomlWritePath(configPath)
   const directory = dirname(writePath)
   mkdirSync(directory, { recursive: true })

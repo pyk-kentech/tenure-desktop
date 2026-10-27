@@ -1,3 +1,4 @@
+import { claudeInlineHookSettingsEnv } from '../../../claude/claude-inline-hook-settings'
 import { resolveTerminalInlineImagesEnabled } from '../../../../shared/terminal-inline-images-settings'
 import { resolveSetupAgentSequenceLaunchCommand } from '../../../../shared/setup-agent-sequencing'
 import {
@@ -129,7 +130,7 @@ export function buildPtyHostEnv(
     delete baseEnv[key]
   }
   if (opts.agentStatusHooksEnabled) {
-    Object.assign(baseEnv, agentHookServer.buildPtyEnv())
+    Object.assign(baseEnv, agentHookServer.buildPtyEnv(), claudeInlineHookSettingsEnv())
     if (opts.isWsl === true) {
       // Why: hook POSTs to 127.0.0.1 die inside WSL's NAT namespace; use the guest-resident relay's endpoint instead of the Windows one.
       const distro = opts.wslDistro ?? null

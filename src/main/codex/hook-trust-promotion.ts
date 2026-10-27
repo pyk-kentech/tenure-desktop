@@ -1,3 +1,4 @@
+import { IS_TENURE_FORK_BUILD } from '../../shared/tenure-fork-build'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { isDefinitiveAbsence } from '../../shared/definitive-filesystem-absence'
@@ -146,6 +147,10 @@ export function snapshotCodexRuntimeHookTrustProvenance(
 export function promoteCodexRuntimeHookApprovalsToSystem(
   runtimeHomePath: string = getOrcaManagedCodexHomePath()
 ): void {
+  // Why (tenure): promotion copies hook trust into the user's ~/.codex/config.toml.
+  if (IS_TENURE_FORK_BUILD) {
+    return
+  }
   try {
     promoteCodexRuntimeHookApprovalsToSystemUnsafe(runtimeHomePath)
   } catch (error) {

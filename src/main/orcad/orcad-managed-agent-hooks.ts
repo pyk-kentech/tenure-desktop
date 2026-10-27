@@ -1,3 +1,4 @@
+import { IS_TENURE_FORK_BUILD } from '../../shared/tenure-fork-build'
 import { getAppEnvironment } from '../../shared/app-environment'
 import { startCodexHooks } from '../codex/codex-hook-reconcile'
 import { adoptLoginShellAgentHomes } from '../agent-hooks/agent-home-login-shell'
@@ -39,12 +40,15 @@ export function startOrcadManagedAgentHooks(
     // Why null: orcad launches Codex on ~/.codex; Orca-managed account homes are a desktop flow.
     resolveLaunchHome: () => null
   })
+  // Why (tenure): startup reconcile installs into each CLI's user-global config.
   void adoptLoginShellAgentHomes().then(() =>
-    reconcileStartupManagedAgentHooks({
-      getSettings,
-      isQuitting: () => stopping,
-      shouldHydrateShellPath
-    })
+    IS_TENURE_FORK_BUILD
+      ? undefined
+      : reconcileStartupManagedAgentHooks({
+          getSettings,
+          isQuitting: () => stopping,
+          shouldHydrateShellPath
+        })
   )
   try {
     refreshInstalledOpenCodeStatusPlugins(getSettings())

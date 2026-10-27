@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
-import { ChevronDown, ChevronRight } from 'lucide-react'
+import { ChevronDown, ChevronRight, Maximize2 } from 'lucide-react'
+import { useAppStore } from '@/store'
 import { translate } from '@/i18n/i18n'
 import { tenureCall, type TenureRunDetail, type TenureRunEntry } from './tenure-flow-api'
 import { stepLabel } from './tenure-flow-labels'
@@ -61,16 +62,54 @@ function EntryBody({
 }
 
 /** Each agent call of the run in order, expandable to its transcript; the result summary first. */
+/** Opens a transcript in Orca's markdown preview tab: the right panel is too narrow to read reviews. */
+function useOpenEntryTab(detail: TenureRunDetail, worktreeId: string | null, project: string) {
+  const openMarkdownPreview = useAppStore((s) => s.openMarkdownPreview)
+  return (file: string) => {
+    if (!worktreeId) {
+      return
+    }
+    const runDir = detail.run_dir.replace(/[\\/]+$/, '')
+    const sep = runDir.includes('\\') ? '\\' : '/'
+    const filePath = `${runDir}${sep}${file}`
+    const root = project.replace(/[\\/]+$/, '')
+    const relativePath = filePath.startsWith(root)
+      ? filePath.slice(root.length + 1).replace(/\\/g, '/')
+      : file
+    openMarkdownPreview({ filePath, relativePath, worktreeId, language: 'markdown' })
+  }
+}
+
+function OpenTabButton({ onOpen }: { onOpen: () => void }): React.JSX.Element {
+  return (
+    <button
+      type="button"
+      className="shrink-0 rounded p-0.5 text-muted-foreground hover:bg-accent hover:text-foreground"
+      title={translate('tenure.flow.openTab', 'Open in a tab')}
+      aria-label={translate('tenure.flow.openTab', 'Open in a tab')}
+      onClick={(e) => {
+        e.stopPropagation()
+        onOpen()
+      }}
+    >
+      <Maximize2 className="size-3" />
+    </button>
+  )
+}
+
 export function TenureFlowTimeline({
   detail,
   project,
-  runId
+  runId,
+  worktreeId
 }: {
   detail: TenureRunDetail
   project: string
   runId: string
+  worktreeId: string | null
 }): React.JSX.Element {
   const [open, setOpen] = useState<string | null>(null)
+  const openTab = useOpenEntryTab(detail, worktreeId, project)
   const report = detail.state.report && !detail.live ? detail.state.report : null
   const rows = detail.entries.filter((entry) => entry.name !== report)
   return (
@@ -87,7 +126,8 @@ export function TenureFlowTimeline({
             ) : (
               <ChevronRight className="size-3" />
             )}
-            {translate('tenure.flow.summary', 'Result summary')}
+            <span className="flex-1">{translate('tenure.flow.summary', 'Result summary')}</span>
+            <OpenTabButton onOpen={() => openTab(report)} />
           </button>
           {open === report ? <EntryBody project={project} runId={runId} file={report} /> : null}
         </div>
@@ -122,6 +162,7 @@ export function TenureFlowTimeline({
               {verdict ? (
                 <span className="shrink-0 text-2xs text-muted-foreground">{verdict}</span>
               ) : null}
+              <OpenTabButton onOpen={() => openTab(entry.name)} />
             </button>
             {open === entry.name ? (
               <EntryBody project={project} runId={runId} file={entry.name} />

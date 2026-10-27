@@ -21178,7 +21178,8 @@
       "composer": {
         "toggle": "Start a tenure flow instead of an agent",
         "failed": "Could not start the flow: {{value0}}"
-      }
+      },
+      "openTab": "Open in a tab"
     },
     "relay": {
       "toggle": "Start a coordinator + worker relay (two Codex)",

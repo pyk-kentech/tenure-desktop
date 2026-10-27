@@ -1,3 +1,4 @@
+import { IS_TENURE_FORK_BUILD } from '../../shared/tenure-fork-build'
 import { isAgentStatusHooksEnabledForAgent } from '../../shared/agent-status-hooks-setting'
 import type { ManagedHookDetectionSettings } from '../agent-hooks/managed-hook-detection-commands'
 import { openCode2HookService, openCodeHookService } from './hook-service'
@@ -7,6 +8,10 @@ import { openCode2HookService, openCodeHookService } from './hook-service'
 export function refreshInstalledOpenCodeStatusPlugins(
   settings: ManagedHookDetectionSettings
 ): void {
+  // Why (tenure): installed plugins live in the user's own OpenCode config.
+  if (IS_TENURE_FORK_BUILD) {
+    return
+  }
   if (isAgentStatusHooksEnabledForAgent(settings, 'opencode')) {
     openCodeHookService.refreshInstalledPlugins()
   }

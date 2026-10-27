@@ -1,3 +1,4 @@
+import { prepareClaudeInlineHookSettings } from '../claude/claude-inline-hook-settings'
 import { app, BrowserWindow, ipcMain } from 'electron'
 import type { TenureEngineRequest } from '../../shared/tenure-engine-types'
 import { TenureEngineService } from './tenure-engine-service'
@@ -29,5 +30,6 @@ export function startTenureEngine(): TenureEngineService {
   app.once('will-quit', () => engine.stop())
   engine.start()
   startTenureIsland(engine)
+  prepareClaudeInlineHookSettings()
   return engine
 }

@@ -1,3 +1,4 @@
+import { IS_TENURE_FORK_BUILD } from '../../shared/tenure-fork-build'
 import { withTimeout } from '../../shared/promise-timeout-fallback'
 import {
   CODEX_HOOK_LAUNCH_WAIT_MS,
@@ -131,6 +132,10 @@ async function runUntilSettled(): Promise<void> {
 }
 
 async function reconcileOnce(realHomeLaunch: boolean): Promise<void> {
+  // Why (tenure): this lane only ever writes the user's real ~/.codex.
+  if (IS_TENURE_FORK_BUILD) {
+    return
+  }
   const current = config
   if (!current?.isEnabled() || !(realHomeLaunch || resolveHome(current).kind === 'real')) {
     return

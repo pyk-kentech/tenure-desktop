@@ -1,3 +1,4 @@
+import { APP_HOME_DIRNAME } from '../../shared/app-home-dirs'
 import { homedir } from 'node:os'
 import { basename, extname, join, win32 } from 'node:path'
 import {
@@ -166,7 +167,9 @@ export function getWindowsManagedLifecycleHook(scriptPath: string): HookCommandC
 
 function getWindowsPowerShellLifecycleCommand(scriptPath: string): string {
   const scriptFileName = win32.basename(scriptPath)
-  const quotedRelativePath = quotePowerShellLiteral(`.orca\\agent-hooks\\${scriptFileName}`)
+  const quotedRelativePath = quotePowerShellLiteral(
+    `${APP_HOME_DIRNAME}\\agent-hooks\\${scriptFileName}`
+  )
   return (
     `$scriptPath = Join-Path $env:USERPROFILE ${quotedRelativePath}; ` +
     'if (Test-Path -LiteralPath $scriptPath -PathType Leaf) { & $scriptPath; exit $LASTEXITCODE }; ' +

@@ -12,6 +12,10 @@ export function getPosixClaudeShellFunction(): string {
   return `__orca_claude_binary="$(unalias claude 2>/dev/null || :; command -v claude 2>/dev/null || :)"
 if [[ -n "\${ORCA_CLAUDE_PROFILE_POINTER:-}" && -n "\${__orca_claude_binary:-}" && -x "\${__orca_claude_binary}" ]]; then
   function claude {
+    # tenure: per-launch hooks instead of ~/.claude/settings.json; never for subcommands or a user --settings.
+    if [ -n "\${ORCA_CLAUDE_HOOK_SETTINGS:-}" ] && [ -f "$ORCA_CLAUDE_HOOK_SETTINGS" ]; then
+      case "\${1:-}" in ''|-*|*' '*) case " $* " in *' --settings'*) ;; *) set -- --settings "$ORCA_CLAUDE_HOOK_SETTINGS" "$@" ;; esac ;; esac
+    fi
     local __orca_claude_home __orca_claude_pointer="\${ORCA_CLAUDE_PROFILE_POINTER:-}"
     # Why: a WSL pane's pointer is relative to the guest home, which the host cannot know at spawn.
     case "$__orca_claude_pointer" in '~/'*) __orca_claude_pointer="\${HOME:-}/\${__orca_claude_pointer#??}" ;; esac
@@ -43,6 +47,12 @@ export function getFishClaudeShellFunction(): string {
 set -l __orca_claude_type (type -t claude 2>/dev/null)
 if test -n "$ORCA_CLAUDE_PROFILE_POINTER"; and test "$__orca_claude_type" = file
   function claude
+    # tenure: per-launch hooks instead of ~/.claude/settings.json; never for subcommands or a user --settings.
+    if test -n "$ORCA_CLAUDE_HOOK_SETTINGS"; and test -f "$ORCA_CLAUDE_HOOK_SETTINGS"; and not contains -- --settings $argv
+      if test (count $argv) -eq 0; or string match -qr '^-| ' -- "$argv[1]"
+        set argv --settings "$ORCA_CLAUDE_HOOK_SETTINGS" $argv
+      end
+    end
     # Why: a WSL pane's pointer is relative to the guest home, which the host cannot know at spawn.
     set -l pointer (string replace -r '^~/' "$HOME/" -- "$ORCA_CLAUDE_PROFILE_POINTER")
     set -l profile (cat "$pointer" 2>/dev/null)
@@ -102,7 +112,14 @@ function Global:claude {
             $env:ORCA_CLAUDE_INJECTED_CONFIG_DIR = $orcaClaudeHome
         }
         $binary = Get-Command claude -CommandType Application,ExternalScript -ErrorAction Stop | Select-Object -First 1
-        $claudeArgs = @(__OrcaEscapeNativeArgs $binary.Source $args)
+        # tenure: per-launch hooks instead of ~/.claude/settings.json; never for subcommands or a user --settings.
+        $orcaArgs = @($args)
+        if ($env:ORCA_CLAUDE_HOOK_SETTINGS -and (Test-Path -LiteralPath $env:ORCA_CLAUDE_HOOK_SETTINGS -PathType Leaf) -and
+            ($orcaArgs -notcontains '--settings') -and
+            ($orcaArgs.Count -eq 0 -or "$($orcaArgs[0])" -match '^-| ')) {
+            $orcaArgs = @('--settings', $env:ORCA_CLAUDE_HOOK_SETTINGS) + $orcaArgs
+        }
+        $claudeArgs = @(__OrcaEscapeNativeArgs $binary.Source $orcaArgs)
         if ($MyInvocation.ExpectingInput) { $input | & $binary.Source @claudeArgs } else { & $binary.Source @claudeArgs }
         $global:LASTEXITCODE = $LASTEXITCODE
     } catch { $global:LASTEXITCODE = 1; Write-Error $_ -ErrorAction Continue }
