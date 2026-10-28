@@ -1,9 +1,10 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { translate } from '@/i18n/i18n'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
 import { tenureCall } from './tenure-flow-api'
+import { listWorkflows, type WorkflowListItem } from '../../tenure-workflow/workflow-editor-api'
 
 const WORKFLOWS = ['auto', 'quick', 'race', 'classic'] as const
 type FlowWorkflow = (typeof WORKFLOWS)[number]
@@ -24,15 +25,24 @@ function workflowLabel(name: FlowWorkflow): string {
 /** Starts a tenure flow in this workspace folder itself: the workspace is already an isolated worktree. */
 export function TenureFlowStartForm({
   path,
+  workflowsVersion,
   onStarted,
   onCancel
 }: {
   path: string
+  workflowsVersion: number
   onStarted: (runId: string) => void
   onCancel?: () => void
 }): React.JSX.Element {
   const [task, setTask] = useState('')
-  const [workflow, setWorkflow] = useState<FlowWorkflow>('auto')
+  const [workflow, setWorkflow] = useState<string>('auto')
+  // tenure: workflows saved from the node editor (project or my templates, DESIGN.md 36.29)
+  const [saved, setSaved] = useState<WorkflowListItem[]>([])
+  useEffect(() => {
+    listWorkflows(path)
+      .then((items) => setSaved(items.filter((w) => w.source === 'project' || w.source === 'user')))
+      .catch(() => setSaved([]))
+  }, [path, workflowsVersion])
   const [force, setForce] = useState(false)
   const [mock, setMock] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -93,6 +103,22 @@ export function TenureFlowStartForm({
               onChange={() => setWorkflow(name)}
             />
             {workflowLabel(name)}
+          </label>
+        ))}
+        {saved.map((w) => (
+          <label
+            key={w.id}
+            className="flex cursor-pointer items-center gap-2 text-xs"
+            title={w.summary}
+          >
+            <input
+              type="radio"
+              name="tenure-workflow"
+              checked={workflow === w.id}
+              onChange={() => setWorkflow(w.id)}
+            />
+            {w.id}
+            <span className="text-muted-foreground">{w.source_label}</span>
           </label>
         ))}
       </div>

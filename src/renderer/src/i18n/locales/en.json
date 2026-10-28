@@ -21136,7 +21136,13 @@
         "fix": "Fix",
         "test": "Test",
         "design": "Design",
-        "report": "Summary"
+        "report": "Summary",
+        "propose": "Propose",
+        "critique": "Critique",
+        "synthesize": "Synthesise",
+        "rereview": "Re-review",
+        "audit": "Audit",
+        "explore": "Explore"
       },
       "status": {
         "running": "Running",
@@ -21199,6 +21205,87 @@
       "start": "Start coordinator",
       "launchFailed": "Could not start the coordinator Codex.",
       "remoteUnsupported": "The relay runs only in local workspaces for now."
+    },
+    "workflow": {
+      "button": "Workflows",
+      "check": "Check",
+      "checkOk": "Looks good: {{value0}}",
+      "delete": "Delete",
+      "description": "Description",
+      "field": {
+        "agent": "Agent",
+        "effort": "Effort (empty: settings)",
+        "instructions": "Extra instructions",
+        "model": "Model (empty: settings)",
+        "roleName": "Role name",
+        "roleNameRule": "Lowercase letters, digits and _; start with a letter."
+      },
+      "hasInstructions": "Has instructions",
+      "help": {
+        "audit": "After approval, auditors check the whole change once more.",
+        "build": "The implementer writes code; reviewers review and the fix rounds repeat until approved. A rival turns it into a race of two drafts.",
+        "debate": "Proposers write designs, criticise each other, and the synthesiser merges them into DESIGN.md.",
+        "explore": "One role reads the project and writes notes for the next steps."
+      },
+      "inspector": {
+        "empty": "Pick a node to change it. Drag from a dot to another dot to connect."
+      },
+      "kind": {
+        "audit": "Audit",
+        "build": "Implement + review",
+        "debate": "Design debate",
+        "explore": "Explore the code"
+      },
+      "open": "Edit workflows as nodes",
+      "optional": "optional",
+      "overwrite": "Overwrite",
+      "palette": {
+        "claude": "Claude role",
+        "codex": "Codex role",
+        "hint": "Drag the top dot of a role onto the bottom dot of a step. Steps run left to right along the moving lines.",
+        "roleHelp": "An agent with its own model and instructions.",
+        "roles": "Roles (who)",
+        "steps": "Steps (what)"
+      },
+      "param": {
+        "design": "Design source",
+        "designDoc": "DESIGN.md",
+        "designTask": "The task text itself",
+        "designTaskShort": "task as design",
+        "maxReview": "Max review rounds (empty: settings)",
+        "maxReviewShort": "up to {{value0}} reviews",
+        "output": "Output",
+        "outputChange": "Change design",
+        "outputDesign": "Full design",
+        "rounds": "Critique rounds (empty: settings)",
+        "roundsShort": "{{value0}} critique rounds"
+      },
+      "problem": {
+        "empty": "Add at least one step.",
+        "loop": "The steps form a loop. Remove one link.",
+        "split": "Connect the steps in one line (the right dot of a step to the left dot of the next).",
+        "slot": "Step {{value0}} ({{value1}}): connect a role to \"{{value2}}\"."
+      },
+      "save": "Save",
+      "saveName": "Save as",
+      "saved": "Saved: {{value0}}",
+      "scope": {
+        "project": "This project",
+        "user": "My templates"
+      },
+      "slot": {
+        "arbiter": "Arbiter",
+        "implementer": "Implementer",
+        "proposers": "Proposers",
+        "reviewers": "Reviewers",
+        "rivals": "Rival",
+        "role": "Explorer",
+        "roles": "Auditors",
+        "synth": "Synthesiser"
+      },
+      "template": "Start from",
+      "tidy": "Tidy up",
+      "title": "Workflow editor"
     }
   }
 }

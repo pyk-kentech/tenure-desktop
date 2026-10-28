@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import { Play, Square, RotateCw } from 'lucide-react'
+import { Play, Square, RotateCw, Workflow } from 'lucide-react'
 import { useActiveWorktree } from '@/store/selectors'
 import { translate } from '@/i18n/i18n'
 import { Button } from '@/components/ui/button'
@@ -9,6 +9,7 @@ import { TenureFlowTimeline } from './TenureFlowTimeline'
 import { TenureFlowReviewButton } from './TenureFlowReviewButton'
 import { TenureFlowDrafts } from './TenureFlowDrafts'
 import { flowStateLabel, TenureFlowStateDot } from './tenure-flow-labels'
+import { TenureWorkflowEditor } from '../../tenure-workflow/TenureWorkflowEditor'
 
 const LIVE_POLL_MS = 2000
 const IDLE_POLL_MS = 10000
@@ -22,6 +23,9 @@ export default function TenureFlowPanel(): React.JSX.Element {
   const [detail, setDetail] = useState<TenureRunDetail | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [starting, setStarting] = useState(false)
+  const [editing, setEditing] = useState(false)
+  // Why: the start form re-reads the workflow list after the editor saves one.
+  const [workflowsVersion, setWorkflowsVersion] = useState(0)
 
   const loadRuns = useCallback(async () => {
     if (!path) {
@@ -104,6 +108,15 @@ export default function TenureFlowPanel(): React.JSX.Element {
         <span className="min-w-0 flex-1 truncate text-xs text-muted-foreground" title={path}>
           {worktree.displayName ?? path}
         </span>
+        <Button
+          variant="ghost"
+          size="xs"
+          title={translate('tenure.workflow.open', 'Edit workflows as nodes')}
+          onClick={() => setEditing(true)}
+        >
+          <Workflow className="size-3" />
+          {translate('tenure.workflow.button', 'Workflows')}
+        </Button>
         <Button variant="ghost" size="xs" onClick={() => setStarting((v) => !v)}>
           <Play className="size-3" />
           {translate('tenure.flow.new', 'New flow')}
@@ -114,6 +127,7 @@ export default function TenureFlowPanel(): React.JSX.Element {
         {showForm ? (
           <TenureFlowStartForm
             path={path}
+            workflowsVersion={workflowsVersion}
             onStarted={(id) => {
               setStarting(false)
               setSelected(id)
@@ -202,6 +216,12 @@ export default function TenureFlowPanel(): React.JSX.Element {
           </div>
         ) : null}
       </div>
+      <TenureWorkflowEditor
+        open={editing}
+        onOpenChange={setEditing}
+        project={path}
+        onSaved={() => setWorkflowsVersion((v) => v + 1)}
+      />
     </div>
   )
 }
