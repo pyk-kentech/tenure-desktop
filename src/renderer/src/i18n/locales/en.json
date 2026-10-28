@@ -21392,6 +21392,85 @@
       },
       "open": "Open the guide",
       "button": "Guide"
+    },
+    "tours": {
+      "board": {
+        "0": {
+          "title": "Plan work on the board",
+          "body": "Use the board when you want to see workspaces by status instead of by project."
+        },
+        "1": {
+          "title": "Move work through lanes",
+          "body": "Drag workspaces between lanes as their status changes."
+        }
+      },
+      "sessions": {
+        "0": {
+          "title": "Split a terminal pane",
+          "body": "Open a second terminal pane with {terminal.splitRight}, or right-click the pane for split options."
+        },
+        "1": {
+          "title": "Start another task in parallel",
+          "body": "Each worktree gets its own branch, so parallel work stays separate."
+        }
+      },
+      "browser": {
+        "0": {
+          "title": "Grab page context for agents",
+          "body": "Use the grab tool to copy a page element's context for agents."
+        },
+        "1": {
+          "title": "Mark design feedback in place",
+          "body": "Annotate elements and send those notes to an agent."
+        },
+        "2": {
+          "title": "Stay logged in",
+          "body": "Bring your existing logins into Orca to stay signed in immediately."
+        }
+      },
+      "tasks": {
+        "0": {
+          "title": "Choose the work source",
+          "body": "Switch between connected providers and project filters without changing pages."
+        },
+        "1": {
+          "title": "Filter to the work you need",
+          "body": "Use presets and search to narrow issues, reviews, merge requests, or tasks."
+        },
+        "2": {
+          "title": "Start from work items",
+          "body": "Use Start or Open on a task, issue, review, or merge request to bring its context into a workspace."
+        }
+      },
+      "floating": {
+        "0": {
+          "title": "Run an agent across every repo",
+          "body": "Agents here run in any folder you choose. Point one at the directory above your services to work across all your repos at once."
+        },
+        "1": {
+          "title": "Or use it as a scratchpad",
+          "body": "Open agents, scratch terminals, notes, and browser tabs without cluttering the worktree you’re focused on."
+        }
+      },
+      "creation": {
+        "0": {
+          "title": "Pick a project",
+          "body": "Orca isolates each task in its own worktree, branched off your base."
+        },
+        "1": {
+          "title": "Name it, or start from existing work",
+          "body": "Start from a linked task for a short issue or PR name. Or leave it blank to auto-name it from your first agent message."
+        },
+        "2": {
+          "title": "Choose what agent starts the work",
+          "body": "Pick the agent that should be opened when this worktree is created."
+        }
+      },
+      "action": {
+        "splitTerminal": "Split terminal",
+        "gotIt": "Got it",
+        "browserSettings": "Browser settings"
+      }
     }
   }
 }

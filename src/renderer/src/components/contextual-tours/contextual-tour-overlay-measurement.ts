@@ -1,4 +1,5 @@
 import { formatShortcutLabel } from '@/hooks/useShortcutLabel'
+import { STEP_COPY_BY_POSITION, localizeTourActionLabel } from './tenure-tour-copy'
 import type { ContextualTour, ContextualTourId } from '../../../../shared/contextual-tours'
 import type { ContextualTourOutcome } from '../../../../shared/feature-education-telemetry'
 import { useAppStore } from '@/store'
@@ -70,6 +71,11 @@ const LOCALIZED_STEP_COPY: Record<string, { title: () => string; body: () => str
   }
 }
 
+// tenure: action labels in the tour definitions are plain English (DESIGN.md 36.31).
+function localizeAction<T extends { label: string } | undefined>(action: T): T {
+  return action ? { ...action, label: localizeTourActionLabel(action.label) } : action
+}
+
 export function getContextualTourDisplayProgress(args: {
   tour: ContextualTour
   visibleStepIndexes: readonly number[]
@@ -131,7 +137,9 @@ export function measureContextualTourOverlayRenderState(args: {
   )
   const activeStep = args.tour.steps[args.activeStepIndex]
   const target = activeStep ? getMeasurableContextualTourTarget(activeStep.targetSelector) : null
-  const localizedCopy = activeStep?.id ? LOCALIZED_STEP_COPY[activeStep.id] : undefined
+  const localizedCopy = activeStep?.id
+    ? LOCALIZED_STEP_COPY[activeStep.id]
+    : STEP_COPY_BY_POSITION[`${args.tour.id}#${args.activeStepIndex}`]
   const localizedTitle = localizedCopy ? localizedCopy.title() : activeStep?.title
   const localizedBody = localizedCopy
     ? localizedCopy.body()
@@ -174,8 +182,10 @@ export function measureContextualTourOverlayRenderState(args: {
           'Next'
         )
       } as const)
-    : activeStep.primaryAction
-  const secondaryAction = sidebarAlreadyVisible ? undefined : activeStep.secondaryAction
+    : localizeAction(activeStep.primaryAction)
+  const secondaryAction = sidebarAlreadyVisible
+    ? undefined
+    : localizeAction(activeStep.secondaryAction)
 
   return {
     kind: 'render',
