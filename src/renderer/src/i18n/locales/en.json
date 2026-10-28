@@ -21142,7 +21142,8 @@
         "synthesize": "Synthesise",
         "rereview": "Re-review",
         "audit": "Audit",
-        "explore": "Explore"
+        "explore": "Explore",
+        "arbitrate": "Arbitrate"
       },
       "status": {
         "running": "Running",
@@ -21225,7 +21226,10 @@
         "audit": "After approval, auditors check the whole change once more.",
         "build": "The implementer writes code; reviewers review and the fix rounds repeat until approved. A rival turns it into a race of two drafts.",
         "debate": "Proposers write designs, criticise each other, and the synthesiser merges them into DESIGN.md.",
-        "explore": "One role reads the project and writes notes for the next steps."
+        "explore": "One role reads the project and writes notes for the next steps.",
+        "branch": "Looks at the last result and takes the yes or the no line. Point a line back to an earlier step to repeat it.",
+        "continue": "Takes over the finished implementation and runs more fix → test → review rounds, possibly with other roles.",
+        "parallel": "Runs read-only steps (explore, audit) at the same time, then goes on along its next line."
       },
       "inspector": {
         "empty": "Pick a node to change it. Drag from a dot to another dot to connect."
@@ -21234,7 +21238,10 @@
         "audit": "Audit",
         "build": "Implement + review",
         "debate": "Design debate",
-        "explore": "Explore the code"
+        "explore": "Explore the code",
+        "branch": "Branch",
+        "continue": "Keep fixing",
+        "parallel": "Side by side"
       },
       "open": "Edit workflows as nodes",
       "optional": "optional",
@@ -21245,7 +21252,8 @@
         "hint": "Drag the top dot of a role onto the bottom dot of a step. Steps run left to right along the moving lines.",
         "roleHelp": "An agent with its own model and instructions.",
         "roles": "Roles (who)",
-        "steps": "Steps (what)"
+        "steps": "Steps (what)",
+        "controls": "Flow (when, again)"
       },
       "param": {
         "design": "Design source",
@@ -21258,13 +21266,19 @@
         "outputChange": "Change design",
         "outputDesign": "Full design",
         "rounds": "Critique rounds (empty: settings)",
-        "roundsShort": "{{value0}} critique rounds"
+        "roundsShort": "{{value0}} critique rounds",
+        "check": "Condition",
+        "maxVisits": "Max repeats when a line loops back (1-5, empty: once)",
+        "maxVisitsShort": "repeats up to {{value0}}×",
+        "moreRounds": "More rounds (1-5)",
+        "moreRoundsShort": "{{value0}} more rounds"
       },
       "problem": {
         "empty": "Add at least one step.",
-        "loop": "The steps form a loop. Remove one link.",
-        "split": "Connect the steps in one line (the right dot of a step to the left dot of the next).",
-        "slot": "Step {{value0}} ({{value1}}): connect a role to \"{{value2}}\"."
+        "loop": "Every step has a line coming in, so there is no start. Remove the line into the first step.",
+        "split": "Some steps are not reached from the start. Connect them (a right dot to the left dot of the next step).",
+        "slot": "Step {{value0}} ({{value1}}): connect a role to \"{{value2}}\".",
+        "start": "There must be exactly one start: only the first step may have no line coming in."
       },
       "save": "Save",
       "saveName": "Save as",
@@ -21285,7 +21299,18 @@
       },
       "template": "Start from",
       "tidy": "Tidy up",
-      "title": "Workflow editor"
+      "title": "Workflow editor",
+      "cond": {
+        "approved": "Was it approved?",
+        "auditClean": "Was the audit clean?",
+        "testsPass": "Did the tests pass?"
+      },
+      "out": {
+        "fork": "Branches",
+        "next": "Next",
+        "no": "No",
+        "yes": "Yes"
+      }
     }
   }
 }

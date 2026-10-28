@@ -46,6 +46,8 @@ export function stepLabel(step: string): string {
       return translate('tenure.flow.step.audit', 'Audit')
     case 'explore':
       return translate('tenure.flow.step.explore', 'Explore')
+    case 'arbitrate':
+      return translate('tenure.flow.step.arbitrate', 'Arbitrate')
     default:
       return step
   }

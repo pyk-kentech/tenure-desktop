@@ -1,10 +1,22 @@
 import type { Edge, Node } from '@xyflow/react'
 
-// tenure: engine workflow (src/tenure/workflow.py) ⇄ node graph for the editor (DESIGN.md 36.29 M44).
-// The engine validates; this module only converts and lays out.
+// tenure: engine workflow (src/tenure/workflow.py) as a node graph (DESIGN.md 36.29 M44, 36.30 M45).
+// Types, step slots and edge helpers; conversion lives in workflow-convert.ts, layout in workflow-layout.ts.
 
-export type StepKind = 'explore' | 'debate' | 'build' | 'audit'
-export const STEP_KINDS: StepKind[] = ['explore', 'debate', 'build', 'audit']
+export type StepKind = 'explore' | 'debate' | 'build' | 'audit' | 'branch' | 'continue' | 'parallel'
+export const BLOCK_KINDS: StepKind[] = ['explore', 'debate', 'build', 'audit']
+export const CONTROL_KINDS: StepKind[] = ['branch', 'continue', 'parallel']
+// Steps that may run more than once in a loop (the engine refuses max_visits on debate/build).
+export const REVISIT_KINDS = new Set<StepKind>([
+  'explore',
+  'audit',
+  'branch',
+  'continue',
+  'parallel'
+])
+// Read-only steps a parallel node can run side by side.
+export const PARALLEL_BRANCH_KINDS = new Set<StepKind>(['explore', 'audit'])
+export const BRANCH_CHECKS = ['approved', 'tests_pass', 'audit_clean'] as const
 
 export type RoleDef = {
   agent: string
@@ -36,11 +48,21 @@ export const STEP_SLOTS: Record<StepKind, Slot[]> = {
     { key: 'rivals', min: 0, max: 1 },
     { key: 'arbiter', min: 0, max: 1 }
   ],
-  audit: [{ key: 'roles', min: 1, max: 3 }]
+  audit: [{ key: 'roles', min: 1, max: 3 }],
+  branch: [],
+  continue: [
+    { key: 'implementer', min: 1, max: 1 },
+    { key: 'reviewers', min: 1, max: 3 }
+  ],
+  parallel: []
 }
 // Slots the engine stores as one role name rather than a list.
-const SINGLE_SLOTS = new Set(['role', 'synth', 'implementer', 'arbiter'])
-const SLOT_KEYS = new Set(Object.values(STEP_SLOTS).flatMap((slots) => slots.map((s) => s.key)))
+export const SINGLE_SLOTS = new Set(['role', 'synth', 'implementer', 'arbiter'])
+export const SLOT_KEYS = new Set(
+  Object.values(STEP_SLOTS).flatMap((slots) => slots.map((s) => s.key))
+)
+// Route keys become edges, never params.
+export const ROUTE_KEYS = new Set(['next', 'yes', 'no', 'branches'])
 
 export type RoleNodeData = { name: string; def: RoleDef }
 export type StepNodeData = { kind: StepKind; params: Record<string, unknown> }
@@ -49,8 +71,24 @@ export type StepNode = Node<StepNodeData, 'tenureStep'>
 export type WorkflowNode = RoleNode | StepNode
 
 export const NEXT_HANDLE = 'next'
+export const YES_HANDLE = 'yes'
+export const NO_HANDLE = 'no'
+export const FORK_HANDLE = 'fork'
 export const PREV_HANDLE = 'prev'
 export const ROLE_HANDLE = 'out'
+export const FLOW_HANDLES = new Set([NEXT_HANDLE, YES_HANDLE, NO_HANDLE, FORK_HANDLE])
+export const MAX_PARALLEL = 4
+
+/** Output dots a step has on its right side, in drawing order. */
+export function flowOutputs(kind: StepKind): string[] {
+  if (kind === 'branch') {
+    return [YES_HANDLE, NO_HANDLE]
+  }
+  if (kind === 'parallel') {
+    return [FORK_HANDLE, NEXT_HANDLE]
+  }
+  return [NEXT_HANDLE]
+}
 
 export function roleNodeId(name: string): string {
   return `role:${name}`
@@ -82,168 +120,28 @@ export function slotEdge(role: string, stepId: string, slot: string): Edge {
   }
 }
 
-export function orderEdge(from: string, to: string): Edge {
+/** A run-order edge from a step's output dot (next / yes / no / fork) to another step. */
+export function flowEdge(from: string, to: string, handle: string = NEXT_HANDLE): Edge {
   return {
-    id: `${from}->${to}`,
+    id: `${from}:${handle}->${to}`,
     source: from,
-    sourceHandle: NEXT_HANDLE,
+    sourceHandle: handle,
     target: to,
     targetHandle: PREV_HANDLE,
     type: 'smoothstep',
-    animated: true
+    animated: handle !== FORK_HANDLE
   }
 }
 
-export function toGraph(def: WorkflowDef): { nodes: WorkflowNode[]; edges: Edge[] } {
-  const nodes: WorkflowNode[] = Object.entries(def.roles).map(([name, role]) => ({
-    id: roleNodeId(name),
-    type: 'tenureRole',
-    position: { x: 0, y: 0 },
-    data: { name, def: role }
-  }))
-  const edges: Edge[] = []
-  let prev: string | null = null
-  for (const step of def.steps) {
-    const id = newStepNodeId()
-    const params: Record<string, unknown> = {}
-    for (const [key, value] of Object.entries(step)) {
-      if (key === 'kind') {
-        continue
-      }
-      if (SLOT_KEYS.has(key)) {
-        const names = Array.isArray(value) ? value : [value]
-        for (const name of names) {
-          if (typeof name === 'string' && def.roles[name]) {
-            edges.push(slotEdge(name, id, key))
-          }
-        }
-      } else {
-        params[key] = value
-      }
-    }
-    nodes.push({
-      id,
-      type: 'tenureStep',
-      position: { x: 0, y: 0 },
-      data: { kind: step.kind, params }
-    })
-    if (prev) {
-      edges.push(orderEdge(prev, id))
-    }
-    prev = id
-  }
-  return { nodes: layoutGraph(nodes, edges), edges }
+/** Kept for M44 callers: a plain next edge. */
+export function orderEdge(from: string, to: string): Edge {
+  return flowEdge(from, to, NEXT_HANDLE)
 }
 
-/** Steps in run order: follow next → prev edges from the step nobody points at. */
-export function orderSteps(
-  nodes: WorkflowNode[],
-  edges: Edge[]
-): {
-  steps: StepNode[]
-  problem: 'none' | 'empty' | 'split' | 'loop'
-} {
-  const steps = nodes.filter(isStepNode)
-  if (steps.length === 0) {
-    return { steps, problem: 'empty' }
-  }
-  const byId = new Map(steps.map((s) => [s.id, s]))
-  const next = new Map<string, string>()
-  const hasPrev = new Set<string>()
-  for (const e of edges) {
-    if (e.sourceHandle === NEXT_HANDLE && byId.has(e.source) && byId.has(e.target)) {
-      next.set(e.source, e.target)
-      hasPrev.add(e.target)
-    }
-  }
-  const heads = steps.filter((s) => !hasPrev.has(s.id))
-  if (heads.length !== 1) {
-    const fallback = [...steps].sort((a, b) => a.position.x - b.position.x)
-    return { steps: fallback, problem: heads.length === 0 ? 'loop' : 'split' }
-  }
-  const ordered: StepNode[] = []
-  const seen = new Set<string>()
-  for (let cur: string | undefined = heads[0].id; cur && !seen.has(cur); cur = next.get(cur)) {
-    seen.add(cur)
-    ordered.push(byId.get(cur)!)
-  }
-  return { steps: ordered, problem: ordered.length === steps.length ? 'none' : 'split' }
+export function isFlowEdge(e: Edge): boolean {
+  return !!e.sourceHandle && FLOW_HANDLES.has(e.sourceHandle)
 }
 
-export function fromGraph(
-  nodes: WorkflowNode[],
-  edges: Edge[],
-  meta: { name: string; description: string }
-): { def: WorkflowDef; problem: 'none' | 'empty' | 'split' | 'loop' } {
-  const roles: Record<string, RoleDef> = {}
-  for (const node of nodes.filter(isRoleNode)) {
-    roles[node.data.name] = node.data.def
-  }
-  const { steps, problem } = orderSteps(nodes, edges)
-  const roleOf = new Map(nodes.filter(isRoleNode).map((n) => [n.id, n.data.name]))
-  const defSteps = steps.map((step) => {
-    const out: StepDef = { kind: step.data.kind, ...step.data.params }
-    for (const slot of STEP_SLOTS[step.data.kind]) {
-      const names = edges
-        .filter((e) => e.target === step.id && e.targetHandle === slot.key)
-        .map((e) => roleOf.get(e.source))
-        .filter((n): n is string => !!n)
-      if (names.length > 0) {
-        out[slot.key] = SINGLE_SLOTS.has(slot.key) ? names[0] : names
-      }
-    }
-    return out
-  })
-  return { def: { ...meta, roles, steps: defSteps }, problem }
-}
-
-const STEP_GAP_X = 340
-const ROLE_GAP_X = 190
-const ROLE_TOP_Y = 260
-const ROLE_GAP_Y = 110
-
-/**
- * Auto-tidy: steps left → right in run order; each role sits in a row under the first step that
- * uses it, and a step widens to fit its roles so no line runs through a node.
- */
-export function layoutGraph(nodes: WorkflowNode[], edges: Edge[]): WorkflowNode[] {
-  const { steps } = orderSteps(nodes, edges)
-  const roles = nodes.filter(isRoleNode)
-  const firstUse = new Map<string, string>()
-  for (const role of roles) {
-    const step = steps.find((s) => edges.some((e) => e.source === role.id && e.target === s.id))
-    if (step) {
-      firstUse.set(role.id, step.id)
-    }
-  }
-  const pos = new Map<string, { x: number; y: number }>()
-  let cursor = 0
-  for (const step of steps) {
-    pos.set(step.id, { x: cursor, y: 0 })
-    const mine = roles.filter((r) => firstUse.get(r.id) === step.id)
-    mine.forEach((r, k) => pos.set(r.id, { x: cursor + k * ROLE_GAP_X, y: ROLE_TOP_Y }))
-    cursor += Math.max(STEP_GAP_X, mine.length * ROLE_GAP_X)
-  }
-  roles
-    .filter((r) => !firstUse.has(r.id))
-    .forEach((r, k) => pos.set(r.id, { x: -ROLE_GAP_X - 60, y: k * ROLE_GAP_Y }))
-  return nodes.map((node) => ({ ...node, position: pos.get(node.id) ?? node.position }))
-}
-
-/** A role slot that takes one name keeps only its newest edge. */
 export function slotMax(kind: StepKind, slot: string): number {
   return STEP_SLOTS[kind].find((s) => s.key === slot)?.max ?? 1
-}
-
-/** Required role slots left empty, so the editor can say which dot to connect before the engine check. */
-export function emptySlots(def: WorkflowDef): { index: number; kind: StepKind; slot: string }[] {
-  const out: { index: number; kind: StepKind; slot: string }[] = []
-  def.steps.forEach((step, i) => {
-    for (const slot of STEP_SLOTS[step.kind]) {
-      if (slot.min > 0 && step[slot.key] === undefined) {
-        out.push({ index: i + 1, kind: step.kind, slot: slot.key })
-      }
-    }
-  })
-  return out
 }

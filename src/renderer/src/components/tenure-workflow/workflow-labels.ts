@@ -1,5 +1,6 @@
 import { translate } from '@/i18n/i18n'
 import type { StepKind } from './workflow-model'
+import type { GraphProblem } from './workflow-convert'
 
 export function kindLabel(kind: StepKind): string {
   switch (kind) {
@@ -11,6 +12,12 @@ export function kindLabel(kind: StepKind): string {
       return translate('tenure.workflow.kind.build', 'Implement + review')
     case 'audit':
       return translate('tenure.workflow.kind.audit', 'Audit')
+    case 'branch':
+      return translate('tenure.workflow.kind.branch', 'Branch')
+    case 'continue':
+      return translate('tenure.workflow.kind.continue', 'Keep fixing')
+    case 'parallel':
+      return translate('tenure.workflow.kind.parallel', 'Side by side')
   }
 }
 
@@ -36,6 +43,45 @@ export function kindHelp(kind: StepKind): string {
         'tenure.workflow.help.audit',
         'After approval, auditors check the whole change once more.'
       )
+    case 'branch':
+      return translate(
+        'tenure.workflow.help.branch',
+        'Looks at the last result and takes the yes or the no line. Point a line back to an earlier step to repeat it.'
+      )
+    case 'continue':
+      return translate(
+        'tenure.workflow.help.continue',
+        'Takes over the finished implementation and runs more fix → test → review rounds, possibly with other roles.'
+      )
+    case 'parallel':
+      return translate(
+        'tenure.workflow.help.parallel',
+        'Runs read-only steps (explore, audit) at the same time, then goes on along its next line.'
+      )
+  }
+}
+
+export function outputLabel(handle: string): string {
+  switch (handle) {
+    case 'yes':
+      return translate('tenure.workflow.out.yes', 'Yes')
+    case 'no':
+      return translate('tenure.workflow.out.no', 'No')
+    case 'fork':
+      return translate('tenure.workflow.out.fork', 'Branches')
+    default:
+      return translate('tenure.workflow.out.next', 'Next')
+  }
+}
+
+export function checkLabel(check: unknown): string {
+  switch (check) {
+    case 'tests_pass':
+      return translate('tenure.workflow.cond.testsPass', 'Did the tests pass?')
+    case 'audit_clean':
+      return translate('tenure.workflow.cond.auditClean', 'Was the audit clean?')
+    default:
+      return translate('tenure.workflow.cond.approved', 'Was it approved?')
   }
 }
 
@@ -62,17 +108,25 @@ export function slotLabel(slot: string): string {
   }
 }
 
-export function orderProblemText(problem: 'none' | 'empty' | 'split' | 'loop'): string | null {
+export function orderProblemText(problem: GraphProblem): string | null {
   switch (problem) {
     case 'empty':
       return translate('tenure.workflow.problem.empty', 'Add at least one step.')
     case 'split':
       return translate(
         'tenure.workflow.problem.split',
-        'Connect the steps in one line (the right dot of a step to the left dot of the next).'
+        'Some steps are not reached from the start. Connect them (a right dot to the left dot of the next step).'
       )
     case 'loop':
-      return translate('tenure.workflow.problem.loop', 'The steps form a loop. Remove one link.')
+      return translate(
+        'tenure.workflow.problem.loop',
+        'Every step has a line coming in, so there is no start. Remove the line into the first step.'
+      )
+    case 'start':
+      return translate(
+        'tenure.workflow.problem.start',
+        'There must be exactly one start: only the first step may have no line coming in.'
+      )
     default:
       return null
   }

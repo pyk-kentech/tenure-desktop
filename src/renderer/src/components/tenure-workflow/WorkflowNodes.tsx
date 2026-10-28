@@ -2,18 +2,24 @@ import React from 'react'
 import { Handle, Position, type NodeProps } from '@xyflow/react'
 import { translate } from '@/i18n/i18n'
 import {
-  NEXT_HANDLE,
   PREV_HANDLE,
   ROLE_HANDLE,
   STEP_SLOTS,
+  flowOutputs,
   type RoleNode,
   type StepNode
 } from './workflow-model'
-import { kindLabel, slotLabel } from './workflow-labels'
+import { checkLabel, kindLabel, outputLabel, slotLabel } from './workflow-labels'
 
 const AGENT_TINT: Record<string, string> = {
   claude: 'border-l-orange-400',
   codex: 'border-l-emerald-500'
+}
+const OUTPUT_TINT: Record<string, string> = {
+  yes: '!bg-emerald-500',
+  no: '!bg-rose-500',
+  fork: '!bg-sky-500',
+  next: '!bg-primary'
 }
 
 /** A role: which agent/model does the work. Its top dot connects to a step's slot. */
@@ -48,6 +54,9 @@ export function WorkflowRoleNode({ data, selected }: NodeProps<RoleNode>): React
 
 function paramSummary(kind: StepNode['data']['kind'], params: Record<string, unknown>): string {
   const parts: string[] = []
+  if (kind === 'branch') {
+    parts.push(checkLabel(params.check))
+  }
   if (kind === 'build' && params.max_review !== undefined) {
     parts.push(
       translate('tenure.workflow.param.maxReviewShort', 'up to {{value0}} reviews', {
@@ -65,18 +74,37 @@ function paramSummary(kind: StepNode['data']['kind'], params: Record<string, unk
       })
     )
   }
+  if (kind === 'continue') {
+    parts.push(
+      translate('tenure.workflow.param.moreRoundsShort', '{{value0}} more rounds', {
+        value0: String(params.rounds ?? 1)
+      })
+    )
+  }
+  if (typeof params.max_visits === 'number' && params.max_visits > 1) {
+    parts.push(
+      translate('tenure.workflow.param.maxVisitsShort', 'repeats up to {{value0}}×', {
+        value0: String(params.max_visits)
+      })
+    )
+  }
   return parts.join(' · ')
 }
 
-/** A step: what happens, in order. Left/right dots chain the steps; bottom dots take roles. */
+/**
+ * A step: what happens. The left dot takes lines from earlier steps (several may join, a line
+ * from further right is a loop back); right dots lead on; bottom dots take roles.
+ */
 export function WorkflowStepNode({ data, selected }: NodeProps<StepNode>): React.JSX.Element {
   const slots = STEP_SLOTS[data.kind]
+  const outputs = flowOutputs(data.kind)
   const summary = paramSummary(data.kind, data.params)
+  const control = data.kind === 'branch' || data.kind === 'parallel' || data.kind === 'continue'
   return (
     <div
       className={`w-60 rounded-md border bg-card text-xs shadow-sm ${
-        selected ? 'ring-2 ring-ring' : ''
-      }`}
+        control ? 'border-dashed' : ''
+      } ${selected ? 'ring-2 ring-ring' : ''}`}
     >
       <Handle
         type="target"
@@ -84,36 +112,53 @@ export function WorkflowStepNode({ data, selected }: NodeProps<StepNode>): React
         position={Position.Left}
         className="!size-3 !border-2 !border-background !bg-primary"
       />
-      <Handle
-        type="source"
-        id={NEXT_HANDLE}
-        position={Position.Right}
-        className="!size-3 !border-2 !border-background !bg-primary"
-      />
-      <div className="border-b px-3 py-2">
+      <div className="relative border-b px-3 py-2 pr-14">
         <div className="text-sm font-medium">{kindLabel(data.kind)}</div>
         {summary ? <div className="text-muted-foreground">{summary}</div> : null}
-      </div>
-      <div className="relative flex justify-around px-1 pb-3 pt-2">
-        {slots.map((slot) => (
-          <div key={slot.key} className="text-center text-2xs text-muted-foreground">
-            {slotLabel(slot.key)}
-            {slot.min === 0 ? (
-              <div className="text-[10px]">{translate('tenure.workflow.optional', 'optional')}</div>
-            ) : null}
+        {outputs.map((handle, i) => (
+          <div
+            key={handle}
+            className="absolute right-3 text-[10px] text-muted-foreground"
+            style={{ top: `${((i + 0.5) / outputs.length) * 100}%`, transform: 'translateY(-50%)' }}
+          >
+            {outputs.length > 1 ? outputLabel(handle) : ''}
           </div>
         ))}
-        {slots.map((slot, i) => (
+        {outputs.map((handle, i) => (
           <Handle
-            key={slot.key}
-            type="target"
-            id={slot.key}
-            position={Position.Bottom}
-            style={{ left: `${((i + 0.5) / slots.length) * 100}%` }}
-            className="!size-3 !border-2 !border-background !bg-muted-foreground"
+            key={handle}
+            type="source"
+            id={handle}
+            position={Position.Right}
+            style={{ top: `${((i + 0.5) / outputs.length) * 100}%` }}
+            className={`!size-3 !border-2 !border-background ${OUTPUT_TINT[handle] ?? ''}`}
           />
         ))}
       </div>
+      {slots.length ? (
+        <div className="relative flex justify-around px-1 pb-3 pt-2">
+          {slots.map((slot) => (
+            <div key={slot.key} className="text-center text-2xs text-muted-foreground">
+              {slotLabel(slot.key)}
+              {slot.min === 0 ? (
+                <div className="text-[10px]">
+                  {translate('tenure.workflow.optional', 'optional')}
+                </div>
+              ) : null}
+            </div>
+          ))}
+          {slots.map((slot, i) => (
+            <Handle
+              key={slot.key}
+              type="target"
+              id={slot.key}
+              position={Position.Bottom}
+              style={{ left: `${((i + 0.5) / slots.length) * 100}%` }}
+              className="!size-3 !border-2 !border-background !bg-muted-foreground"
+            />
+          ))}
+        </div>
+      ) : null}
     </div>
   )
 }

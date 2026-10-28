@@ -1,29 +1,33 @@
 import { useCallback } from 'react'
 import { useEdgesState, useNodesState, type Connection, type Edge } from '@xyflow/react'
 import {
+  FLOW_HANDLES,
+  FORK_HANDLE,
+  MAX_PARALLEL,
   NEXT_HANDLE,
+  PARALLEL_BRANCH_KINDS,
   PREV_HANDLE,
   ROLE_HANDLE,
   STEP_SLOTS,
+  flowEdge,
+  isFlowEdge,
   isRoleNode,
   isStepNode,
-  layoutGraph,
   newStepNodeId,
-  orderEdge,
-  orderSteps,
   roleNodeId,
   slotEdge,
   slotMax,
-  toGraph,
   type RoleDef,
   type StepKind,
   type WorkflowDef,
   type WorkflowNode
 } from './workflow-model'
+import { tailStep, toGraph } from './workflow-convert'
+import { layoutGraph } from './workflow-layout'
 
 const ROLE_NAME_RE = /^[a-z][a-z0-9_]{0,23}$/
 
-/** Node graph state plus the edits the editor offers (connect rules follow the engine's step slots). */
+/** Node graph state plus the edits the editor offers (connect rules follow the engine's steps). */
 export function useWorkflowGraph() {
   const [nodes, setNodes, onNodesChange] = useNodesState<WorkflowNode>([])
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([])
@@ -46,7 +50,11 @@ export function useWorkflowGraph() {
       if (c.sourceHandle === ROLE_HANDLE) {
         return STEP_SLOTS[target.data.kind].some((s) => s.key === c.targetHandle)
       }
-      return c.sourceHandle === NEXT_HANDLE && c.targetHandle === PREV_HANDLE
+      if (c.targetHandle !== PREV_HANDLE || !c.sourceHandle || !FLOW_HANDLES.has(c.sourceHandle)) {
+        return false
+      }
+      // Why: a parallel node only fans out to read-only steps (the engine refuses others).
+      return c.sourceHandle !== FORK_HANDLE || PARALLEL_BRANCH_KINDS.has(target.data.kind)
     },
     [nodes]
   )
@@ -55,11 +63,12 @@ export function useWorkflowGraph() {
     (c: Connection) => {
       const target = nodes.find((n) => n.id === c.target)
       const source = nodes.find((n) => n.id === c.source)
-      if (!target || !source || !isStepNode(target)) {
+      if (!target || !source || !isStepNode(target) || !c.sourceHandle) {
         return
       }
+      const handle = c.sourceHandle
       setEdges((es) => {
-        if (c.sourceHandle === ROLE_HANDLE && isRoleNode(source) && c.targetHandle) {
+        if (handle === ROLE_HANDLE && isRoleNode(source) && c.targetHandle) {
           const slot = c.targetHandle
           const sameSlot = es.filter((e) => e.target === target.id && e.targetHandle === slot)
           if (sameSlot.some((e) => e.source === source.id)) {
@@ -69,12 +78,16 @@ export function useWorkflowGraph() {
           const drop = sameSlot.length >= slotMax(target.data.kind, slot) ? sameSlot[0]?.id : null
           return [...es.filter((e) => e.id !== drop), slotEdge(source.data.name, target.id, slot)]
         }
-        const kept = es.filter(
-          (e) =>
-            !(e.source === source.id && e.sourceHandle === NEXT_HANDLE) &&
-            !(e.target === target.id && e.targetHandle === PREV_HANDLE)
-        )
-        return [...kept, orderEdge(source.id, target.id)]
+        const fromHere = es.filter((e) => e.source === source.id && e.sourceHandle === handle)
+        if (fromHere.some((e) => e.target === target.id)) {
+          return es
+        }
+        if (handle === FORK_HANDLE) {
+          const drop = fromHere.length >= MAX_PARALLEL ? fromHere[0]?.id : null
+          return [...es.filter((e) => e.id !== drop), flowEdge(source.id, target.id, handle)]
+        }
+        // Why: next / yes / no lead to one step; a new drag replaces the old line.
+        return [...es.filter((e) => !fromHere.includes(e)), flowEdge(source.id, target.id, handle)]
       })
     },
     [nodes, setEdges]
@@ -103,18 +116,18 @@ export function useWorkflowGraph() {
   const addStep = useCallback(
     (kind: StepKind) => {
       const id = newStepNodeId()
-      const { steps } = orderSteps(nodes, edges)
-      const last = steps.at(-1)
+      const last = tailStep(nodes, edges)
+      const params: Record<string, unknown> = kind === 'branch' ? { check: 'approved' } : {}
       const node: WorkflowNode = {
         id,
         type: 'tenureStep',
-        position: { x: last ? last.position.x + 340 : 0, y: 0 },
-        data: { kind, params: {} }
+        position: { x: last ? last.position.x + 340 : 0, y: last ? last.position.y : 0 },
+        data: { kind, params }
       }
       setNodes((ns) => [...ns, node])
       if (last) {
         // Why: new steps join the end of the line, which is what beginners expect.
-        setEdges((es) => [...es, orderEdge(last.id, id)])
+        setEdges((es) => [...es, flowEdge(last.id, id, NEXT_HANDLE)])
       }
     },
     [nodes, edges, setNodes, setEdges]
@@ -157,13 +170,18 @@ export function useWorkflowGraph() {
 
   const deleteNode = useCallback(
     (id: string) => {
-      const before = edges.find((e) => e.target === id && e.targetHandle === PREV_HANDLE)?.source
-      const after = edges.find((e) => e.source === id && e.sourceHandle === NEXT_HANDLE)?.target
+      const flow = edges.filter(isFlowEdge)
+      const ins = flow.filter((e) => e.target === id)
+      const outs = flow.filter((e) => e.source === id)
       setNodes((ns) => ns.filter((n) => n.id !== id))
       setEdges((es) => {
         const kept = es.filter((e) => e.source !== id && e.target !== id)
-        // Why: removing a middle step keeps the line joined.
-        return before && after ? [...kept, orderEdge(before, after)] : kept
+        // Why: removing a middle step of a plain line keeps the line joined.
+        const join =
+          ins.length === 1 && outs.length === 1 && outs[0].sourceHandle === NEXT_HANDLE
+            ? [flowEdge(ins[0].source, outs[0].target, ins[0].sourceHandle ?? NEXT_HANDLE)]
+            : []
+        return [...kept, ...join]
       })
     },
     [edges, setNodes, setEdges]

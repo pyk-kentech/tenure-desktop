@@ -4,8 +4,14 @@ import { translate } from '@/i18n/i18n'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { isRoleNode, type RoleDef, type WorkflowNode } from './workflow-model'
-import { kindHelp, kindLabel } from './workflow-labels'
+import {
+  BRANCH_CHECKS,
+  REVISIT_KINDS,
+  isRoleNode,
+  type RoleDef,
+  type WorkflowNode
+} from './workflow-model'
+import { checkLabel, kindHelp, kindLabel } from './workflow-labels'
 
 const ROLE_NAME_RE = /^[a-z][a-z0-9_]{0,23}$/
 const AGENTS = ['claude', 'codex']
@@ -170,6 +176,38 @@ export function WorkflowInspector({
         <div className="text-sm font-medium">{kindLabel(kind)}</div>
         <div className="mt-1 text-xs text-muted-foreground">{kindHelp(kind)}</div>
       </div>
+      {kind === 'branch' ? (
+        <Field label={translate('tenure.workflow.param.check', 'Condition')}>
+          <select
+            className={selectClass}
+            value={typeof params.check === 'string' ? params.check : 'approved'}
+            onChange={(e) => set('check', e.target.value)}
+          >
+            {BRANCH_CHECKS.map((check) => (
+              <option key={check} value={check}>
+                {checkLabel(check)}
+              </option>
+            ))}
+          </select>
+        </Field>
+      ) : null}
+      {kind === 'continue' ? (
+        <NumberField
+          label={translate('tenure.workflow.param.moreRounds', 'More rounds (1-5)')}
+          value={params.rounds}
+          onChange={(v) => set('rounds', v)}
+        />
+      ) : null}
+      {REVISIT_KINDS.has(kind) ? (
+        <NumberField
+          label={translate(
+            'tenure.workflow.param.maxVisits',
+            'Max repeats when a line loops back (1-5, empty: once)'
+          )}
+          value={params.max_visits}
+          onChange={(v) => set('max_visits', v)}
+        />
+      ) : null}
       {kind === 'build' ? (
         <>
           <NumberField

@@ -1,14 +1,16 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Background, Controls, ReactFlow } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 import { translate } from '@/i18n/i18n'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { WORKFLOW_NODE_TYPES } from './WorkflowNodes'
+import { WORKFLOW_EDGE_TYPES } from './WorkflowEdges'
 import { WorkflowInspector } from './WorkflowInspector'
 import { WorkflowPalette } from './WorkflowPalette'
 import { WorkflowToolbar, type EditorStatus } from './WorkflowToolbar'
 import { useWorkflowGraph } from './use-workflow-graph'
-import { emptySlots, fromGraph } from './workflow-model'
+import { emptySlots, fromGraph } from './workflow-convert'
+import { isFlowEdge } from './workflow-model'
 import { kindLabel, orderProblemText, slotLabel } from './workflow-labels'
 import {
   checkWorkflow,
@@ -147,6 +149,20 @@ export function TenureWorkflowEditor({
     }
   }
 
+  // Why: a line into a step at or left of where it starts is a loop back; colour it so loops read at a glance.
+  const shownEdges = useMemo(() => {
+    const x = new Map(graph.nodes.map((n) => [n.id, n.position.x]))
+    return graph.edges.map((e) =>
+      isFlowEdge(e) && (x.get(e.target) ?? 0) <= (x.get(e.source) ?? 0)
+        ? {
+            ...e,
+            type: 'tenureLoop',
+            animated: false,
+            style: { stroke: '#f59e0b', strokeDasharray: '6 4' }
+          }
+        : e
+    )
+  }, [graph.nodes, graph.edges])
   const selected = graph.nodes.find((n) => n.id === selectedId) ?? null
   const dark = document.documentElement.classList.contains('dark')
 
@@ -183,8 +199,9 @@ export function TenureWorkflowEditor({
             <ReactFlow
               key={viewKey}
               nodes={graph.nodes}
-              edges={graph.edges}
+              edges={shownEdges}
               nodeTypes={WORKFLOW_NODE_TYPES}
+              edgeTypes={WORKFLOW_EDGE_TYPES}
               onNodesChange={graph.onNodesChange}
               onEdgesChange={graph.onEdgesChange}
               onConnect={graph.onConnect}

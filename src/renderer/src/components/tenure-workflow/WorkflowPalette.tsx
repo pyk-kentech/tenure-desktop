@@ -1,7 +1,7 @@
 import React from 'react'
 import { Plus } from 'lucide-react'
 import { translate } from '@/i18n/i18n'
-import { STEP_KINDS, type StepKind } from './workflow-model'
+import { BLOCK_KINDS, CONTROL_KINDS, type StepKind } from './workflow-model'
 import { kindHelp, kindLabel } from './workflow-labels'
 
 function PaletteButton({
@@ -61,7 +61,20 @@ export function WorkflowPalette({
         <div className="px-2 pb-1 text-2xs font-medium uppercase text-muted-foreground">
           {translate('tenure.workflow.palette.steps', 'Steps (what)')}
         </div>
-        {STEP_KINDS.map((kind) => (
+        {BLOCK_KINDS.map((kind) => (
+          <PaletteButton
+            key={kind}
+            label={kindLabel(kind)}
+            help={kindHelp(kind)}
+            onClick={() => onAddStep(kind)}
+          />
+        ))}
+      </div>
+      <div>
+        <div className="px-2 pb-1 text-2xs font-medium uppercase text-muted-foreground">
+          {translate('tenure.workflow.palette.controls', 'Flow (when, again)')}
+        </div>
+        {CONTROL_KINDS.map((kind) => (
           <PaletteButton
             key={kind}
             label={kindLabel(kind)}
