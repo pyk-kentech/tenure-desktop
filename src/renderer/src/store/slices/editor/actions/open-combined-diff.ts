@@ -106,12 +106,14 @@ export function createOpenCombinedDiff(
       })
       void openWorkspaceEditorItem(get(), id, worktreeId, label, 'diff')
     },
-    openBranchAllDiffs: (worktreeId, worktreePath, compare, alternate) => {
+    openBranchAllDiffs: (worktreeId, worktreePath, compare, alternate, options) => {
       const branchCompare = toBranchCompareSnapshot(compare)
       const id = `${worktreeId}::all-diffs::branch::${compare.baseRef}::${branchCompare.compareVersion}`
+      const label = options?.label ?? `Branch Changes (${compare.baseRef})`
       set((s) => {
         const runtimeEnvironmentId = resolveDiffRuntimeEnvironmentId(s, worktreeId, undefined)
-        const branchEntriesSnapshot = s.gitBranchChangesByWorktree[worktreeId] ?? []
+        const branchEntriesSnapshot =
+          options?.entriesSnapshot ?? s.gitBranchChangesByWorktree[worktreeId] ?? []
         const existing = s.openFiles.find((f) => f.id === id)
         if (existing) {
           return {
@@ -138,7 +140,7 @@ export function createOpenCombinedDiff(
         const newFile: OpenFile = {
           id,
           filePath: worktreePath,
-          relativePath: `Branch Changes (${compare.baseRef})`,
+          relativePath: label,
           worktreeId,
           language: 'plaintext',
           isDirty: false,
@@ -160,13 +162,7 @@ export function createOpenCombinedDiff(
           activeTabTypeByWorktree: { ...s.activeTabTypeByWorktree, [worktreeId]: 'editor' }
         }
       })
-      void openWorkspaceEditorItem(
-        get(),
-        id,
-        worktreeId,
-        `Branch Changes (${compare.baseRef})`,
-        'diff'
-      )
+      void openWorkspaceEditorItem(get(), id, worktreeId, label, 'diff')
     },
 
     openCommitAllDiffs: (worktreeId, worktreePath, compare, entries, subject, message) => {

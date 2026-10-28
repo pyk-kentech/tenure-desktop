@@ -210,7 +210,9 @@ export type EditorFilesSlice = {
     worktreeId: string,
     worktreePath: string,
     compare: GitBranchCompareSummary,
-    alternate?: CombinedDiffAlternate
+    alternate?: CombinedDiffAlternate,
+    // tenure: a flow review passes its own entries and tab label (DESIGN.md 36.28)
+    options?: { entriesSnapshot?: GitBranchChangeEntry[]; label?: string }
   ) => void
   openCommitAllDiffs: (
     worktreeId: string,

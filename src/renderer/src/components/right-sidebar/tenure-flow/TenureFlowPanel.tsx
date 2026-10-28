@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { tenureCall, type TenureRunDetail, type TenureRunSummary } from './tenure-flow-api'
 import { TenureFlowStartForm } from './TenureFlowStartForm'
 import { TenureFlowTimeline } from './TenureFlowTimeline'
+import { TenureFlowReviewButton } from './TenureFlowReviewButton'
 import { TenureFlowDrafts } from './TenureFlowDrafts'
 import { flowStateLabel, TenureFlowStateDot } from './tenure-flow-labels'
 
@@ -171,6 +172,9 @@ export default function TenureFlowPanel(): React.JSX.Element {
                 </Button>
               ) : null}
             </div>
+            {detail.live ? null : (
+              <TenureFlowReviewButton detail={detail} worktreeId={worktree.id} />
+            )}
             {detail.state.error && !detail.live ? (
               <div className="rounded border border-destructive/40 bg-destructive/10 px-2 py-1 text-xs">
                 {detail.state.error}

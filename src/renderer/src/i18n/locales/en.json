@@ -21179,7 +21179,10 @@
         "toggle": "Start a tenure flow instead of an agent",
         "failed": "Could not start the flow: {{value0}}"
       },
-      "openTab": "Open in a tab"
+      "openTab": "Open in a tab",
+      "review": "Review changes",
+      "reviewEmpty": "No files changed since the flow started.",
+      "reviewTab": "tenure: {{value0}}"
     },
     "relay": {
       "toggle": "Start a coordinator + worker relay (two Codex)",

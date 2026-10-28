@@ -51,6 +51,7 @@ export type TenureRunDetail = {
     phase: string
     step: string
     round: number
+    base_commit?: string | null
     error?: string | null
     report?: string | null
     workflow?: { name?: string } | null

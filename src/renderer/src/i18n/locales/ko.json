@@ -20897,7 +20897,10 @@
         "toggle": "에이전트 대신 tenure 흐름으로 시작",
         "failed": "흐름을 시작하지 못했습니다: {{value0}}"
       },
-      "openTab": "탭으로 크게 보기"
+      "openTab": "탭으로 크게 보기",
+      "review": "변경 리뷰",
+      "reviewEmpty": "흐름을 시작한 뒤 바뀐 파일이 없습니다.",
+      "reviewTab": "tenure: {{value0}}"
     },
     "relay": {
       "toggle": "지휘자 + 일꾼 중계로 시작 (Codex 두 개)",

@@ -49,7 +49,8 @@ export function getEditorDisplayLabel(
     return file.combinedAreaFilter ? getBaseLabel(file, variant) : 'Uncommitted Changes'
   }
   if (source === 'combined-branch') {
-    return `Branch Changes (${file.branchCompare?.baseRef ?? 'base'})`
+    // tenure: a flow review names its tab after the task (DESIGN.md 36.28); upstream tabs store the same default here.
+    return file.relativePath || `Branch Changes (${file.branchCompare?.baseRef ?? 'base'})`
   }
   if (source === 'combined-commit') {
     return file.commitCompare?.subject
