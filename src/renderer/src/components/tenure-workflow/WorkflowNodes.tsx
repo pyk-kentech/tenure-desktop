@@ -1,164 +1,233 @@
-import React from 'react'
-import { Handle, Position, type NodeProps } from '@xyflow/react'
+import React, { useState } from 'react'
+import { Handle, NodeToolbar, Position, type NodeProps } from '@xyflow/react'
+import {
+  Bot,
+  Check,
+  Code2,
+  Columns2,
+  MessagesSquare,
+  RotateCcw,
+  Search,
+  ShieldCheck,
+  Split,
+  X,
+  type LucideIcon
+} from 'lucide-react'
 import { translate } from '@/i18n/i18n'
 import {
+  AGENT_COLOR,
+  NEXT_HANDLE,
   PREV_HANDLE,
   ROLE_HANDLE,
-  STEP_SLOTS,
-  flowOutputs,
   type RoleNode,
+  type StepKind,
   type StepNode
 } from './workflow-model'
-import { checkLabel, kindLabel, outputLabel, slotLabel } from './workflow-labels'
+import { kindHelp, kindLabel } from './workflow-labels'
+import { HEADER_CENTER, HEADER_H, ROW_H, rowCenter, stepRows } from './workflow-node-rows'
+import { statusLabel, type StepStatus } from './run-progress'
 
-const AGENT_TINT: Record<string, string> = {
-  claude: 'border-l-orange-400',
-  codex: 'border-l-emerald-500'
+const KIND_ICON: Record<StepKind, LucideIcon> = {
+  explore: Search,
+  debate: MessagesSquare,
+  build: Code2,
+  audit: ShieldCheck,
+  branch: Split,
+  continue: RotateCcw,
+  parallel: Columns2
 }
-const OUTPUT_TINT: Record<string, string> = {
+const WORK_HEADER = 'bg-violet-100 text-violet-900 dark:bg-violet-950 dark:text-violet-200'
+const CONTROL_HEADER = 'bg-muted text-foreground'
+const AGENT_HEADER: Record<string, string> = {
+  claude: 'bg-orange-100 text-orange-900 dark:bg-orange-950 dark:text-orange-200',
+  codex: 'bg-teal-100 text-teal-900 dark:bg-teal-950 dark:text-teal-200'
+}
+const OUT_DOT: Record<string, string> = {
   yes: '!bg-emerald-500',
   no: '!bg-rose-500',
   fork: '!bg-sky-500',
-  next: '!bg-primary'
+  next: '!bg-zinc-400'
+}
+const STATUS_RING: Record<StepStatus, string> = {
+  pending: 'opacity-80',
+  running: 'ring-2 ring-sky-500 ring-offset-2 ring-offset-background',
+  done: 'ring-1 ring-emerald-500',
+  failed: 'ring-2 ring-rose-500',
+  skipped: 'opacity-45'
+}
+const dot = '!size-2.5 !border-2 !border-card'
+
+function HoverCard({
+  visible,
+  title,
+  children
+}: {
+  visible: boolean
+  title: string
+  children: React.ReactNode
+}) {
+  return (
+    <NodeToolbar isVisible={visible} position={Position.Top} offset={10}>
+      <div className="pointer-events-none w-64 rounded-md border bg-popover p-3 text-xs text-popover-foreground shadow-lg">
+        <div className="mb-1 font-medium">{title}</div>
+        {children}
+      </div>
+    </NodeToolbar>
+  )
 }
 
-/** A role: which agent/model does the work. Its top dot connects to a step's slot. */
+/** A role: which agent and model do the work. Its right connector goes into a step's slot. */
 export function WorkflowRoleNode({ data, selected }: NodeProps<RoleNode>): React.JSX.Element {
   const { name, def } = data
+  const [hover, setHover] = useState(false)
+  const detail = [def.model, def.effort].filter(Boolean).join(' · ')
   return (
     <div
-      className={`min-w-40 rounded-md border border-l-4 bg-card px-3 py-2 text-xs shadow-sm ${
-        AGENT_TINT[def.agent] ?? ''
-      } ${selected ? 'ring-2 ring-ring' : ''}`}
+      className={`w-40 rounded-lg border bg-card text-xs shadow-sm ${selected ? 'ring-2 ring-ring' : ''}`}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
     >
+      <div
+        className={`flex items-center gap-1.5 rounded-t-[7px] px-2.5 font-medium ${AGENT_HEADER[def.agent] ?? CONTROL_HEADER}`}
+        style={{ height: HEADER_H }}
+      >
+        <Bot className="size-3.5 shrink-0" />
+        <span className="truncate">{name}</span>
+      </div>
+      <div className="flex items-center px-2.5 text-muted-foreground" style={{ height: ROW_H }}>
+        <span className="truncate">{[def.agent, detail].filter(Boolean).join(' · ')}</span>
+      </div>
       <Handle
         type="source"
         id={ROLE_HANDLE}
-        position={Position.Top}
-        className="!size-3 !border-2 !border-background !bg-foreground"
+        position={Position.Right}
+        style={{ top: rowCenter(0), background: AGENT_COLOR[def.agent] }}
+        className={dot}
       />
-      <div className="font-medium">{name}</div>
-      <div className="text-muted-foreground">
-        {def.agent}
-        {def.model ? ` · ${def.model}` : ''}
-        {def.effort ? ` · ${def.effort}` : ''}
-      </div>
-      {def.instructions ? (
-        <div className="mt-1 text-2xs text-muted-foreground">
-          {translate('tenure.workflow.hasInstructions', 'Has instructions')}
+      <HoverCard visible={hover} title={name}>
+        <div className="text-muted-foreground">
+          {def.agent}
+          {def.model ? ` · ${def.model}` : ''}
+          {def.effort ? ` · ${def.effort}` : ''}
         </div>
-      ) : null}
+        {def.instructions ? (
+          <div className="mt-1 line-clamp-4 text-muted-foreground">{def.instructions}</div>
+        ) : null}
+      </HoverCard>
     </div>
   )
 }
 
-function paramSummary(kind: StepNode['data']['kind'], params: Record<string, unknown>): string {
-  const parts: string[] = []
-  if (kind === 'branch') {
-    parts.push(checkLabel(params.check))
-  }
-  if (kind === 'build' && params.max_review !== undefined) {
-    parts.push(
-      translate('tenure.workflow.param.maxReviewShort', 'up to {{value0}} reviews', {
-        value0: String(params.max_review)
-      })
-    )
-  }
-  if (kind === 'build' && params.design === 'task') {
-    parts.push(translate('tenure.workflow.param.designTaskShort', 'task as design'))
-  }
-  if (kind === 'debate' && params.rounds !== undefined) {
-    parts.push(
-      translate('tenure.workflow.param.roundsShort', '{{value0}} critique rounds', {
-        value0: String(params.rounds)
-      })
-    )
-  }
-  if (kind === 'continue') {
-    parts.push(
-      translate('tenure.workflow.param.moreRoundsShort', '{{value0}} more rounds', {
-        value0: String(params.rounds ?? 1)
-      })
-    )
-  }
-  if (typeof params.max_visits === 'number' && params.max_visits > 1) {
-    parts.push(
-      translate('tenure.workflow.param.maxVisitsShort', 'repeats up to {{value0}}×', {
-        value0: String(params.max_visits)
-      })
-    )
-  }
-  return parts.join(' · ')
-}
-
 /**
- * A step: what happens. The left dot takes lines from earlier steps (several may join, a line
- * from further right is a loop back); right dots lead on; bottom dots take roles.
+ * A step. Left connectors take the previous step (header) and roles (rows); right connectors lead
+ * on. In the run view the ring shows its status and hovering shows what happened there.
  */
 export function WorkflowStepNode({ data, selected }: NodeProps<StepNode>): React.JSX.Element {
-  const slots = STEP_SLOTS[data.kind]
-  const outputs = flowOutputs(data.kind)
-  const summary = paramSummary(data.kind, data.params)
-  const control = data.kind === 'branch' || data.kind === 'parallel' || data.kind === 'continue'
+  const [hover, setHover] = useState(false)
+  const rows = stepRows(data.kind, data.params)
+  const Icon = KIND_ICON[data.kind]
+  const control = data.kind === 'branch' || data.kind === 'parallel'
+  const progress = data.progress
   return (
     <div
-      className={`w-60 rounded-md border bg-card text-xs shadow-sm ${
-        control ? 'border-dashed' : ''
-      } ${selected ? 'ring-2 ring-ring' : ''}`}
+      className={`w-56 rounded-lg bg-card text-xs shadow-sm ${control ? 'border border-dashed border-foreground/30' : 'border'} ${
+        progress ? STATUS_RING[progress.status] : ''
+      } ${selected ? 'outline outline-2 outline-ring' : ''}`}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
     >
+      <div
+        className={`flex items-center gap-1.5 rounded-t-[7px] px-2.5 font-medium ${control ? CONTROL_HEADER : WORK_HEADER}`}
+        style={{ height: HEADER_H }}
+      >
+        <Icon className="size-3.5 shrink-0" />
+        <span className="flex-1 truncate">{kindLabel(data.kind)}</span>
+        {progress?.status === 'running' ? (
+          <span className="size-2 animate-ping rounded-full bg-sky-500" />
+        ) : null}
+        {progress?.status === 'done' ? <Check className="size-3.5 text-emerald-600" /> : null}
+        {progress?.status === 'failed' ? <X className="size-3.5 text-rose-600" /> : null}
+      </div>
+      {rows.map((row) => (
+        <div
+          key={row.key}
+          className={`flex items-center gap-2 px-2.5 text-muted-foreground ${row.type === 'value' ? 'border-t border-border/60' : ''}`}
+          style={{ height: ROW_H }}
+        >
+          {row.type === 'out' ? (
+            <span className="flex-1 text-right">{row.label}</span>
+          ) : (
+            <span className="flex-1 truncate">
+              {row.label}
+              {row.type === 'slot' && row.optional ? (
+                <span className="ml-1 text-[10px] opacity-70">
+                  {translate('tenure.workflow.optional', 'optional')}
+                </span>
+              ) : null}
+            </span>
+          )}
+          {row.type === 'value' ? (
+            <span className="rounded bg-muted px-1.5 py-0.5 text-foreground">{row.value}</span>
+          ) : null}
+        </div>
+      ))}
       <Handle
         type="target"
         id={PREV_HANDLE}
         position={Position.Left}
-        className="!size-3 !border-2 !border-background !bg-primary"
+        style={{ top: HEADER_CENTER }}
+        className={`${dot} !bg-zinc-400`}
       />
-      <div className="relative border-b px-3 py-2 pr-14">
-        <div className="text-sm font-medium">{kindLabel(data.kind)}</div>
-        {summary ? <div className="text-muted-foreground">{summary}</div> : null}
-        {outputs.map((handle, i) => (
-          <div
-            key={handle}
-            className="absolute right-3 text-[10px] text-muted-foreground"
-            style={{ top: `${((i + 0.5) / outputs.length) * 100}%`, transform: 'translateY(-50%)' }}
-          >
-            {outputs.length > 1 ? outputLabel(handle) : ''}
-          </div>
-        ))}
-        {outputs.map((handle, i) => (
-          <Handle
-            key={handle}
-            type="source"
-            id={handle}
-            position={Position.Right}
-            style={{ top: `${((i + 0.5) / outputs.length) * 100}%` }}
-            className={`!size-3 !border-2 !border-background ${OUTPUT_TINT[handle] ?? ''}`}
-          />
-        ))}
-      </div>
-      {slots.length ? (
-        <div className="relative flex justify-around px-1 pb-3 pt-2">
-          {slots.map((slot) => (
-            <div key={slot.key} className="text-center text-2xs text-muted-foreground">
-              {slotLabel(slot.key)}
-              {slot.min === 0 ? (
-                <div className="text-[10px]">
-                  {translate('tenure.workflow.optional', 'optional')}
-                </div>
-              ) : null}
-            </div>
-          ))}
-          {slots.map((slot, i) => (
-            <Handle
-              key={slot.key}
-              type="target"
-              id={slot.key}
-              position={Position.Bottom}
-              style={{ left: `${((i + 0.5) / slots.length) * 100}%` }}
-              className="!size-3 !border-2 !border-background !bg-muted-foreground"
-            />
-          ))}
-        </div>
+      {data.kind !== 'branch' ? (
+        <Handle
+          type="source"
+          id={NEXT_HANDLE}
+          position={Position.Right}
+          style={{ top: HEADER_CENTER }}
+          className={`${dot} ${OUT_DOT.next}`}
+        />
       ) : null}
+      {rows.map((row, i) =>
+        row.type === 'slot' ? (
+          <Handle
+            key={row.key}
+            type="target"
+            id={row.key}
+            position={Position.Left}
+            style={{ top: rowCenter(i) }}
+            className={`${dot} !bg-muted-foreground`}
+          />
+        ) : row.type === 'out' ? (
+          <Handle
+            key={row.key}
+            type="source"
+            id={row.key}
+            position={Position.Right}
+            style={{ top: rowCenter(i) }}
+            className={`${dot} ${OUT_DOT[row.key] ?? ''}`}
+          />
+        ) : null
+      )}
+      <HoverCard visible={hover} title={kindLabel(data.kind)}>
+        {progress ? (
+          <>
+            <div className="mb-1 text-muted-foreground">{statusLabel(progress.status)}</div>
+            {progress.lines.length ? (
+              progress.lines.map((line) => (
+                <div key={line} className="leading-relaxed">
+                  {line}
+                </div>
+              ))
+            ) : (
+              <div className="text-muted-foreground">
+                {translate('tenure.progress.noRecord', 'No record yet.')}
+              </div>
+            )}
+          </>
+        ) : (
+          <div className="leading-relaxed text-muted-foreground">{kindHelp(data.kind)}</div>
+        )}
+      </HoverCard>
     </div>
   )
 }

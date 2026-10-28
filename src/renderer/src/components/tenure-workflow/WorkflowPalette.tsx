@@ -86,7 +86,7 @@ export function WorkflowPalette({
       <div className="mt-auto px-2 text-2xs leading-relaxed text-muted-foreground">
         {translate(
           'tenure.workflow.palette.hint',
-          'Drag the top dot of a role onto the bottom dot of a step. Steps run left to right along the moving lines.'
+          "Drag a role's right connector onto a step's slot on its left. Steps run left to right, and a moving light shows the direction."
         )}
       </div>
     </div>

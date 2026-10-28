@@ -5,12 +5,16 @@ import { translate } from '@/i18n/i18n'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { WORKFLOW_NODE_TYPES } from './WorkflowNodes'
 import { WORKFLOW_EDGE_TYPES } from './WorkflowEdges'
+import { WorkflowRunBanner } from './WorkflowRunBanner'
+import { useRunView } from './use-run-view'
+import { runProgress } from './run-progress'
+import { displayGraph, stepRefs } from './graph-display'
 import { WorkflowInspector } from './WorkflowInspector'
 import { WorkflowPalette } from './WorkflowPalette'
 import { WorkflowToolbar, type EditorStatus } from './WorkflowToolbar'
 import { useWorkflowGraph } from './use-workflow-graph'
 import { emptySlots, fromGraph } from './workflow-convert'
-import { isFlowEdge } from './workflow-model'
+import type { WorkflowDef } from './workflow-model'
 import { kindLabel, orderProblemText, slotLabel } from './workflow-labels'
 import {
   checkWorkflow,
@@ -34,12 +38,15 @@ export function TenureWorkflowEditor({
   onOpenChange,
   project,
   initial,
+  run,
   onSaved
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
   project: string | null
   initial?: string
+  // tenure: open a run's workflow with its progress on top (DESIGN.md 36.32)
+  run?: string | null
   onSaved?: (id: string) => void
 }): React.JSX.Element {
   const graph = useWorkflowGraph()
@@ -53,6 +60,17 @@ export function TenureWorkflowEditor({
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [viewKey, setViewKey] = useState(0)
   const { load } = graph
+  const loadRunDef = useCallback(
+    (def: WorkflowDef) => {
+      load(def)
+      setSaveName(`${def.name || 'run'}-copy`.replace(/[^a-z0-9_-]/g, '-').toLowerCase())
+      setDescription(def.description ?? '')
+      setViewKey((k) => k + 1)
+    },
+    [load]
+  )
+  const onRunError = useCallback((text: string) => setStatus({ tone: 'error', text }), [])
+  const runView = useRunView({ open, project, runId: run, onLoad: loadRunDef, onError: onRunError })
 
   const loadTemplate = useCallback(
     async (id: string) => {
@@ -79,8 +97,10 @@ export function TenureWorkflowEditor({
     listWorkflows(project)
       .then((items) => setTemplates(items.filter((w) => w.source !== 'error')))
       .catch((e: unknown) => setStatus({ tone: 'error', text: errorText(e) }))
-    void loadTemplate(initial ?? 'quick')
-  }, [open, project, initial, loadTemplate])
+    if (!run) {
+      void loadTemplate(initial ?? 'quick')
+    }
+  }, [open, project, initial, run, loadTemplate])
 
   const current = () =>
     fromGraph(graph.nodes, graph.edges, { name: saveName || template, description })
@@ -149,25 +169,36 @@ export function TenureWorkflowEditor({
     }
   }
 
-  // Why: a line into a step at or left of where it starts is a loop back; colour it so loops read at a glance.
-  const shownEdges = useMemo(() => {
-    const x = new Map(graph.nodes.map((n) => [n.id, n.position.x]))
-    return graph.edges.map((e) =>
-      isFlowEdge(e) && (x.get(e.target) ?? 0) <= (x.get(e.source) ?? 0)
-        ? {
-            ...e,
-            type: 'tenureLoop',
-            animated: false,
-            style: { stroke: '#f59e0b', strokeDasharray: '6 4' }
-          }
-        : e
-    )
-  }, [graph.nodes, graph.edges])
+  const detail = runView.active ? runView.detail : null
+  const progress = useMemo(
+    () =>
+      detail
+        ? runProgress(
+            stepRefs(graph.nodes, graph.edges),
+            detail.state,
+            detail.live,
+            detail.current_call
+          )
+        : null,
+    [detail, graph.nodes, graph.edges]
+  )
+  const shown = useMemo(
+    () => displayGraph(graph.nodes, graph.edges, progress, detail?.state.graph?.decisions),
+    [graph.nodes, graph.edges, progress, detail]
+  )
   const selected = graph.nodes.find((n) => n.id === selectedId) ?? null
   const dark = document.documentElement.classList.contains('dark')
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog
+      open={open}
+      onOpenChange={(next) => {
+        if (!next) {
+          runView.reset()
+        }
+        onOpenChange(next)
+      }}
+    >
       <DialogContent
         className="flex h-[90vh] w-[95vw] max-w-none flex-col gap-0 overflow-hidden p-0 sm:max-w-none"
         // Why: the walkthrough card sits outside the dialog; clicking it must not close the editor.
@@ -180,44 +211,51 @@ export function TenureWorkflowEditor({
         <DialogTitle className="sr-only">
           {translate('tenure.workflow.title', 'Workflow editor')}
         </DialogTitle>
-        <WorkflowToolbar
-          templates={templates}
-          template={template}
-          onTemplate={(id) => void loadTemplate(id)}
-          saveName={saveName}
-          onSaveName={setSaveName}
-          description={description}
-          onDescription={setDescription}
-          scope={scope}
-          onScope={setScope}
-          canProjectScope={!!project}
-          overwrite={overwrite}
-          onOverwrite={setOverwrite}
-          onTidy={() => {
-            graph.tidy()
-            setViewKey((k) => k + 1)
-          }}
-          onCheck={() => void runCheck()}
-          onSave={() => void runSave()}
-          status={status}
-        />
+        {runView.active ? (
+          <WorkflowRunBanner detail={runView.detail} onEdit={runView.exit} />
+        ) : (
+          <WorkflowToolbar
+            templates={templates}
+            template={template}
+            onTemplate={(id) => void loadTemplate(id)}
+            saveName={saveName}
+            onSaveName={setSaveName}
+            description={description}
+            onDescription={setDescription}
+            scope={scope}
+            onScope={setScope}
+            canProjectScope={!!project}
+            overwrite={overwrite}
+            onOverwrite={setOverwrite}
+            onTidy={() => {
+              graph.tidy()
+              setViewKey((k) => k + 1)
+            }}
+            onCheck={() => void runCheck()}
+            onSave={() => void runSave()}
+            status={status}
+          />
+        )}
         <div className="flex min-h-0 flex-1">
-          <WorkflowPalette onAddRole={graph.addRole} onAddStep={graph.addStep} />
+          {runView.active ? null : (
+            <WorkflowPalette onAddRole={graph.addRole} onAddStep={graph.addStep} />
+          )}
           <div className="min-w-0 flex-1" data-tenure-tour="editor-canvas">
             <ReactFlow
               key={viewKey}
-              nodes={graph.nodes}
-              edges={shownEdges}
+              nodes={shown.nodes}
+              edges={shown.edges}
               nodeTypes={WORKFLOW_NODE_TYPES}
               edgeTypes={WORKFLOW_EDGE_TYPES}
               onNodesChange={graph.onNodesChange}
               onEdgesChange={graph.onEdgesChange}
               onConnect={graph.onConnect}
+              nodesConnectable={!runView.active}
               isValidConnection={graph.isValidConnection}
               onSelectionChange={({ nodes }) => setSelectedId(nodes[0]?.id ?? null)}
-              defaultEdgeOptions={{ type: 'smoothstep' }}
+              defaultEdgeOptions={{ type: 'tenureFlow' }}
               colorMode={dark ? 'dark' : 'light'}
-              deleteKeyCode={['Delete', 'Backspace']}
+              deleteKeyCode={runView.active ? null : ['Delete', 'Backspace']}
               fitView
               fitViewOptions={{ padding: 0.15 }}
               minZoom={0.2}
@@ -226,7 +264,9 @@ export function TenureWorkflowEditor({
               <Controls showInteractive={false} />
             </ReactFlow>
           </div>
-          <div className="w-72 shrink-0 overflow-y-auto border-l scrollbar-sleek">
+          <div
+            className={`w-72 shrink-0 overflow-y-auto border-l scrollbar-sleek ${runView.active ? 'hidden' : ''}`}
+          >
             <WorkflowInspector
               node={selected}
               onRenameRole={graph.renameRole}

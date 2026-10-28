@@ -4963,6 +4963,18 @@
       "dialogDescriptionStart": "tenure couldn't generate a name for"
     }
   },
+  "tenure": {
+    "workflow": {
+      "hasInstructions": "Has instructions",
+      "param": {
+        "designTaskShort": "task as design",
+        "maxReviewShort": "up to {{value0}} reviews",
+        "maxVisitsShort": "repeats up to {{value0}}×",
+        "moreRoundsShort": "{{value0}} more rounds",
+        "roundsShort": "{{value0}} critique rounds"
+      }
+    }
+  },
   "terminal": {
     "claudeDiffPanelNotice": {
       "title": "Claude Code can open its own diff panel beside the chat in wide terminals. That panel is Claude's, not tenure's."

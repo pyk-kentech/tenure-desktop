@@ -21189,7 +21189,8 @@
       "openTab": "Open in a tab",
       "review": "Review changes",
       "reviewEmpty": "No files changed since the flow started.",
-      "reviewTab": "tenure: {{value0}}"
+      "reviewTab": "tenure: {{value0}}",
+      "graph": "View as graph"
     },
     "relay": {
       "toggle": "Start a coordinator + worker relay (two Codex)",
@@ -21249,7 +21250,7 @@
       "palette": {
         "claude": "Claude role",
         "codex": "Codex role",
-        "hint": "Drag the top dot of a role onto the bottom dot of a step. Steps run left to right along the moving lines.",
+        "hint": "Drag a role's right connector onto a step's slot on its left. Steps run left to right, and a moving light shows the direction.",
         "roleHelp": "An agent with its own model and instructions.",
         "roles": "Roles (who)",
         "steps": "Steps (what)",
@@ -21310,6 +21311,13 @@
         "next": "Next",
         "no": "No",
         "yes": "Yes"
+      },
+      "row": {
+        "maxReview": "Max reviews",
+        "times": "{{value0}}×",
+        "rounds": "Critique rounds",
+        "moreRounds": "More rounds",
+        "maxVisits": "Max repeats"
       }
     },
     "tutorial": {
@@ -21351,7 +21359,7 @@
       },
       "timeline": {
         "title": "Round records",
-        "body": "Implementation, review and fixes are recorded round by round. Expand an entry to read the agent’s reply, or open it in a tab with the icon on the right."
+        "body": "Implementation, review and fixes are recorded round by round. Expand an entry to read the agent's reply, or open it in a tab with the icon on the right. View as graph shows the run on its workflow: each step's status, and its details when you hover it."
       },
       "review": {
         "title": "Review changes",
@@ -21364,7 +21372,7 @@
       },
       "canvas": {
         "title": "Nodes and connections",
-        "body": "Role nodes (below) say which agent and model work; step nodes (above) say what happens. Drag a role’s top connector onto a step’s slot to assign it, and connect a step’s right connector to the next step’s left connector to set the order."
+        "body": "Role nodes on the left say which agent and model work; step nodes say what happens. Drag a role's right connector onto a step's slot to assign it, and connect a step's right connector to the next step's left connector to set the order. The light on each line travels in the run direction."
       },
       "controls": {
         "title": "Branch, additional fixes, parallel",
@@ -21470,6 +21478,34 @@
         "splitTerminal": "Split terminal",
         "gotIt": "Got it",
         "browserSettings": "Browser settings"
+      }
+    },
+    "progress": {
+      "noRecord": "No record yet.",
+      "title": "Run view",
+      "live": "Updating live",
+      "hint": "Hover a step to see what happened there.",
+      "edit": "Edit this workflow",
+      "testStatus": {
+        "passed": "passed",
+        "failed": "failed",
+        "timeout": "timed out",
+        "error": "could not run"
+      },
+      "round": "Round {{value0}}",
+      "blocking": "{{value0}} blocking",
+      "test": "tests {{value0}}",
+      "until": "Runs up to round {{value0}}",
+      "clean": "no issues",
+      "check": "needs a look",
+      "decision": "Pass {{value0}}: {{value1}}",
+      "now": "Now: {{value0}} · {{value1}} ({{value2}}s)",
+      "status": {
+        "running": "In progress",
+        "done": "Done",
+        "failed": "Failed",
+        "skipped": "Not reached",
+        "pending": "Waiting"
       }
     }
   }

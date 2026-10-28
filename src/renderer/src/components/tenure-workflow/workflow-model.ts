@@ -1,4 +1,5 @@
 import type { Edge, Node } from '@xyflow/react'
+import type { StepProgress } from './run-progress'
 
 // tenure: engine workflow (src/tenure/workflow.py) as a node graph (DESIGN.md 36.29 M44, 36.30 M45).
 // Types, step slots and edge helpers; conversion lives in workflow-convert.ts, layout in workflow-layout.ts.
@@ -65,7 +66,12 @@ export const SLOT_KEYS = new Set(
 export const ROUTE_KEYS = new Set(['next', 'yes', 'no', 'branches'])
 
 export type RoleNodeData = { name: string; def: RoleDef }
-export type StepNodeData = { kind: StepKind; params: Record<string, unknown> }
+// progress is set only in the run view (DESIGN.md 36.32)
+export type StepNodeData = {
+  kind: StepKind
+  params: Record<string, unknown>
+  progress?: StepProgress
+}
 export type RoleNode = Node<RoleNodeData, 'tenureRole'>
 export type StepNode = Node<StepNodeData, 'tenureStep'>
 export type WorkflowNode = RoleNode | StepNode
@@ -78,6 +84,8 @@ export const PREV_HANDLE = 'prev'
 export const ROLE_HANDLE = 'out'
 export const FLOW_HANDLES = new Set([NEXT_HANDLE, YES_HANDLE, NO_HANDLE, FORK_HANDLE])
 export const MAX_PARALLEL = 4
+// Agent colours for role headers, role connectors and role lines (DESIGN.md 36.32).
+export const AGENT_COLOR: Record<string, string> = { claude: '#D85A30', codex: '#1D9E75' }
 
 /** Output dots a step has on its right side, in drawing order. */
 export function flowOutputs(kind: StepKind): string[] {
@@ -116,7 +124,7 @@ export function slotEdge(role: string, stepId: string, slot: string): Edge {
     sourceHandle: ROLE_HANDLE,
     target: stepId,
     targetHandle: slot,
-    type: 'smoothstep'
+    type: 'tenureRole'
   }
 }
 
@@ -128,8 +136,7 @@ export function flowEdge(from: string, to: string, handle: string = NEXT_HANDLE)
     sourceHandle: handle,
     target: to,
     targetHandle: PREV_HANDLE,
-    type: 'smoothstep',
-    animated: handle !== FORK_HANDLE
+    type: 'tenureFlow'
   }
 }
 

@@ -94,13 +94,14 @@ describe('workflow graph', () => {
     expect(fromGraph(nodes, loop, meta).problem).toBe('loop')
   })
 
-  it('lays steps out left to right and roles in a row under the step that first uses them', () => {
+  it('puts roles in a left column by first use and steps left to right', () => {
     const { nodes, edges } = toGraph(SECURE)
     const laid = layoutGraph(nodes, edges)
-    expect(laid.filter(isStepNode).map((s) => s.position.x)).toEqual([0, 380, 720])
-    const security = laid.find((n) => n.id === 'role:security')!
-    expect(security.position.x).toBe(380)
-    expect(security.position.y).toBeGreaterThan(0)
+    expect(laid.filter(isStepNode).map((s) => s.position.x)).toEqual([240, 540, 840])
+    const y = (id: string) => laid.find((n) => n.id === id)!.position
+    expect(y('role:claude')).toEqual({ x: 0, y: 0 })
+    expect(y('role:security').x).toBe(0)
+    expect(y('role:security').y).toBeGreaterThan(y('role:codex').y)
   })
 
   it('round-trips branches, a loop back and side-by-side audits in the graph form', () => {

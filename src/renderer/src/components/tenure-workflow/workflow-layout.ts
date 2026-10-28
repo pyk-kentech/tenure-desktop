@@ -9,10 +9,10 @@ import {
 
 // tenure: auto-tidy for the workflow editor (DESIGN.md 36.29, 36.30).
 
-const STEP_GAP_X = 340
-const ROLE_GAP_X = 190
-const LANE_GAP_Y = 190
-const ROLE_GAP_Y = 110
+const ROLE_COLUMN_W = 240
+const STEP_GAP_X = 300
+const LANE_GAP_Y = 200
+const ROLE_GAP_Y = 90
 
 /** Steps nobody flows into (fork targets excluded): where a run starts. */
 export function headSteps(nodes: WorkflowNode[], edges: Edge[]): StepNode[] {
@@ -58,33 +58,23 @@ export function rankSteps(nodes: WorkflowNode[], edges: Edge[]): StepNode[][] {
 }
 
 /**
- * Auto-tidy: steps left → right by rank, branch lanes stacked; each role sits in a row under the
- * column of the first step that uses it, and a column widens to fit its roles.
+ * Auto-tidy (DESIGN.md 36.32): roles in a column on the left, ordered by the first step that uses
+ * them; steps left → right by rank with branch lanes stacked, so role lines run left to right too.
  */
 export function layoutGraph(nodes: WorkflowNode[], edges: Edge[]): WorkflowNode[] {
   const columns = rankSteps(nodes, edges)
-  const roles = nodes.filter(isRoleNode)
   const ordered = columns.flat()
-  const columnOf = new Map(columns.flatMap((col, r) => col.map((s) => [s.id, r] as const)))
-  const firstUse = new Map<string, number>()
-  for (const role of roles) {
-    const step = ordered.find((s) => edges.some((e) => e.source === role.id && e.target === s.id))
-    if (step) {
-      firstUse.set(role.id, columnOf.get(step.id) ?? 0)
-    }
+  const rank = (roleId: string) => {
+    const i = ordered.findIndex((s) => edges.some((e) => e.source === roleId && e.target === s.id))
+    return i === -1 ? Number.MAX_SAFE_INTEGER : i
   }
-  const lanes = Math.max(1, ...columns.map((c) => c.length))
-  const roleY = (lanes - 1) * LANE_GAP_Y + 260
+  const roles = nodes.filter(isRoleNode).sort((a, b) => rank(a.id) - rank(b.id))
   const pos = new Map<string, { x: number; y: number }>()
-  let cursor = 0
+  roles.forEach((role, k) => pos.set(role.id, { x: 0, y: k * ROLE_GAP_Y }))
   columns.forEach((col, r) => {
-    col.forEach((s, lane) => pos.set(s.id, { x: cursor, y: lane * LANE_GAP_Y }))
-    const mine = roles.filter((role) => firstUse.get(role.id) === r)
-    mine.forEach((role, k) => pos.set(role.id, { x: cursor + k * ROLE_GAP_X, y: roleY }))
-    cursor += Math.max(STEP_GAP_X, mine.length * ROLE_GAP_X)
+    col.forEach((s, lane) =>
+      pos.set(s.id, { x: ROLE_COLUMN_W + r * STEP_GAP_X, y: lane * LANE_GAP_Y })
+    )
   })
-  roles
-    .filter((r) => !firstUse.has(r.id))
-    .forEach((r, k) => pos.set(r.id, { x: -ROLE_GAP_X - 60, y: k * ROLE_GAP_Y }))
   return nodes.map((node) => ({ ...node, position: pos.get(node.id) ?? node.position }))
 }

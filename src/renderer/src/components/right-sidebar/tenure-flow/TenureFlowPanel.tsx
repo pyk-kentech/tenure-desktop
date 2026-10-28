@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import { GraduationCap, Play, Square, RotateCw, Workflow } from 'lucide-react'
+import { GraduationCap, Network, Play, Square, RotateCw, Workflow } from 'lucide-react'
 import { useActiveWorktree } from '@/store/selectors'
 import { translate } from '@/i18n/i18n'
 import { Button } from '@/components/ui/button'
@@ -26,6 +26,8 @@ export default function TenureFlowPanel(): React.JSX.Element {
   const [error, setError] = useState<string | null>(null)
   const [starting, setStarting] = useState(false)
   const [editing, setEditing] = useState(false)
+  // tenure: run whose progress the editor shows as a graph (DESIGN.md 36.32)
+  const [graphRun, setGraphRun] = useState<string | null>(null)
   // Why: the start form re-reads the workflow list after the editor saves one.
   const [workflowsVersion, setWorkflowsVersion] = useState(0)
 
@@ -204,9 +206,20 @@ export default function TenureFlowPanel(): React.JSX.Element {
                 </Button>
               ) : null}
             </div>
-            {detail.live ? null : (
-              <TenureFlowReviewButton detail={detail} worktreeId={worktree.id} />
-            )}
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant="outline"
+                size="xs"
+                data-tenure-tour="graph"
+                onClick={() => setGraphRun(runId)}
+              >
+                <Network className="size-3" />
+                {translate('tenure.flow.graph', 'View as graph')}
+              </Button>
+              {detail.live ? null : (
+                <TenureFlowReviewButton detail={detail} worktreeId={worktree.id} />
+              )}
+            </div>
             {detail.state.error && !detail.live ? (
               <div className="rounded border border-destructive/40 bg-destructive/10 px-2 py-1 text-xs">
                 {detail.state.error}
@@ -237,8 +250,14 @@ export default function TenureFlowPanel(): React.JSX.Element {
         ) : null}
       </div>
       <TenureWorkflowEditor
-        open={editing}
-        onOpenChange={setEditing}
+        open={editing || !!graphRun}
+        run={graphRun}
+        onOpenChange={(next) => {
+          setEditing(next)
+          if (!next) {
+            setGraphRun(null)
+          }
+        }}
         project={path}
         onSaved={() => setWorkflowsVersion((v) => v + 1)}
       />

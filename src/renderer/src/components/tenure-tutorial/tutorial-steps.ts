@@ -175,7 +175,7 @@ export function tutorialSteps(): TutorialStep[] {
       title: translate('tenure.tutorial.timeline.title', 'Round records'),
       body: translate(
         'tenure.tutorial.timeline.body',
-        'Implementation, review and fixes are recorded round by round. Expand an entry to read the agent’s reply, or open it in a tab with the icon on the right.'
+        "Implementation, review and fixes are recorded round by round. Expand an entry to read the agent's reply, or open it in a tab with the icon on the right. View as graph shows the run on its workflow: each step's status, and its details when you hover it."
       ),
       target: () => tourTarget('timeline')
     },
@@ -206,7 +206,7 @@ export function tutorialSteps(): TutorialStep[] {
       title: translate('tenure.tutorial.canvas.title', 'Nodes and connections'),
       body: translate(
         'tenure.tutorial.canvas.body',
-        'Role nodes (below) say which agent and model work; step nodes (above) say what happens. Drag a role’s top connector onto a step’s slot to assign it, and connect a step’s right connector to the next step’s left connector to set the order.'
+        "Role nodes on the left say which agent and model work; step nodes say what happens. Drag a role's right connector onto a step's slot to assign it, and connect a step's right connector to the next step's left connector to set the order. The light on each line travels in the run direction."
       ),
       target: () => tourTarget('editor-canvas')
     },
