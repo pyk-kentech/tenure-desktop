@@ -79,6 +79,7 @@ export function TenureFlowStartForm({
         {translate('tenure.flow.startTitle', 'Start a flow here')}
       </div>
       <Textarea
+        data-tenure-tour="task"
         value={task}
         onChange={(e) => setTask(e.target.value)}
         rows={4}
@@ -93,7 +94,7 @@ export function TenureFlowStartForm({
           }
         }}
       />
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col gap-1" data-tenure-tour="workflow-choice">
         {WORKFLOWS.map((name) => (
           <label key={name} className="flex cursor-pointer items-center gap-2 text-xs">
             <input
@@ -126,9 +127,12 @@ export function TenureFlowStartForm({
         <Checkbox checked={force} onCheckedChange={(v) => setForce(v === true)} />
         {translate('tenure.flow.force', 'Start even with uncommitted changes')}
       </label>
-      <label className="flex cursor-pointer items-center gap-2 text-xs text-muted-foreground">
+      <label
+        className="flex cursor-pointer items-center gap-2 text-xs text-muted-foreground"
+        data-tenure-tour="mock"
+      >
         <Checkbox checked={mock} onCheckedChange={(v) => setMock(v === true)} />
-        {translate('tenure.flow.mock', 'Practice run (mock, calls no agent)')}
+        {translate('tenure.flow.mock', 'Mock run (no agent calls)')}
       </label>
       {error ? <div className="whitespace-pre-wrap text-xs text-destructive">{error}</div> : null}
       <div className="flex justify-end gap-2">
@@ -137,7 +141,12 @@ export function TenureFlowStartForm({
             {translate('tenure.flow.cancel', 'Cancel')}
           </Button>
         ) : null}
-        <Button size="xs" disabled={!task.trim() || busy} onClick={() => void submit()}>
+        <Button
+          size="xs"
+          data-tenure-tour="start"
+          disabled={!task.trim() || busy}
+          onClick={() => void submit()}
+        >
           {translate('tenure.flow.start', 'Start')}
         </Button>
       </div>

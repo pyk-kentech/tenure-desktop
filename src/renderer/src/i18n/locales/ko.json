@@ -2325,7 +2325,7 @@
         "2007e14d95": "gitlab",
         "456b8512da": "MR",
         "03da966159": "GitLab에 인증할 수 있도록 프로젝트를 선택하세요.",
-        "d591aac6ae": "대기 중인 할 일이 없습니다. 모두 따라잡았네요!",
+        "d591aac6ae": "대기 중인 할 일이 없습니다. 모두 처리했습니다.",
         "33a4bd7f5c": "해야 할 일",
         "66ae7330f6": "추가 작업",
         "93d5f21fc1": "PR",
@@ -2420,7 +2420,7 @@
         "cdc9ac4b2d": "편집기",
         "e57db40c11": "{{value0}} 실행 명령을 만들 수 없습니다.",
         "5b2c1a9e44": "agent CLI를 찾지 못했습니다. 하나를 설치하거나 설정에서 기본 agent를 선택하세요.",
-        "b7c1f0a934": "원격 호스트에 연결할 수 없으므로 tenure는 해당 호스트에서 작업이 아직 실행 중인지 알 수 없습니다. 그래도 창을 닫으시겠어요?",
+        "b7c1f0a934": "원격 호스트에 연결할 수 없어 tenure가 해당 호스트의 작업이 아직 실행 중인지 확인할 수 없습니다. 그래도 창을 닫으시겠습니까?",
         "quitSnapshotSaveFailed": "종료 취소됨: 세션 스냅샷을 저장할 수 없습니다({{value0}})."
       },
       "TerminalSearch": {
@@ -3424,7 +3424,7 @@
           },
           "PinnedTabCloseDialog": {
             "6c190f295a": "고정된 탭을 닫을까요?",
-            "0d1963f4a6": "이 탭은 고정되어 있습니다. 정말 닫으시겠어요?",
+            "0d1963f4a6": "이 탭은 고정되어 있습니다. 닫으시겠습니까?",
             "dont_ask_again": "고정된 탭에 대해 다시 묻지 않기",
             "0b38ee2f86": "취소",
             "c337c9d75c": "닫기"
@@ -5478,7 +5478,7 @@
           "a49196d538": "tenure가 새 작업 트리를 생성할 때 실행됩니다.",
           "d9f2db2738": "프로젝트 설정",
           "a5bb8c5135": "여기에 저장됨",
-          "dcaa645da5": "좋아요"
+          "dcaa645da5": "확인"
         },
         "SetupScriptPromptCardViews": {
           "96a7f4198c": "로컬 설정 저장",
@@ -5922,7 +5922,7 @@
           "a0d191b7a7": "이 워크스페이스에 대한 이슈 링크, PR 링크 및 메모를 편집합니다.",
           "gitlabDescription": "이 워크스페이스에 대한 이슈 링크, MR 링크 및 메모를 편집합니다.",
           "gitlabMR": "깃랩 MR",
-          "gitlabPlaceholder": "씨 ! 또는 GitLab URL",
+          "gitlabPlaceholder": "MR ! 번호 또는 GitLab URL",
           "gitlabHelp": "MR URL을 붙여넣거나 숫자를 입력하세요. 링크를 제거하려면 비워두세요."
         },
         "WorktreeOpenInMenu": {
@@ -7505,7 +7505,7 @@
           "confirm_running_terminal_close_description": "터미널을 닫을 때 실행 중인 에이전트나 명령을 중지하기 전에 묻습니다."
         },
         "GeneralSupportSection": {
-          "af7d9f4396": "지원해 주셔서 감사합니다!",
+          "af7d9f4396": "지원해 주셔서 감사합니다.",
           "6922c1fa2b": "GitHub에서 tenure 스타 누르기",
           "511782265b": "gh CLI를 통해 GitHub 스타로 프로젝트를 지원하세요.",
           "55a87e5fd1": "tenure 지원",
@@ -9901,7 +9901,7 @@
         },
         "general": {
           "search": {
-            "bdfb6dc21b": "좋아요",
+            "bdfb6dc21b": "확인",
             "e6b01c8e30": "피드백",
             "b65665703a": "지원",
             "06ea5a69a6": "GitHub",
@@ -14660,7 +14660,7 @@
           "4123609efd": "terminal 시작 중..."
         },
         "OnboardingSkipConfirmationDialog": {
-          "9f47f345a4": "오래 걸리지 않을 거예요!",
+          "9f47f345a4": "잠시면 완료됩니다.",
           "e4726b2d50": "온보딩을 건너뛰시겠습니까?"
         },
         "ThemeStep": {
@@ -15165,9 +15165,9 @@
             "7da6eed7bf": "localhost:3000",
             "0a2bd01c02": "새 브라우저 탭",
             "04096318ab": "Terminal 1",
-            "eb88125c6f": "✓ 검증됨 — 무료 체험판은 여전히 작동합니다.",
+            "eb88125c6f": "검증됨 — 무료 체험판은 계속 사용할 수 있습니다.",
             "051c97d15a": ".pp-card[data-card=\"starter\"] .pp-cta",
-            "4fa59ca545": "✓ 업데이트됨",
+            "4fa59ca545": "업데이트됨",
             "1bec24acc1": "@keyframes browserFlash { 0% { opacity: 0; } 20% { opacity: 0.85; } 100% { opacity: 0; } } @keyframes browserTabIn { from { opacity: 0; transform: translateY(-2px); } to { opacity: 1; transform: none; } } @keyframes browserViewIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }",
             "73bbb46073": "/pricing",
             "f39be6ca14": "/signup"
@@ -17838,13 +17838,13 @@
       "star": {
         "nag": {
           "StarNagToastHost": {
-            "starredThanks": "별표를 눌러주셔서 감사합니다!",
+            "starredThanks": "별표를 눌러 주셔서 감사합니다.",
             "githubOpened": "GitHub 열림",
             "opening": "여는 중…",
             "starring": "별표 누르는 중…",
             "openGithub": "GitHub 열기",
             "starOnGithub": "GitHub에서 별표 누르기",
-            "onboardingCompleted": "온보딩 완료!",
+            "onboardingCompleted": "온보딩을 완료했습니다.",
             "body": "tenure가 마음에 드신다면 GitHub 별표가 다른 개발자가 tenure를 발견하는 데 도움이 됩니다.",
             "dismiss": "닫기",
             "later": "Later"
@@ -20371,7 +20371,7 @@
       "step2Warning": "서버를 공유하는 열려 있는 Codex 세션을 닫습니다.",
       "turnOff": "끄기",
       "turningOff": "끄는 중...",
-      "turnedOff": "껐어요",
+      "turnedOff": "꺼짐",
       "turnOffFailed": "tenure는 이 기능을 끌 수 없었다.",
       "stopServer": "서버 중지",
       "stopping": "정지 중",
@@ -20825,42 +20825,42 @@
       "starting": "시작 중",
       "failed": "실패",
       "stopped": "꺼짐",
-      "unknown": "모름",
+      "unknown": "알 수 없음",
       "agents": "에이전트",
       "fiveHour": "5시간",
-      "week": "주",
-      "clickRestart": "눌러서 다시 시작"
+      "week": "주간",
+      "clickRestart": "클릭하여 다시 시작"
     },
     "brand": "tenure",
     "flow": {
-      "title": "흐름",
-      "noWorkspace": "작업공간을 고르면 그 흐름이 보입니다.",
-      "new": "새 흐름",
+      "title": "플로",
+      "noWorkspace": "작업공간을 선택하면 해당 플로가 표시됩니다.",
+      "new": "새 플로",
       "stop": "중지",
-      "resume": "이어하기",
+      "resume": "이어서 실행",
       "round": "{{value0}}회차",
       "summary": "결과 요약",
       "noEntries": "아직 에이전트 호출이 없습니다.",
-      "preparing": "다음 단계를 준비하는 중",
-      "startTitle": "여기서 흐름 시작",
-      "taskPlaceholder": "무엇을 만들거나 고칠까요? 에이전트가 구현 → 리뷰 → 고치기를 회차마다 돕니다.",
-      "force": "커밋 안 된 변경이 있어도 시작",
-      "mock": "연습 실행 (mock, 에이전트를 부르지 않음)",
+      "preparing": "다음 단계를 준비하고 있습니다",
+      "startTitle": "이 작업공간에서 플로 시작",
+      "taskPlaceholder": "구현하거나 수정할 내용을 입력하세요. 에이전트가 구현 · 리뷰 · 수정을 회차별로 반복합니다.",
+      "force": "커밋되지 않은 변경이 있어도 시작",
+      "mock": "모의 실행 (에이전트를 호출하지 않음)",
       "cancel": "취소",
       "start": "시작",
       "step": {
         "implement": "구현",
         "review": "리뷰",
-        "fix": "고치기",
+        "fix": "수정",
         "test": "테스트",
         "design": "설계",
         "report": "요약",
         "propose": "제안",
-        "critique": "비판",
+        "critique": "비평",
         "synthesize": "종합",
         "rereview": "재리뷰",
         "audit": "감사",
-        "explore": "살펴보기",
+        "explore": "탐색",
         "arbitrate": "중재"
       },
       "status": {
@@ -20872,94 +20872,94 @@
       },
       "verdict": {
         "approved": "승인",
-        "changes": "고칠 것 있음"
+        "changes": "수정 요청"
       },
       "wf": {
         "auto": "자동 선택",
-        "quick": "빠른 (구현 + 짧은 리뷰)",
-        "race": "경쟁 초안 (둘이 따로 만들고 나은 쪽)",
-        "classic": "토론 (설계 토론부터)"
+        "quick": "빠른 진행 (구현 후 간단 리뷰)",
+        "race": "경쟁 초안 (두 초안 중 우수안 채택)",
+        "classic": "설계 토론 (설계 합의 후 구현)"
       },
       "card": {
-        "working": "흐름 진행",
-        "blocked": "흐름 기다림",
-        "failed": "흐름 실패",
-        "done": "흐름 끝"
+        "working": "플로 진행 중",
+        "blocked": "입력 대기",
+        "failed": "플로 실패",
+        "done": "플로 완료"
       },
       "draft": {
-        "noDiff": "바뀐 것이 없습니다.",
-        "picked": "바꿨습니다. 이전 상태는 {{value0}} 에 남겼습니다.",
+        "noDiff": "변경 사항이 없습니다.",
+        "picked": "적용했습니다. 이전 상태는 {{value0}} 에 보관했습니다.",
         "title": "경쟁 초안",
-        "blocking": "막는 지적 {{value0}}",
+        "blocking": "막는 지적 {{value0}}건",
         "kept": "채택",
-        "pick": "이걸로"
+        "pick": "이 초안 채택"
       },
       "notes": {
-        "sending": "흐름에 메모를 보내는 중…",
-        "send": "tenure 흐름으로 보내기 (고치기 회차)",
-        "noEngine": "tenure 엔진을 쓸 수 없습니다.",
-        "sent": "메모를 보냈습니다. 흐름이 고치기 회차를 시작합니다."
+        "sending": "플로에 메모를 보내고 있습니다…",
+        "send": "tenure 플로로 보내기 (수정 회차)",
+        "noEngine": "tenure 엔진을 사용할 수 없습니다.",
+        "sent": "메모를 보냈습니다. 플로가 수정 회차를 시작합니다."
       },
       "composer": {
-        "toggle": "에이전트 대신 tenure 흐름으로 시작",
-        "failed": "흐름을 시작하지 못했습니다: {{value0}}"
+        "toggle": "에이전트 대신 tenure 플로로 시작",
+        "failed": "플로를 시작하지 못했습니다: {{value0}}"
       },
-      "openTab": "탭으로 크게 보기",
-      "review": "변경 리뷰",
-      "reviewEmpty": "흐름을 시작한 뒤 바뀐 파일이 없습니다.",
+      "openTab": "탭에서 열기",
+      "review": "변경 사항 검토",
+      "reviewEmpty": "플로를 시작한 뒤 변경된 파일이 없습니다.",
       "reviewTab": "tenure: {{value0}}"
     },
     "relay": {
-      "toggle": "지휘자 + 일꾼 중계로 시작 (Codex 두 개)",
+      "toggle": "지휘자 + 작업자 중계로 시작 (Codex 2개)",
       "coordinator": "지휘자",
-      "worker": "일꾼",
+      "worker": "작업자",
       "rounds": "최대 회차",
       "keepConfig": "Codex 설정",
       "noCap": "없음",
-      "taskOptional": "과제 (선택). 비워 두면 지휘자 창에서 과제·링크·파일을 직접 주면 됩니다.",
-      "hint": "지휘자는 파일을 고치지 않습니다. 옆에 일꾼 Codex 를 띄워 회차마다 일을 맡기고 결과를 확인합니다. 과제를 비워 두면 지휘자 창에서 과제·링크·파일을 주면 됩니다. 지휘자를 멈추면 중계도 멈춥니다.",
-      "menuItem": "지휘자 + 일꾼 (tenure)…",
-      "dialogTitle": "지휘자 + 일꾼",
-      "dialogDescription": "이 작업공간의 새 탭에 지휘자 Codex 를 띄웁니다.",
+      "taskOptional": "과제 (선택). 비워 두면 지휘자 창에서 과제·링크·파일을 직접 전달할 수 있습니다.",
+      "hint": "지휘자는 파일을 수정하지 않습니다. 작업자 Codex 를 별도로 실행해 회차마다 작업을 맡기고 결과를 확인합니다. 과제를 비워 두면 지휘자 창에서 과제·링크·파일을 전달할 수 있습니다. 지휘자를 중지하면 중계도 함께 중지됩니다.",
+      "menuItem": "지휘자 + 작업자 (tenure)…",
+      "dialogTitle": "지휘자 + 작업자",
+      "dialogDescription": "이 작업공간의 새 탭에서 지휘자 Codex 를 실행합니다.",
       "start": "지휘자 시작",
-      "launchFailed": "지휘자 Codex 를 띄우지 못했습니다.",
-      "remoteUnsupported": "중계는 아직 로컬 작업공간에서만 됩니다."
+      "launchFailed": "지휘자 Codex 를 실행하지 못했습니다.",
+      "remoteUnsupported": "중계는 현재 로컬 작업공간에서만 사용할 수 있습니다."
     },
     "workflow": {
       "button": "워크플로",
       "check": "검사",
-      "checkOk": "문제없음: {{value0}}",
-      "delete": "지우기",
+      "checkOk": "검사 통과: {{value0}}",
+      "delete": "삭제",
       "description": "설명",
       "field": {
         "agent": "에이전트",
-        "effort": "강도 (비우면 설정값)",
+        "effort": "추론 강도 (비우면 기본 설정)",
         "instructions": "추가 지시문",
-        "model": "모델 (비우면 설정값)",
+        "model": "모델 (비우면 기본 설정)",
         "roleName": "역할 이름",
-        "roleNameRule": "영문 소문자로 시작하고 소문자·숫자·_ 만 씁니다."
+        "roleNameRule": "영문 소문자로 시작하며 소문자·숫자·밑줄(_)만 사용할 수 있습니다."
       },
       "hasInstructions": "지시문 있음",
       "help": {
-        "audit": "승인된 뒤 감사자가 전체 변경을 한 번 더 봅니다.",
-        "build": "구현자가 코드를 쓰고 리뷰어가 리뷰합니다. 승인될 때까지 고치기 회차를 돕니다. 맞수를 이으면 두 초안 경쟁이 됩니다.",
-        "debate": "제안자들이 설계를 쓰고 서로 비판한 뒤, 종합자가 DESIGN.md 로 합칩니다.",
-        "explore": "역할 하나가 프로젝트를 읽고 다음 단계를 위한 메모를 남깁니다.",
-        "branch": "마지막 결과를 보고 '예' 또는 '아니오' 선으로 갑니다. 앞쪽 단계로 선을 되돌리면 반복이 됩니다.",
-        "continue": "끝난 구현을 이어받아 고치기 → 테스트 → 리뷰를 몇 회 더 돕니다. 다른 역할에게 맡길 수 있습니다.",
-        "parallel": "읽기만 하는 단계(살펴보기·감사)를 동시에 돌린 뒤 '다음' 선으로 갑니다."
+        "audit": "승인 이후 감사자가 전체 변경 사항을 한 번 더 검토합니다.",
+        "build": "구현자가 코드를 작성하고 리뷰어가 검토합니다. 승인될 때까지 수정 회차를 반복합니다. 경쟁 상대를 연결하면 두 초안의 경쟁으로 진행됩니다.",
+        "debate": "제안자가 각자 설계안을 작성하고 서로 비평한 뒤, 종합자가 하나의 DESIGN.md 로 정리합니다.",
+        "explore": "지정한 역할이 프로젝트를 읽고 이후 단계에서 참고할 메모를 남깁니다.",
+        "branch": "직전 결과를 판단해 '예' 또는 '아니오' 연결선으로 진행합니다. 앞 단계로 연결선을 되돌리면 반복 구간이 됩니다.",
+        "continue": "완료된 구현을 이어받아 수정 · 테스트 · 리뷰를 지정한 횟수만큼 더 진행합니다. 다른 역할에게 맡길 수 있습니다.",
+        "parallel": "읽기 전용 단계(탐색·감사)를 동시에 실행한 뒤 '다음' 연결선으로 진행합니다."
       },
       "inspector": {
-        "empty": "노드를 고르면 여기서 바꿀 수 있습니다. 점에서 다른 점으로 끌어서 잇습니다."
+        "empty": "노드를 선택하면 이곳에서 설정을 변경할 수 있습니다. 연결점을 드래그해 다른 연결점에 놓으면 연결됩니다."
       },
       "kind": {
         "audit": "감사",
         "build": "구현 + 리뷰",
         "debate": "설계 토론",
-        "explore": "코드 살펴보기",
-        "branch": "갈림",
-        "continue": "이어서 고치기",
-        "parallel": "나란히"
+        "explore": "코드 탐색",
+        "branch": "분기",
+        "continue": "추가 수정",
+        "parallel": "병렬 실행"
       },
       "open": "워크플로를 노드로 편집",
       "optional": "선택",
@@ -20967,40 +20967,40 @@
       "palette": {
         "claude": "Claude 역할",
         "codex": "Codex 역할",
-        "hint": "역할의 위쪽 점을 단계의 아래쪽 점으로 끌어 놓습니다. 단계는 움직이는 선을 따라 왼쪽에서 오른쪽으로 진행합니다.",
-        "roleHelp": "모델과 지시문을 따로 가진 에이전트입니다.",
-        "roles": "역할 (누가)",
-        "steps": "단계 (무엇을)",
-        "controls": "흐름 (조건·반복)"
+        "hint": "역할 상단의 연결점을 단계 하단의 연결점으로 드래그합니다. 단계는 연결선을 따라 왼쪽에서 오른쪽으로 진행합니다.",
+        "roleHelp": "모델과 지시문을 별도로 지정할 수 있는 에이전트입니다.",
+        "roles": "역할",
+        "steps": "단계",
+        "controls": "제어 (분기·반복)"
       },
       "param": {
-        "design": "설계 원천",
+        "design": "설계 기준",
         "designDoc": "DESIGN.md",
-        "designTask": "과제 원문 그대로",
-        "designTaskShort": "과제를 설계로",
-        "maxReview": "최대 리뷰 회차 (비우면 설정값)",
+        "designTask": "과제 원문",
+        "designTaskShort": "과제를 설계로 사용",
+        "maxReview": "최대 리뷰 회차 (비우면 기본 설정)",
         "maxReviewShort": "리뷰 최대 {{value0}}회",
         "output": "결과물",
         "outputChange": "변경 설계",
         "outputDesign": "전체 설계",
-        "rounds": "비판 라운드 (비우면 설정값)",
-        "roundsShort": "비판 {{value0}}라운드",
+        "rounds": "비평 라운드 (비우면 기본 설정)",
+        "roundsShort": "비평 {{value0}}라운드",
         "check": "조건",
-        "maxVisits": "선이 되돌아올 때 최대 반복 (1~5, 비우면 한 번)",
-        "maxVisitsShort": "최대 {{value0}}번 반복",
-        "moreRounds": "더 돌 회차 (1~5)",
-        "moreRoundsShort": "{{value0}}회 더"
+        "maxVisits": "최대 반복 횟수 (1~5, 비우면 1회)",
+        "maxVisitsShort": "최대 {{value0}}회 반복",
+        "moreRounds": "추가 회차 (1~5)",
+        "moreRoundsShort": "{{value0}}회 추가"
       },
       "problem": {
-        "empty": "단계를 하나 이상 넣으세요.",
-        "loop": "모든 단계에 들어오는 선이 있어 시작이 없습니다. 첫 단계로 들어오는 선을 지우세요.",
-        "split": "시작에서 닿지 않는 단계가 있습니다. 선으로 이으세요 (오른쪽 점 → 다음 단계의 왼쪽 점).",
-        "slot": "{{value0}}번째 단계({{value1}}): \"{{value2}}\" 칸에 역할을 이으세요.",
-        "start": "시작은 하나여야 합니다: 들어오는 선이 없는 단계는 첫 단계 하나뿐이어야 합니다."
+        "empty": "단계를 하나 이상 추가하세요.",
+        "loop": "모든 단계에 들어오는 연결선이 있어 시작 단계가 없습니다. 첫 단계로 들어오는 연결선을 삭제하세요.",
+        "split": "시작 단계에서 도달할 수 없는 단계가 있습니다. 앞 단계의 오른쪽 연결점을 다음 단계의 왼쪽 연결점에 연결하세요.",
+        "slot": "{{value0}}번째 단계({{value1}})의 \"{{value2}}\" 항목에 역할을 연결하세요.",
+        "start": "시작 단계는 하나여야 합니다. 들어오는 연결선이 없는 단계가 첫 단계 하나뿐인지 확인하세요."
       },
       "save": "저장",
       "saveName": "저장 이름",
-      "saved": "저장함: {{value0}}",
+      "saved": "저장했습니다: {{value0}}",
       "scope": {
         "project": "이 프로젝트",
         "user": "내 템플릿"
@@ -21010,24 +21010,105 @@
         "implementer": "구현자",
         "proposers": "제안자",
         "reviewers": "리뷰어",
-        "rivals": "맞수",
-        "role": "살펴볼 역할",
+        "rivals": "경쟁 상대",
+        "role": "탐색 담당",
         "roles": "감사자",
         "synth": "종합자"
       },
-      "template": "시작할 템플릿",
-      "tidy": "자동 정리",
+      "template": "템플릿",
+      "tidy": "자동 정렬",
       "title": "워크플로 편집기",
       "cond": {
-        "approved": "승인됐나?",
-        "auditClean": "감사에서 문제가 없었나?",
-        "testsPass": "테스트가 통과했나?"
+        "approved": "승인 여부",
+        "auditClean": "감사 이상 없음 여부",
+        "testsPass": "테스트 통과 여부"
       },
       "out": {
-        "fork": "가지",
+        "fork": "병렬 단계",
         "next": "다음",
         "no": "아니오",
         "yes": "예"
+      }
+    },
+    "tutorial": {
+      "button": "사용 안내",
+      "open": "사용 안내 열기",
+      "close": "닫기",
+      "prev": "이전",
+      "next": "다음",
+      "done": "마치기",
+      "progress": "{{value0}} / {{value1}}",
+      "notFound": "해당 항목이 화면에 없습니다. 앞 단계를 진행한 뒤 다시 시도하세요.",
+      "offer": {
+        "title": "tenure 를 처음 사용하시나요?",
+        "body": "3분 분량의 사용 안내가 모의 실행으로 플로 전체를 보여 드립니다. 구독 사용량은 발생하지 않습니다.",
+        "start": "안내 시작",
+        "later": "다음에"
+      },
+      "welcome": {
+        "title": "tenure 사용 안내",
+        "body": "tenure 는 Claude 와 Codex 가 구현 · 리뷰 · 수정을 회차별로 주고받으며 결과물을 완성하도록 돕는 작업 환경입니다. 이 안내는 모의 실행으로 진행하므로 구독 사용량이 발생하지 않으며, 약 3분이 걸립니다."
+      },
+      "flowsTab": {
+        "title": "플로 패널",
+        "body": "오른쪽 사이드바의 플로 탭에서 현재 작업공간의 플로를 시작하고 실행 기록을 확인합니다.",
+        "action": "패널 열기"
+      },
+      "newFlow": {
+        "title": "새 플로",
+        "body": "'새 플로'를 누르면 시작 양식이 열립니다. 작업공간마다 독립된 git 워크트리에서 실행되므로 다른 작업과 섞이지 않습니다.",
+        "action": "양식 열기"
+      },
+      "task": {
+        "title": "과제 입력",
+        "body": "구현하거나 수정할 내용을 구체적으로 적습니다. 요구 사항이 분명할수록 리뷰가 정확해집니다.",
+        "action": "예시 입력",
+        "sample": "할 일 목록 CLI 를 만든다. 추가 · 완료 · 목록 명령을 지원한다."
+      },
+      "choice": {
+        "title": "진행 방식",
+        "body": "자동 선택은 과제에 맞는 방식을 고릅니다. 빠른 진행은 구현 후 간단히 리뷰하고, 경쟁 초안은 두 에이전트가 각자 만든 결과 중 우수안을 채택하며, 설계 토론은 설계를 먼저 합의한 뒤 구현합니다. 직접 만든 워크플로도 이 목록에 표시됩니다."
+      },
+      "mock": {
+        "title": "모의 실행",
+        "body": "모의 실행은 실제 에이전트를 호출하지 않고 전체 과정을 시연합니다. 실제 작업에서는 이 항목을 해제하세요. 그때부터 구독 사용량이 발생합니다.",
+        "action": "모의 실행 선택"
+      },
+      "start": {
+        "title": "시작",
+        "body": "'시작'을 누르면 플로가 실행됩니다. 모의 실행은 1분 안에 끝납니다.",
+        "action": "모의 실행으로 시작",
+        "needMock": "먼저 모의 실행을 선택하세요."
+      },
+      "timeline": {
+        "title": "회차 기록",
+        "body": "구현 · 리뷰 · 수정이 회차별로 기록됩니다. 항목을 펼치면 에이전트의 응답을 볼 수 있고, 오른쪽 아이콘을 누르면 탭에서 크게 열립니다."
+      },
+      "review": {
+        "title": "변경 사항 검토",
+        "body": "플로가 시작된 시점부터 변경된 파일을 좌우 비교 화면으로 엽니다. 파일마다 확인 표시를 하고, 줄 단위 메모로 추가 수정 회차를 요청할 수 있습니다."
+      },
+      "editor": {
+        "title": "워크플로 편집기",
+        "body": "'워크플로'를 누르면 어떤 역할이 어떤 단계를 맡을지 노드로 구성하는 편집기가 열립니다.",
+        "action": "편집기 열기"
+      },
+      "canvas": {
+        "title": "노드와 연결",
+        "body": "아래쪽 역할 노드는 어떤 에이전트와 모델이 일할지, 위쪽 단계 노드는 무엇을 할지 정합니다. 역할 상단의 연결점을 단계 하단의 항목으로 드래그해 담당을 지정하고, 단계의 오른쪽 연결점을 다음 단계의 왼쪽 연결점에 연결해 순서를 정합니다."
+      },
+      "controls": {
+        "title": "분기 · 추가 수정 · 병렬 실행",
+        "body": "분기는 승인 여부나 테스트 결과에 따라 경로를 나눕니다. 추가 수정은 완료된 구현을 다른 역할에게 넘겨 몇 회 더 수정하게 합니다. 병렬 실행은 탐색 · 감사처럼 읽기 전용 단계를 동시에 실행합니다. 앞 단계로 연결선을 되돌리면 반복 구간이 되며, 반복 횟수는 노드마다 제한됩니다."
+      },
+      "check": {
+        "title": "검사와 저장",
+        "body": "'검사'는 엔진과 같은 규칙으로 구성을 확인합니다. 저장 위치는 '이 프로젝트' 또는 '내 템플릿' 중에서 고를 수 있으며, 저장한 워크플로는 플로 시작 양식에 표시됩니다.",
+        "action": "검사 실행"
+      },
+      "finish": {
+        "title": "안내를 마칩니다",
+        "body": "실제 작업에서는 모의 실행을 해제한 뒤 시작하세요. 진행 상황은 화면 상단의 상태 창에서도 확인할 수 있습니다. 이 안내는 플로 패널의 '사용 안내'에서 언제든 다시 열 수 있습니다."
       }
     }
   }

@@ -15,9 +15,9 @@ export function kindLabel(kind: StepKind): string {
     case 'branch':
       return translate('tenure.workflow.kind.branch', 'Branch')
     case 'continue':
-      return translate('tenure.workflow.kind.continue', 'Keep fixing')
+      return translate('tenure.workflow.kind.continue', 'Additional fixes')
     case 'parallel':
-      return translate('tenure.workflow.kind.parallel', 'Side by side')
+      return translate('tenure.workflow.kind.parallel', 'Parallel')
   }
 }
 
@@ -68,7 +68,7 @@ export function outputLabel(handle: string): string {
     case 'no':
       return translate('tenure.workflow.out.no', 'No')
     case 'fork':
-      return translate('tenure.workflow.out.fork', 'Branches')
+      return translate('tenure.workflow.out.fork', 'Parallel steps')
     default:
       return translate('tenure.workflow.out.next', 'Next')
   }

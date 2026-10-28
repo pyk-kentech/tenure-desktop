@@ -53,9 +53,9 @@ export function WorkflowToolbar(props: {
         <div className="flex-1" />
         <Button variant="outline" size="xs" onClick={props.onTidy}>
           <LayoutGrid className="size-3" />
-          {translate('tenure.workflow.tidy', 'Tidy up')}
+          {translate('tenure.workflow.tidy', 'Auto-arrange')}
         </Button>
-        <Button variant="outline" size="xs" onClick={props.onCheck}>
+        <Button variant="outline" size="xs" data-tenure-tour="editor-check" onClick={props.onCheck}>
           <CheckCircle2 className="size-3" />
           {translate('tenure.workflow.check', 'Check')}
         </Button>

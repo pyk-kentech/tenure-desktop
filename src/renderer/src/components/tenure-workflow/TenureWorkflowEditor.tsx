@@ -168,7 +168,15 @@ export function TenureWorkflowEditor({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex h-[90vh] w-[95vw] max-w-none flex-col gap-0 overflow-hidden p-0 sm:max-w-none">
+      <DialogContent
+        className="flex h-[90vh] w-[95vw] max-w-none flex-col gap-0 overflow-hidden p-0 sm:max-w-none"
+        // Why: the walkthrough card sits outside the dialog; clicking it must not close the editor.
+        onInteractOutside={(e) => {
+          if (e.target instanceof Element && e.target.closest('[data-tenure-tutorial]')) {
+            e.preventDefault()
+          }
+        }}
+      >
         <DialogTitle className="sr-only">
           {translate('tenure.workflow.title', 'Workflow editor')}
         </DialogTitle>
@@ -195,7 +203,7 @@ export function TenureWorkflowEditor({
         />
         <div className="flex min-h-0 flex-1">
           <WorkflowPalette onAddRole={graph.addRole} onAddStep={graph.addStep} />
-          <div className="min-w-0 flex-1">
+          <div className="min-w-0 flex-1" data-tenure-tour="editor-canvas">
             <ReactFlow
               key={viewKey}
               nodes={graph.nodes}

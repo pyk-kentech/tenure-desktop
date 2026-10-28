@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import { Play, Square, RotateCw, Workflow } from 'lucide-react'
+import { GraduationCap, Play, Square, RotateCw, Workflow } from 'lucide-react'
 import { useActiveWorktree } from '@/store/selectors'
 import { translate } from '@/i18n/i18n'
 import { Button } from '@/components/ui/button'
@@ -10,6 +10,8 @@ import { TenureFlowReviewButton } from './TenureFlowReviewButton'
 import { TenureFlowDrafts } from './TenureFlowDrafts'
 import { flowStateLabel, TenureFlowStateDot } from './tenure-flow-labels'
 import { TenureWorkflowEditor } from '../../tenure-workflow/TenureWorkflowEditor'
+import { startTenureTutorial } from '../../tenure-tutorial/tutorial-steps'
+import { TenureTutorialOffer } from './TenureTutorialOffer'
 
 const LIVE_POLL_MS = 2000
 const IDLE_POLL_MS = 10000
@@ -111,19 +113,35 @@ export default function TenureFlowPanel(): React.JSX.Element {
         <Button
           variant="ghost"
           size="xs"
+          title={translate('tenure.tutorial.open', 'Open the guide')}
+          aria-label={translate('tenure.tutorial.button', 'Guide')}
+          onClick={startTenureTutorial}
+        >
+          <GraduationCap className="size-3" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="xs"
+          data-tenure-tour="workflow-button"
           title={translate('tenure.workflow.open', 'Edit workflows as nodes')}
           onClick={() => setEditing(true)}
         >
           <Workflow className="size-3" />
           {translate('tenure.workflow.button', 'Workflows')}
         </Button>
-        <Button variant="ghost" size="xs" onClick={() => setStarting((v) => !v)}>
+        <Button
+          variant="ghost"
+          size="xs"
+          data-tenure-tour="new-flow"
+          onClick={() => setStarting((v) => !v)}
+        >
           <Play className="size-3" />
           {translate('tenure.flow.new', 'New flow')}
         </Button>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto scrollbar-sleek">
         {error ? <div className="px-3 py-2 text-xs text-destructive">{error}</div> : null}
+        {runs && runs.length === 0 ? <TenureTutorialOffer /> : null}
         {showForm ? (
           <TenureFlowStartForm
             path={path}
@@ -207,12 +225,14 @@ export default function TenureFlowPanel(): React.JSX.Element {
                 onPicked={() => void loadDetail()}
               />
             ) : null}
-            <TenureFlowTimeline
-              detail={detail}
-              project={path}
-              runId={runId!}
-              worktreeId={worktree.id}
-            />
+            <div data-tenure-tour="timeline">
+              <TenureFlowTimeline
+                detail={detail}
+                project={path}
+                runId={runId!}
+                worktreeId={worktree.id}
+              />
+            </div>
           </div>
         ) : null}
       </div>

@@ -70,9 +70,9 @@ export function WorkflowPalette({
           />
         ))}
       </div>
-      <div>
+      <div data-tenure-tour="editor-controls">
         <div className="px-2 pb-1 text-2xs font-medium uppercase text-muted-foreground">
-          {translate('tenure.workflow.palette.controls', 'Flow (when, again)')}
+          {translate('tenure.workflow.palette.controls', 'Control (branch, repeat)')}
         </div>
         {CONTROL_KINDS.map((kind) => (
           <PaletteButton

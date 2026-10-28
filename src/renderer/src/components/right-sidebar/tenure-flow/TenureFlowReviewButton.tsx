@@ -51,7 +51,13 @@ export function TenureFlowReviewButton({
   }
   return (
     <div className="flex">
-      <Button variant="outline" size="xs" disabled={busy} onClick={() => void open()}>
+      <Button
+        variant="outline"
+        size="xs"
+        data-tenure-tour="review"
+        disabled={busy}
+        onClick={() => void open()}
+      >
         <FileDiff className="size-3" />
         {translate('tenure.flow.review', 'Review changes')}
       </Button>

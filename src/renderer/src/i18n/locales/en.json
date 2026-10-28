@@ -21127,7 +21127,7 @@
       "startTitle": "Start a flow here",
       "taskPlaceholder": "What should be built or fixed? The agents implement, review and fix in rounds.",
       "force": "Start even with uncommitted changes",
-      "mock": "Practice run (mock, calls no agent)",
+      "mock": "Mock run (no agent calls)",
       "cancel": "Cancel",
       "start": "Start",
       "step": {
@@ -21240,8 +21240,8 @@
         "debate": "Design debate",
         "explore": "Explore the code",
         "branch": "Branch",
-        "continue": "Keep fixing",
-        "parallel": "Side by side"
+        "continue": "Additional fixes",
+        "parallel": "Parallel"
       },
       "open": "Edit workflows as nodes",
       "optional": "optional",
@@ -21253,7 +21253,7 @@
         "roleHelp": "An agent with its own model and instructions.",
         "roles": "Roles (who)",
         "steps": "Steps (what)",
-        "controls": "Flow (when, again)"
+        "controls": "Control (branch, repeat)"
       },
       "param": {
         "design": "Design source",
@@ -21298,7 +21298,7 @@
         "synth": "Synthesiser"
       },
       "template": "Start from",
-      "tidy": "Tidy up",
+      "tidy": "Auto-arrange",
       "title": "Workflow editor",
       "cond": {
         "approved": "Was it approved?",
@@ -21306,11 +21306,92 @@
         "testsPass": "Did the tests pass?"
       },
       "out": {
-        "fork": "Branches",
+        "fork": "Parallel steps",
         "next": "Next",
         "no": "No",
         "yes": "Yes"
       }
+    },
+    "tutorial": {
+      "notFound": "The item is not on screen. Finish the previous step and try again.",
+      "welcome": {
+        "title": "Getting started with tenure",
+        "body": "tenure lets Claude and Codex pass implementation, review and fixes back and forth in rounds until the work is done. This walkthrough uses a mock run, so it uses none of your subscription. It takes about three minutes."
+      },
+      "flowsTab": {
+        "title": "Flows panel",
+        "body": "The Flows tab in the right sidebar starts flows for the current workspace and shows their records.",
+        "action": "Open it for me"
+      },
+      "newFlow": {
+        "title": "New flow",
+        "body": "New flow opens the start form. Each workspace runs in its own git worktree, so a flow never mixes with other work.",
+        "action": "Open the form"
+      },
+      "task": {
+        "title": "Task",
+        "body": "Describe what to build or fix as concretely as you can; clear requirements make the reviews sharper.",
+        "action": "Fill in an example",
+        "sample": "Build a to-do list CLI with add, done and list commands."
+      },
+      "choice": {
+        "title": "How the flow runs",
+        "body": "Auto picks a way that suits the task. Quick implements and runs a short review; Race lets two agents build separately and keeps the better draft; Design debate agrees on a design before implementing. Workflows you build yourself appear in this list too."
+      },
+      "mock": {
+        "title": "Mock run",
+        "body": "A mock run shows the whole process without calling any agent. Clear this box for real work; from then on the run uses your subscription.",
+        "action": "Select mock run"
+      },
+      "start": {
+        "title": "Start",
+        "body": "Start runs the flow. A mock run finishes within a minute.",
+        "action": "Start as a mock run",
+        "needMock": "Select mock run first."
+      },
+      "timeline": {
+        "title": "Round records",
+        "body": "Implementation, review and fixes are recorded round by round. Expand an entry to read the agent’s reply, or open it in a tab with the icon on the right."
+      },
+      "review": {
+        "title": "Review changes",
+        "body": "Opens every file changed since the flow started in a side-by-side diff. Mark files as viewed and leave line notes to request another fix round."
+      },
+      "editor": {
+        "title": "Workflow editor",
+        "body": "Workflows opens an editor where you decide, as nodes, who handles which step.",
+        "action": "Open the editor"
+      },
+      "canvas": {
+        "title": "Nodes and connections",
+        "body": "Role nodes (below) say which agent and model work; step nodes (above) say what happens. Drag a role’s top connector onto a step’s slot to assign it, and connect a step’s right connector to the next step’s left connector to set the order."
+      },
+      "controls": {
+        "title": "Branch, additional fixes, parallel",
+        "body": "A branch splits the path by approval or test results. Additional fixes hands the finished implementation to another role for more rounds. Parallel runs read-only steps such as exploring and auditing at the same time. Connecting back to an earlier step makes a loop; each node limits how often it repeats."
+      },
+      "check": {
+        "title": "Check and save",
+        "body": "Check validates the workflow with the engine’s own rules. Save it to this project or to My templates; saved workflows appear in the start form.",
+        "action": "Run the check"
+      },
+      "finish": {
+        "title": "You are ready",
+        "body": "For real work, clear Mock run before starting. Progress also shows in the status window at the top of the screen. You can reopen this walkthrough any time from Guide in the Flows panel."
+      },
+      "progress": "{{value0}} / {{value1}}",
+      "close": "Close",
+      "prev": "Back",
+      "done": "Finish",
+      "next": "Next",
+      "offer": {
+        "title": "New to tenure?",
+        "body": "A three-minute guide walks through a flow with a mock run. It uses none of your subscription.",
+        "start": "Start the guide",
+        "later": "Not now"
+      },
+      "open": "Open the guide",
+      "button": "Guide"
     }
   }
 }

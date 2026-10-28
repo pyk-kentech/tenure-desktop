@@ -21,6 +21,7 @@ import { SkillUpdateStatusSegment } from './SkillUpdateStatusSegment'
 import { NativeChatResumeStatusSegment } from './NativeChatResumeStatusSegment'
 import { CaffeinateStatusSegment } from './CaffeinateStatusSegment'
 import { TenureEngineStatusSegment } from './TenureEngineStatusSegment'
+import { TenureTutorialHost } from '../tenure-tutorial/TenureTutorialHost'
 import { RemoteServerUpdateStatusSegment } from './RemoteServerUpdateStatusSegment'
 import { TOGGLE_FLOATING_TERMINAL_EVENT } from '@/lib/floating-terminal'
 import { FloatingTerminalIconContextMenu } from '@/components/floating-terminal/FloatingTerminalIconContextMenu'
@@ -298,6 +299,7 @@ export function StatusBarSurface({
           {!isPairedWebClientWindow() ? (
             <TenureEngineStatusSegment iconOnly={segmentsIconOnly} />
           ) : null}
+          {!isPairedWebClientWindow() ? <TenureTutorialHost /> : null}
           {!isPairedWebClientWindow() ? (
             <CaffeinateStatusSegment iconOnly={segmentsIconOnly} />
           ) : null}
