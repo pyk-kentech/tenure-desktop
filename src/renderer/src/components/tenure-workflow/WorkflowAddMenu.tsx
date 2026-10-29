@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
-import { Bot, Search } from 'lucide-react'
+import { Bot, BoxSelect, Search } from 'lucide-react'
 import { translate } from '@/i18n/i18n'
 import { isImeOwnedKeyboardEvent } from '@/lib/ime-composition-keyboard-event'
 import { BLOCK_KINDS, CONTROL_KINDS, type StepKind } from './workflow-model'
@@ -33,6 +33,7 @@ export function WorkflowAddMenu({
   allowRoles,
   allowSteps,
   onPick,
+  onGroup,
   onClose
 }: {
   x: number
@@ -40,6 +41,8 @@ export function WorkflowAddMenu({
   allowRoles: boolean
   allowSteps: boolean
   onPick: (item: AddItem) => void
+  // Offers a group box too (DESIGN.md 36.39); not when a line is being dropped.
+  onGroup?: () => void
   onClose: () => void
 }): React.JSX.Element {
   const [query, setQuery] = useState('')
@@ -47,10 +50,20 @@ export function WorkflowAddMenu({
   const box = useRef<HTMLDivElement>(null)
   const list = useMemo(() => {
     const q = query.trim().toLowerCase()
-    return items()
-      .filter((i) => (i.item.type === 'role' ? allowRoles : allowSteps))
-      .filter((i) => !q || i.label.toLowerCase().includes(q) || i.keywords.includes(q))
-  }, [query, allowRoles, allowSteps])
+    const group = onGroup
+      ? [
+          {
+            item: null,
+            label: translate('tenure.workflow.group.add', 'Group box'),
+            keywords: 'group'
+          }
+        ]
+      : []
+    return [
+      ...items().filter((i) => (i.item.type === 'role' ? allowRoles : allowSteps)),
+      ...group
+    ].filter((i) => !q || i.label.toLowerCase().includes(q) || i.keywords.includes(q))
+  }, [query, allowRoles, allowSteps, onGroup])
 
   useEffect(() => {
     const away = (e: MouseEvent) => {
@@ -64,8 +77,10 @@ export function WorkflowAddMenu({
 
   const choose = (index: number) => {
     const hit = list[index]
-    if (hit) {
+    if (hit?.item) {
       onPick(hit.item)
+    } else if (hit) {
+      onGroup?.()
     }
   }
 
@@ -122,9 +137,11 @@ export function WorkflowAddMenu({
               onClick={() => choose(i)}
               className={`flex w-full items-center gap-2 px-3 py-1.5 text-left ${i === active ? 'bg-accent' : ''}`}
             >
-              {entry.item.type === 'role' ? (
+              {entry.item?.type === 'role' ? (
                 <Bot className="size-3.5 text-muted-foreground" />
-              ) : null}
+              ) : entry.item ? null : (
+                <BoxSelect className="size-3.5 text-muted-foreground" />
+              )}
               {entry.label}
             </button>
           ))

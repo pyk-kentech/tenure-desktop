@@ -2,6 +2,14 @@ import type { Edge } from '@xyflow/react'
 import { headSteps, layoutGraph } from './workflow-layout'
 import { layoutOf, nodeKeys, tiesFromLayout, type Tie } from './workflow-ties'
 import {
+  bendsFromLayout,
+  groupsFromLayout,
+  savedBends,
+  savedGroups,
+  type Bend,
+  type Group
+} from './workflow-decor'
+import {
   CONTROL_KINDS,
   FORK_HANDLE,
   NEXT_HANDLE,
@@ -40,6 +48,8 @@ export function toGraph(def: WorkflowDef): {
   nodes: WorkflowNode[]
   edges: Edge[]
   ties: Tie[]
+  bends: Bend[]
+  groups: Group[]
 } {
   const nodes: WorkflowNode[] = Object.entries(def.roles).map(([name, role]) => ({
     id: roleNodeId(name),
@@ -103,7 +113,13 @@ export function toGraph(def: WorkflowDef): {
     const at = saved[keyOf.get(n.id) ?? '']
     return at ? { ...n, position: { x: at[0], y: at[1] } } : n
   })
-  return { nodes: placed, edges, ties: tiesFromLayout(def.editor, edges, keyOf) }
+  return {
+    nodes: placed,
+    edges,
+    ties: tiesFromLayout(def.editor, edges, keyOf),
+    bends: bendsFromLayout(def.editor, edges, keyOf),
+    groups: groupsFromLayout(def.editor)
+  }
 }
 
 function asList(v: unknown): string[] {
@@ -162,7 +178,8 @@ export function fromGraph(
   nodes: WorkflowNode[],
   edges: Edge[],
   meta: { name: string; description: string },
-  ties?: Tie[]
+  ties?: Tie[],
+  decor?: { bends: Bend[]; groups: Group[] }
 ): { def: WorkflowDef; problem: GraphProblem } {
   const roles: Record<string, RoleDef> = {}
   for (const node of nodes.filter(isRoleNode)) {
@@ -203,17 +220,20 @@ export function fromGraph(
     }
     return out
   })
-  // Why: with ties given (the editor), node positions and ties are saved too (DESIGN.md 36.34).
+  // Why: with ties given (the editor), node positions, ties, bends and groups are saved too
+  // (DESIGN.md 36.34, 36.39).
+  const keyOf = nodeKeys(
+    nodes,
+    steps.map((s) => s.id)
+  )
+  const bends = decor ? savedBends(decor.bends, edges, keyOf) : []
+  const groups = decor ? savedGroups(decor.groups) : []
   const editor = ties
-    ? layoutOf(
-        nodes,
-        edges,
-        ties,
-        nodeKeys(
-          nodes,
-          steps.map((s) => s.id)
-        )
-      )
+    ? {
+        ...layoutOf(nodes, edges, ties, keyOf),
+        ...(bends.length ? { bends } : {}),
+        ...(groups.length ? { groups } : {})
+      }
     : undefined
   return {
     def: { ...meta, roles, steps: defSteps, ...(editor ? { editor } : {}) },

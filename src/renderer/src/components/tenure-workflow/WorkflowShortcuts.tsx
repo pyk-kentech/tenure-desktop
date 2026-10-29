@@ -32,6 +32,17 @@ function rows(): [string, string][] {
       translate('tenure.workflow.keys.tieEdit', 'Move it; Shift-drag turns it; double-click unties')
     ],
     [
+      translate('tenure.workflow.keys.bendKey', 'Double-click a line'),
+      translate('tenure.workflow.keys.bend', 'Add a bend point; drag it, double-click it to remove')
+    ],
+    [
+      translate('tenure.workflow.keys.groupKey', 'Ctrl+G'),
+      translate(
+        'tenure.workflow.keys.group',
+        'Box the selected nodes; drag the title to move them together'
+      )
+    ],
+    [
       translate('tenure.workflow.keys.deleteKey', 'Delete'),
       translate('tenure.workflow.keys.delete', 'Delete the selected node or line')
     ],
@@ -46,7 +57,7 @@ function rows(): [string, string][] {
   ]
 }
 
-function typing(t: EventTarget | null): boolean {
+export function typing(t: EventTarget | null): boolean {
   return (
     t instanceof HTMLElement && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))
   )

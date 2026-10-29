@@ -21390,12 +21390,25 @@
         "help": "Show or hide this list",
         "open": "Controls (?)",
         "title": "Controls",
-        "close": "Close"
+        "close": "Close",
+        "bendKey": "Double-click a line",
+        "bend": "Add a bend point; drag it, double-click it to remove",
+        "groupKey": "Ctrl+G",
+        "group": "Box the selected nodes; drag the title to move them together"
       },
       "saveTitle": "Name",
       "fileHint": "File: {{value0}}.toml",
       "saveAsNew": "Save as a new workflow",
-      "copyOf": "{{value0}} copy"
+      "copyOf": "{{value0}} copy",
+      "group": {
+        "add": "Group box",
+        "untitled": "Group",
+        "remove": "Remove the box (nodes stay)",
+        "resize": "Drag to resize"
+      },
+      "bend": {
+        "title": "Bend point"
+      }
     },
     "tutorial": {
       "notFound": "The item is not on screen. Finish the previous step and try again.",

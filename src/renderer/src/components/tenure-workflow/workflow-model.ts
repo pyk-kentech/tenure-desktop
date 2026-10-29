@@ -31,7 +31,15 @@ export type RoleDef = {
 export type StepDef = { kind: StepKind; id?: string } & Record<string, unknown>
 // tenure: editor-only layout saved in the workflow's [editor] table (DESIGN.md 36.34).
 export type EditorTieDef = { x: number; y: number; angle: number; wires: string[] }
-export type EditorLayout = { nodes?: Record<string, [number, number]>; ties?: EditorTieDef[] }
+// Bend points and group boxes (DESIGN.md 36.39).
+export type EditorBendDef = { wire: string; x: number; y: number }
+export type EditorGroupDef = { title: string; x: number; y: number; w: number; h: number }
+export type EditorLayout = {
+  nodes?: Record<string, [number, number]>
+  ties?: EditorTieDef[]
+  bends?: EditorBendDef[]
+  groups?: EditorGroupDef[]
+}
 export type WorkflowDef = {
   name: string
   description: string

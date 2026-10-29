@@ -36,13 +36,13 @@ export function useWorkflowGraph() {
   const [nodes, setNodes, onNodesChange] = useNodesState<WorkflowNode>([])
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([])
 
-  // Returns the saved ties, which live in useWorkflowTies.
+  // Returns the saved ties, bends and groups, which live in useEditorLayers.
   const load = useCallback(
     (def: WorkflowDef) => {
       const graph = toGraph(def)
       setNodes(graph.nodes)
       setEdges(graph.edges)
-      return graph.ties
+      return { ties: graph.ties, bends: graph.bends, groups: graph.groups }
     },
     [setNodes, setEdges]
   )

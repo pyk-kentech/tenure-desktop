@@ -2,18 +2,31 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import type { Edge } from '@xyflow/react'
 import type { WorkflowNode } from './workflow-model'
 import type { Tie } from './workflow-ties'
+import type { Bend, Group } from './workflow-decor'
 
 // tenure: undo / redo and "unsaved changes" for the workflow editor (DESIGN.md 36.36 M51).
 // Every settled change to nodes, lines, ties, settings or positions is one step; a drag or a burst
 // of edits settles into one step after a short pause.
 
-export type EditSnapshot = { nodes: WorkflowNode[]; edges: Edge[]; ties: Tie[] }
+export type EditSnapshot = {
+  nodes: WorkflowNode[]
+  edges: Edge[]
+  ties: Tie[]
+  bends: Bend[]
+  groups: Group[]
+}
 
 const SETTLE_MS = 350
 const MAX_STEPS = 100
 
 /** What counts as a change: not selection, measuring or folding a node. */
-export function editSignature(nodes: WorkflowNode[], edges: Edge[], ties: Tie[]): string {
+export function editSignature(
+  nodes: WorkflowNode[],
+  edges: Edge[],
+  ties: Tie[],
+  bends: Bend[] = [],
+  groups: Group[] = []
+): string {
   return JSON.stringify([
     nodes.map((n) => {
       const {
@@ -25,7 +38,9 @@ export function editSignature(nodes: WorkflowNode[], edges: Edge[], ties: Tie[])
       return [n.id, n.type, Math.round(n.position.x), Math.round(n.position.y), data]
     }),
     edges.map((e) => [e.id, e.source, e.sourceHandle, e.target, e.targetHandle]),
-    ties.map((t) => [t.id, Math.round(t.x), Math.round(t.y), t.angle, t.edges])
+    ties.map((t) => [t.id, Math.round(t.x), Math.round(t.y), t.angle, t.edges]),
+    bends.map((b) => [b.id, b.edge, Math.round(b.x), Math.round(b.y)]),
+    groups.map((g) => [g.id, g.title, ...[g.x, g.y, g.w, g.h].map(Math.round)])
   ])
 }
 
@@ -37,8 +52,8 @@ export function useEditHistory(
   restore: (snap: EditSnapshot) => void
 ) {
   const sig = useMemo(
-    () => editSignature(current.nodes, current.edges, current.ties),
-    [current.nodes, current.edges, current.ties]
+    () => editSignature(current.nodes, current.edges, current.ties, current.bends, current.groups),
+    [current.nodes, current.edges, current.ties, current.bends, current.groups]
   )
   const stack = useRef<Stack>({ snaps: [], sigs: [], at: -1, saved: null })
   const latest = useRef({ current, sig })

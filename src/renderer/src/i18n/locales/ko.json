@@ -21109,11 +21109,24 @@
         "help": "이 목록 열기·닫기",
         "open": "조작법 (?)",
         "title": "조작법",
-        "close": "닫기"
+        "close": "닫기",
+        "bendKey": "선 더블클릭",
+        "bend": "꺾는 점 넣기, 끌어 옮기고 더블클릭으로 빼기",
+        "groupKey": "Ctrl+G",
+        "group": "고른 노드를 그룹 상자로 묶기, 제목을 끌면 함께 움직임"
       },
       "saveTitle": "이름",
       "fileHint": "파일: {{value0}}.toml",
-      "saveAsNew": "새 워크플로로 저장"
+      "saveAsNew": "새 워크플로로 저장",
+      "bend": {
+        "title": "꺾는 점"
+      },
+      "group": {
+        "untitled": "그룹",
+        "remove": "상자 지우기 (노드는 남음)",
+        "resize": "끌어서 크기 바꾸기",
+        "add": "그룹 상자"
+      }
     },
     "tutorial": {
       "button": "사용 안내",

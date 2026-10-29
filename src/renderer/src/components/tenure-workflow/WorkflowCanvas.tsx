@@ -20,6 +20,12 @@ import { TieCutOverlay, WorkflowTieLayer } from './WorkflowTies'
 import { useTieCut } from './use-tie-cut'
 import type { WorkflowTiesState } from './use-workflow-ties'
 import { useShortcutKey, WorkflowShortcuts } from './WorkflowShortcuts'
+import { WorkflowDecorLayer } from './WorkflowDecor'
+import type { WorkflowDecorState } from './use-workflow-decor'
+import { useCanvasDecor } from './use-canvas-decor'
+import { boxAround } from './workflow-decor'
+import type { Point } from './workflow-ties'
+import { translate } from '@/i18n/i18n'
 
 const MENU_W = 240
 const MENU_H = 300
@@ -41,6 +47,9 @@ export function WorkflowCanvas(props: {
   onSelect: (id: string | null) => void
   onAdd: (item: AddItem, position: { x: number; y: number }, from?: DragOrigin) => void
   ties: WorkflowTiesState
+  decor: WorkflowDecorState
+  // How far nodes moved, so ties and bends on their lines can follow (DESIGN.md 36.39).
+  onNodesMoved: (moved: Map<string, Point>) => void
   readOnly: boolean
   dark: boolean
 }): React.JSX.Element {
@@ -53,6 +62,21 @@ export function WorkflowCanvas(props: {
   const [keys, setKeys] = useState(false)
   const toggleKeys = useCallback(() => setKeys((v) => !v), [])
   useShortcutKey(!props.readOnly, toggleKeys)
+  const centre = useCallback(() => {
+    const box = wrap.current?.getBoundingClientRect()
+    return screenToFlowPosition({
+      x: (box?.left ?? 0) + (box?.width ?? 0) / 2,
+      y: (box?.top ?? 0) + (box?.height ?? 0) / 2
+    })
+  }, [screenToFlowPosition])
+  const moves = useCanvasDecor({
+    nodes: props.nodes,
+    onNodesChange: props.onNodesChange,
+    onNodesMoved: props.onNodesMoved,
+    decor: props.decor,
+    readOnly: props.readOnly,
+    centre
+  })
 
   const openAt = useCallback(
     (clientX: number, clientY: number, from?: DragOrigin) => {
@@ -115,10 +139,17 @@ export function WorkflowCanvas(props: {
         edges={props.edges}
         nodeTypes={WORKFLOW_NODE_TYPES}
         edgeTypes={WORKFLOW_EDGE_TYPES}
-        onNodesChange={props.onNodesChange}
+        onNodesChange={moves.onNodesChange}
         onEdgesChange={props.onEdgesChange}
         onConnect={props.onConnect}
         onConnectEnd={onConnectEnd}
+        // Why: like ComfyUI's reroute, double-clicking a line puts a bend point there.
+        onEdgeDoubleClick={(e, edge) => {
+          if (!props.readOnly) {
+            e.stopPropagation()
+            props.decor.addBend(edge.id, screenToFlowPosition({ x: e.clientX, y: e.clientY }))
+          }
+        }}
         edgesReconnectable={!props.readOnly}
         onReconnectStart={() => {
           reconnecting.current = true
@@ -149,6 +180,12 @@ export function WorkflowCanvas(props: {
       >
         <Background gap={20} />
         <Controls showInteractive={false} />
+        <WorkflowDecorLayer
+          decor={props.decor}
+          editable={!props.readOnly}
+          nodes={props.nodes}
+          onMoveNodes={moves.moveNodesTo}
+        />
         <WorkflowTieLayer ties={props.ties} editable={!props.readOnly} />
       </ReactFlow>
       {tieCut.cut ? <TieCutOverlay cut={tieCut.cut} /> : null}
@@ -160,6 +197,16 @@ export function WorkflowCanvas(props: {
           allowRoles={!menu.from || fromSlot}
           allowSteps={!fromSlot}
           onClose={() => setMenu(null)}
+          onGroup={
+            menu.from
+              ? undefined
+              : () => {
+                  props.decor.addGroup(
+                    boxAround([], menu.flow, translate('tenure.workflow.group.untitled', 'Group'))
+                  )
+                  setMenu(null)
+                }
+          }
           onPick={(item) => {
             props.onAdd(item, menu.flow, menu.from)
             setMenu(null)

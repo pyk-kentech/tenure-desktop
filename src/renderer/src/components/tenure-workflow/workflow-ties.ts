@@ -136,7 +136,7 @@ export function tieRoutes(ties: Tie[]): Map<string, Via[]> {
 /**
  * A line from `start` to `end` through each via, as joined cubic curves. Ends leave and enter
  * connectors horizontally; at a via the line runs along the tie's direction (flipped when the
- * line heads the other way, e.g. a loop going back).
+ * line heads the other way, e.g. a loop going back), at a bend point along its neighbours.
  */
 export function viaPath(start: Point, end: Point, vias: Via[]): string {
   const ax = end.x - start.x
@@ -147,6 +147,16 @@ export function viaPath(start: Point, end: Point, vias: Via[]): string {
     ...[...vias].sort((a, b) => along(a) - along(b)),
     { ...end, dx: 1, dy: 0 }
   ]
+  // Why: a bend point (DESIGN.md 36.39) has no direction of its own; the line runs through it
+  // from the point before toward the point after.
+  for (let i = 1; i < pts.length - 1; i++) {
+    if (pts[i].dx === 0 && pts[i].dy === 0) {
+      const tx = pts[i + 1].x - pts[i - 1].x
+      const ty = pts[i + 1].y - pts[i - 1].y
+      const len = Math.hypot(tx, ty) || 1
+      pts[i] = { ...pts[i], dx: tx / len, dy: ty / len }
+    }
+  }
   const parts = [`M ${start.x} ${start.y}`]
   for (let i = 1; i < pts.length; i++) {
     const a = pts[i - 1]

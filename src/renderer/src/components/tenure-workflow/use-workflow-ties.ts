@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react'
 import type { Edge } from '@xyflow/react'
 import { crossedLines, cutTies, liveTies, tieFromCut, type Point, type Tie } from './workflow-ties'
+import { followTies } from './workflow-decor'
 
 /**
  * tenure: cable ties of the editor (DESIGN.md 36.34). Ties keep line ids; a line that is removed or
@@ -36,7 +37,13 @@ export function useWorkflowTies(edges: Edge[]) {
 
   const remove = useCallback((id: string) => setRaw((ts) => ts.filter((t) => t.id !== id)), [])
 
-  return { ties, reset, cut, update, remove }
+  // Moved nodes carry their lines' ties along (DESIGN.md 36.39).
+  const follow = useCallback(
+    (moved: Map<string, Point>) => setRaw((ts) => followTies(ts, edges, moved)),
+    [edges]
+  )
+
+  return { ties, reset, cut, update, remove, follow }
 }
 
 export type WorkflowTiesState = ReturnType<typeof useWorkflowTies>

@@ -9,8 +9,9 @@ import { WorkflowRunBanner } from './WorkflowRunBanner'
 import { useRunView } from './use-run-view'
 import { runProgress } from './run-progress'
 import { displayGraph, stepRefs } from './graph-display'
-import { useWorkflowTies } from './use-workflow-ties'
 import { tieRoutes } from './workflow-ties'
+import { lineRoutes } from './workflow-decor'
+import { useEditorLayers } from './use-editor-layers'
 import { useRunEvents } from './use-run-events'
 import { stepTimelines, withTimelines } from './step-timeline'
 import { WorkflowRunPanel } from './WorkflowRunPanel'
@@ -51,7 +52,7 @@ export function TenureWorkflowEditor({
   onSaved?: (id: string) => void
 }): React.JSX.Element {
   const graph = useWorkflowGraph()
-  const ties = useWorkflowTies(graph.edges)
+  const { ties, decor, resetLayers, onNodesMoved, layers } = useEditorLayers(graph.edges)
   const [templates, setTemplates] = useState<WorkflowListItem[]>([])
   const [template, setTemplate] = useState(initial ?? 'quick')
   const target = useSaveTarget(project)
@@ -62,17 +63,16 @@ export function TenureWorkflowEditor({
   const [viewKey, setViewKey] = useState(0)
   const [wire, setWire] = useState(loadWireStyle)
   const { load, restore } = graph
-  const resetTies = ties.reset
   const [pending, setPending] = useState<(() => void) | null>(null)
   const restoreSnap = useCallback(
     (snap: EditSnapshot) => {
       restore(snap.nodes, snap.edges)
-      resetTies(snap.ties)
+      resetLayers(snap)
     },
-    [restore, resetTies]
+    [restore, resetLayers]
   )
   const history = useEditHistory(
-    { nodes: graph.nodes, edges: graph.edges, ties: ties.ties },
+    { nodes: graph.nodes, edges: graph.edges, ...layers },
     open,
     restoreSnap
   )
@@ -80,12 +80,12 @@ export function TenureWorkflowEditor({
   const loadRunDef = useCallback(
     (def: WorkflowDef) => {
       resetHistory()
-      resetTies(load(def))
+      resetLayers(load(def))
       fromRun(def.name || 'run')
       setDescription(def.description ?? '')
       setViewKey((k) => k + 1)
     },
-    [load, resetTies, resetHistory, fromRun]
+    [load, resetLayers, resetHistory, fromRun]
   )
   const onRunError = useCallback((text: string) => setStatus({ tone: 'error', text }), [])
   const runView = useRunView({ open, project, runId: run, onLoad: loadRunDef, onError: onRunError })
@@ -97,7 +97,7 @@ export function TenureWorkflowEditor({
       try {
         const res = await getWorkflow(project, id)
         resetHistory()
-        resetTies(load(res.definition))
+        resetLayers(load(res.definition))
         setTemplate(id)
         fromTemplate(id, res.source, res.definition.name)
         setDescription(res.definition.description)
@@ -106,7 +106,7 @@ export function TenureWorkflowEditor({
         setStatus({ tone: 'error', text: errorText(e) })
       }
     },
-    [project, load, resetTies, resetHistory, fromTemplate]
+    [project, load, resetLayers, resetHistory, fromTemplate]
   )
 
   const loadList = useCallback(() => {
@@ -130,7 +130,8 @@ export function TenureWorkflowEditor({
       graph.nodes,
       graph.edges,
       { name: target.title.trim() || template, description },
-      ties.ties
+      ties.ties,
+      { bends: decor.bends, groups: decor.groups }
     )
 
   const runCheck = async (): Promise<boolean> => {
@@ -183,9 +184,9 @@ export function TenureWorkflowEditor({
         detail?.state.graph?.decisions,
         wire,
         !runView.active,
-        tieRoutes(ties.ties)
+        lineRoutes(tieRoutes(ties.ties), decor.bends)
       ),
-    [graph.nodes, graph.edges, progress, detail, wire, runView.active, ties.ties]
+    [graph.nodes, graph.edges, progress, detail, wire, runView.active, ties.ties, decor.bends]
   )
   const selected = graph.nodes.find((n) => n.id === selectedId) ?? null
   const runStep = runView.active ? shown.nodes.find((n) => n.id === selectedId) : undefined
@@ -210,9 +211,12 @@ export function TenureWorkflowEditor({
         // Why: React Flow measures every connector while the dialog opens. The default zoom-in
         // scaled it to 95% then, so each line ended a little above and left of its dot; fade only.
         className="flex h-[90vh] w-[95vw] max-w-none flex-col gap-0 overflow-hidden p-0 sm:max-w-none data-[state=closed]:zoom-out-100 data-[state=open]:zoom-in-100"
-        // Why: Esc in the add-node search box closes only the box, not the editor.
+        // Why: Esc in the add-node search box or a group title closes only that, not the editor.
         onEscapeKeyDown={(e) => {
-          if (e.target instanceof Element && e.target.closest('[data-tenure-tour="add-menu"]')) {
+          if (
+            e.target instanceof Element &&
+            e.target.closest('[data-tenure-tour="add-menu"], [data-tenure-group-title]')
+          ) {
             e.preventDefault()
           }
         }}
@@ -283,6 +287,8 @@ export function TenureWorkflowEditor({
                 onSelect={setSelectedId}
                 onAdd={graph.addAt}
                 ties={ties}
+                decor={decor}
+                onNodesMoved={onNodesMoved}
                 readOnly={runView.active}
                 dark={dark}
               />
