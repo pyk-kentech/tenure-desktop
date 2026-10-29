@@ -201,7 +201,9 @@ export function TenureWorkflowEditor({
       }}
     >
       <DialogContent
-        className="flex h-[90vh] w-[95vw] max-w-none flex-col gap-0 overflow-hidden p-0 sm:max-w-none"
+        // Why: React Flow measures every connector while the dialog opens. The default zoom-in
+        // scaled it to 95% then, so each line ended a little above and left of its dot; fade only.
+        className="flex h-[90vh] w-[95vw] max-w-none flex-col gap-0 overflow-hidden p-0 sm:max-w-none data-[state=closed]:zoom-out-100 data-[state=open]:zoom-in-100"
         // Why: the walkthrough card sits outside the dialog; clicking it must not close the editor.
         onInteractOutside={(e) => {
           if (e.target instanceof Element && e.target.closest('[data-tenure-tutorial]')) {
