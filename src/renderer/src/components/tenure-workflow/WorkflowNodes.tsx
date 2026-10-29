@@ -111,7 +111,7 @@ export function WorkflowRoleNode({ data, selected }: NodeProps<RoleNode>): React
       onMouseLeave={() => setHover(false)}
     >
       <div
-        className={`flex items-center gap-1.5 rounded-t-[7px] px-2.5 font-medium ${AGENT_HEADER[def.agent] ?? CONTROL_HEADER}`}
+        className={`flex items-center gap-1.5 rounded-t-[calc(var(--radius-lg)-1px)] px-2.5 font-medium ${AGENT_HEADER[def.agent] ?? CONTROL_HEADER}`}
         style={{ height: HEADER_H }}
       >
         <Bot className="size-3.5 shrink-0" />
@@ -168,7 +168,7 @@ export function WorkflowStepNode({ id, data, selected }: NodeProps<StepNode>): R
       onMouseLeave={() => setHover(false)}
     >
       <div
-        className={`flex items-center gap-1.5 rounded-t-[7px] px-2.5 font-medium ${control ? CONTROL_HEADER : WORK_HEADER}`}
+        className={`flex items-center gap-1.5 rounded-t-[calc(var(--radius-lg)-1px)] px-2.5 font-medium ${control ? CONTROL_HEADER : WORK_HEADER}`}
         style={{ height: HEADER_H }}
       >
         <button
