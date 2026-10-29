@@ -3,7 +3,9 @@ import path from 'node:path'
 import type { AppIdentity } from '../../shared/app-identity'
 
 const BASE_APP_NAME = 'Orca'
-const BASE_APP_USER_MODEL_ID = 'com.stablyai.orca'
+// tenure: its own Windows app id (same as electron-builder appId) so the taskbar does not group it
+// with an installed official Orca and show Orca's icon (DESIGN.md 36.23).
+const BASE_APP_USER_MODEL_ID = 'dev.tenure.app'
 const MAX_LABEL_LENGTH = 80
 
 export type DevInstanceIdentity = AppIdentity & {
