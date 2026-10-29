@@ -9,6 +9,7 @@ import { TenureFlowTimeline } from './TenureFlowTimeline'
 import { TenureFlowReviewButton } from './TenureFlowReviewButton'
 import { TenureFlowMerge } from './TenureFlowMerge'
 import { TenureFlowDrafts } from './TenureFlowDrafts'
+import { TenureFlowRunList } from './TenureFlowRunList'
 import { flowStateLabel, TenureFlowStateDot } from './tenure-flow-labels'
 import { TenureWorkflowEditor } from '../../tenure-workflow/TenureWorkflowEditor'
 import { startTenureTutorial } from '../../tenure-tutorial/tutorial-steps'
@@ -50,7 +51,8 @@ export default function TenureFlowPanel(): React.JSX.Element {
     }
   }, [path])
 
-  const runId = selected ?? runs?.[0]?.run_id ?? null
+  // Why: archived flows stay out of the way; the newest one still in the list opens by default.
+  const runId = selected ?? runs?.find((r) => !r.archived_at)?.run_id ?? null
   const loadDetail = useCallback(async () => {
     if (!path || !runId) {
       setDetail(null)
@@ -157,25 +159,20 @@ export default function TenureFlowPanel(): React.JSX.Element {
             onCancel={runs && runs.length > 0 ? () => setStarting(false) : undefined}
           />
         ) : null}
-        {runs && runs.length > 1 ? (
-          <div className="flex flex-col border-b border-border py-1">
-            {runs.slice(0, 8).map((run) => (
-              <button
-                key={run.run_id}
-                type="button"
-                onClick={() => setSelected(run.run_id)}
-                className={`flex items-center gap-2 px-3 py-1 text-left text-xs hover:bg-accent/60 ${
-                  run.run_id === runId ? 'bg-accent' : ''
-                }`}
-              >
-                <TenureFlowStateDot
-                  state={run.live ? 'working' : (run.activity?.state ?? 'idle')}
-                />
-                <span className="min-w-0 flex-1 truncate">{run.task.split('\n')[0]}</span>
-                <span className="text-muted-foreground">{run.config?.workflow ?? ''}</span>
-              </button>
-            ))}
-          </div>
+        {runs ? (
+          <TenureFlowRunList
+            runs={runs}
+            project={path}
+            selected={runId}
+            onSelect={setSelected}
+            onChanged={(removed) => {
+              if (removed && removed === runId) {
+                setSelected(null)
+                setDetail(null)
+              }
+              void loadRuns()
+            }}
+          />
         ) : null}
         {detail ? (
           <div className="flex flex-col gap-2 px-3 py-2">

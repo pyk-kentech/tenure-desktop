@@ -8,7 +8,10 @@ export type TenureRunSummary = {
   step: string
   round: number
   task: string
+  created_at?: string
   updated_at?: string
+  total_sec?: number
+  archived_at?: string | null
   live?: boolean
   activity?: { state: string; reason: string }
   config?: { workflow?: string }

@@ -19,7 +19,7 @@ function verdictText(entry: TenureRunEntry): string | null {
   return null
 }
 
-function EntryBody({
+export function EntryBody({
   project,
   runId,
   file

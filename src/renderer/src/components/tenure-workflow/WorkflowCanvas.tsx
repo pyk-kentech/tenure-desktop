@@ -19,6 +19,7 @@ import { PREV_HANDLE, type WorkflowNode } from './workflow-model'
 import { TieCutOverlay, WorkflowTieLayer } from './WorkflowTies'
 import { useTieCut } from './use-tie-cut'
 import type { WorkflowTiesState } from './use-workflow-ties'
+import { useShortcutKey, WorkflowShortcuts } from './WorkflowShortcuts'
 
 const MENU_W = 240
 const MENU_H = 300
@@ -49,6 +50,9 @@ export function WorkflowCanvas(props: {
   // Why: React Flow reports a moved line's drop through onConnectEnd too; that must not open the menu.
   const reconnecting = useRef(false)
   const tieCut = useTieCut(wrap, !props.readOnly, props.ties)
+  const [keys, setKeys] = useState(false)
+  const toggleKeys = useCallback(() => setKeys((v) => !v), [])
+  useShortcutKey(!props.readOnly, toggleKeys)
 
   const openAt = useCallback(
     (clientX: number, clientY: number, from?: DragOrigin) => {
@@ -139,7 +143,8 @@ export function WorkflowCanvas(props: {
         deleteKeyCode={props.readOnly ? null : ['Delete', 'Backspace']}
         zoomOnDoubleClick={false}
         fitView
-        fitViewOptions={{ padding: 0.15 }}
+        // Why: a small workflow fitted to the screen came out huge; never zoom past 100%.
+        fitViewOptions={{ padding: 0.15, maxZoom: 1 }}
         minZoom={0.2}
       >
         <Background gap={20} />
@@ -147,6 +152,7 @@ export function WorkflowCanvas(props: {
         <WorkflowTieLayer ties={props.ties} editable={!props.readOnly} />
       </ReactFlow>
       {tieCut.cut ? <TieCutOverlay cut={tieCut.cut} /> : null}
+      {props.readOnly ? null : <WorkflowShortcuts open={keys} onToggle={toggleKeys} />}
       {menu ? (
         <WorkflowAddMenu
           x={menu.x}

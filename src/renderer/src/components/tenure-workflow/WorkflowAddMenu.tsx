@@ -72,6 +72,7 @@ export function WorkflowAddMenu({
   return (
     <div
       ref={box}
+      data-tenure-tour="add-menu"
       className="absolute z-20 w-60 overflow-hidden rounded-md border bg-popover text-xs text-popover-foreground shadow-lg"
       style={{ left: x, top: y }}
     >

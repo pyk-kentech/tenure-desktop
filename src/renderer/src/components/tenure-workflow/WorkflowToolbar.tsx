@@ -4,8 +4,10 @@ import { translate } from '@/i18n/i18n'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
-import type { WorkflowListItem, WorkflowScope } from './workflow-editor-api'
+import type { WorkflowListItem } from './workflow-editor-api'
 import type { WireStyle } from './WorkflowEdges'
+import type { SaveTarget } from './use-save-target'
+import { workflowTitle } from './workflow-titles'
 
 export type EditorStatus = { tone: 'ok' | 'error'; text: string }
 
@@ -16,15 +18,10 @@ export function WorkflowToolbar(props: {
   templates: WorkflowListItem[]
   template: string
   onTemplate: (id: string) => void
-  saveName: string
-  onSaveName: (v: string) => void
+  target: SaveTarget
   description: string
   onDescription: (v: string) => void
-  scope: WorkflowScope
-  onScope: (v: WorkflowScope) => void
   canProjectScope: boolean
-  overwrite: boolean
-  onOverwrite: (v: boolean) => void
   wire: WireStyle
   onWire: (v: WireStyle) => void
   onTidy: () => void
@@ -36,6 +33,7 @@ export function WorkflowToolbar(props: {
   onSave: () => void
   status: EditorStatus | null
 }): React.JSX.Element {
+  const t = props.target
   return (
     <div className="flex flex-col gap-2 border-b px-3 py-2 pr-12">
       <div className="flex flex-wrap items-center gap-2">
@@ -51,7 +49,7 @@ export function WorkflowToolbar(props: {
           >
             {props.templates.map((w) => (
               <option key={w.id} value={w.id}>
-                {w.id}
+                {workflowTitle(w.id, w.name)}
                 {w.source_label ? ` (${w.source_label})` : ''}
               </option>
             ))}
@@ -108,24 +106,25 @@ export function WorkflowToolbar(props: {
           <CheckCircle2 className="size-3" />
           {translate('tenure.workflow.check', 'Check')}
         </Button>
-        <Button size="xs" disabled={!props.saveName.trim()} onClick={props.onSave}>
+        <Button size="xs" disabled={!t.title.trim()} onClick={props.onSave}>
           <Save className="size-3" />
           {translate('tenure.workflow.save', 'Save')}
         </Button>
       </div>
       <div className="flex flex-wrap items-center gap-2 text-xs">
         <label className="flex items-center gap-1 text-muted-foreground">
-          {translate('tenure.workflow.saveName', 'Save as')}
+          {translate('tenure.workflow.saveTitle', 'Name')}
           <Input
-            value={props.saveName}
-            onChange={(e) => props.onSaveName(e.target.value)}
-            className="h-8 w-40 text-xs"
+            value={t.title}
+            maxLength={80}
+            onChange={(e) => t.setTitle(e.target.value)}
+            className="h-8 w-48 text-xs"
           />
         </label>
         <select
           className={selectClass}
-          value={props.scope}
-          onChange={(e) => props.onScope(e.target.value === 'user' ? 'user' : 'project')}
+          value={t.scope}
+          onChange={(e) => t.setScope(e.target.value === 'user' ? 'user' : 'project')}
         >
           {props.canProjectScope ? (
             <option value="project">
@@ -134,13 +133,17 @@ export function WorkflowToolbar(props: {
           ) : null}
           <option value="user">{translate('tenure.workflow.scope.user', 'My templates')}</option>
         </select>
-        <label className="flex items-center gap-1 text-muted-foreground">
-          <Checkbox
-            checked={props.overwrite}
-            onCheckedChange={(v) => props.onOverwrite(v === true)}
-          />
-          {translate('tenure.workflow.overwrite', 'Overwrite')}
-        </label>
+        {t.ownFile ? (
+          <label
+            className="flex items-center gap-1 text-muted-foreground"
+            title={translate('tenure.workflow.fileHint', 'File: {{value0}}.toml', {
+              value0: t.ownFile
+            })}
+          >
+            <Checkbox checked={!t.keepFile} onCheckedChange={(v) => t.setKeepFile(v !== true)} />
+            {translate('tenure.workflow.saveAsNew', 'Save as a new workflow')}
+          </label>
+        ) : null}
         <Input
           value={props.description}
           onChange={(e) => props.onDescription(e.target.value)}

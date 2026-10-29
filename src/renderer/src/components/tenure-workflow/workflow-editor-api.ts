@@ -11,7 +11,13 @@ export type WorkflowListItem = {
   source_label?: string
   summary?: string
   error?: string
+  // Roles in use and steps, for the start form's preview (DESIGN.md 36.37 M52).
+  roles?: { name: string; agent: string; model?: string }[]
+  steps?: (Record<string, unknown> & { kind: string })[]
 }
+
+export type ModelChoice = { id: string; label?: string; note?: string; efforts?: string[] }
+export type ModelChoices = Record<'claude' | 'codex', { models: ModelChoice[]; efforts: string[] }>
 
 export type WorkflowScope = 'project' | 'user'
 
@@ -46,16 +52,23 @@ export async function checkWorkflow(
   })
 }
 
+/** Save under a display name (any text); the engine picks the file name unless `id` is given. */
 export async function saveWorkflow(args: {
   project: string | null
-  name: string
+  title: string
+  id?: string
   scope: WorkflowScope
   workflow: WorkflowDef
   overwrite: boolean
-}): Promise<{ id: string; path: string; summary: string }> {
+}): Promise<{ id: string; name: string; path: string; summary: string }> {
   return tenureCall({
     method: 'POST',
     path: '/api/workflow/save',
     body: { ...args, project: args.project ?? undefined }
   })
+}
+
+/** Model and effort choices for role settings (src/tenure/ui/server.py model_suggestions). */
+export async function listModels(): Promise<ModelChoices> {
+  return tenureCall({ method: 'GET', path: '/api/models' })
 }

@@ -4,10 +4,12 @@ import { tenureCall } from '../right-sidebar/tenure-flow/tenure-flow-api'
 import { kindLabel } from './workflow-labels'
 import { statusLabel } from './run-progress'
 import { RunCallList, RunLogLines } from './WorkflowRunDetails'
+import { EntryBody } from '../right-sidebar/tenure-flow/TenureFlowTimeline'
 import type { StepNode } from './workflow-model'
 
 // tenure: the run log panel (DESIGN.md 36.35). Clicking a step in the run view shows all of its
-// calls and log lines as they arrive, and what the agent is doing right now while it runs.
+// calls and log lines as they arrive, and what the agent is doing right now while it runs. A finished
+// call opens its reply (DESIGN.md 36.37 M52).
 
 type Activity = {
   live: boolean
@@ -101,7 +103,10 @@ export function WorkflowRunPanel({
       <section>
         <div className="mb-1 font-medium">{translate('tenure.progress.calls', 'Agent calls')}</div>
         {timeline?.calls.length ? (
-          <RunCallList timeline={timeline} />
+          <RunCallList
+            timeline={timeline}
+            renderBody={(file) => <EntryBody project={project} runId={runId} file={file} />}
+          />
         ) : (
           <div className="text-muted-foreground">
             {translate('tenure.progress.noRecord', 'No record yet.')}

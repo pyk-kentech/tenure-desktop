@@ -35,16 +35,11 @@ type ImportedWorktreesVisibilityLineProps = {
 }
 
 const PREVIEW_LIMIT = 3
-const KEEP_HIDDEN_LABEL = 'Keep hidden - recover from the project menu'
 const GROUP_LIMIT = 5
 
 type ImportedWorktreePathGroup = {
   path: string
   worktrees: ImportedWorktreeVisibilityPreview[]
-}
-
-function pluralizeWorktree(count: number): string {
-  return count === 1 ? 'worktree' : 'worktrees'
 }
 
 function getWorktreeKey(
@@ -93,7 +88,6 @@ export default function ImportedWorktreesVisibilityLine({
   const [isExpanded, setIsExpanded] = useState(false)
   const [expandedGroupPathKeys, setExpandedGroupPathKeys] = useState<Set<string>>(new Set())
   const hiddenCount = hiddenWorktrees.length
-  const worktreeNoun = pluralizeWorktree(hiddenCount)
   const worktreeGroups = groupWorktreesByParentPath(hiddenWorktrees)
   const visibleWorktreeGroups = worktreeGroups.slice(0, GROUP_LIMIT)
   const remainingGroupCount = Math.max(0, worktreeGroups.length - visibleWorktreeGroups.length)
@@ -101,16 +95,40 @@ export default function ImportedWorktreesVisibilityLine({
   const repoScopeLabel = hostContextLabel
     ? `${repoDisplayName} on ${hostContextLabel}`
     : repoDisplayName
-  const keepHiddenAriaLabel = `Keep ${hiddenCount} discovered ${worktreeNoun} hidden for ${repoScopeLabel}; recover from the project menu`
+  const keepHiddenAriaLabel =
+    hiddenCount === 1
+      ? translate(
+          'tenure.sidebar.keepHiddenAriaOne',
+          'Keep 1 discovered worktree hidden for {{value0}}; recover from the project menu',
+          { value0: repoScopeLabel }
+        )
+      : translate(
+          'tenure.sidebar.keepHiddenAria',
+          'Keep {{value0}} discovered worktrees hidden for {{value1}}; recover from the project menu',
+          { value0: String(hiddenCount), value1: repoScopeLabel }
+        )
 
   if (hiddenCount === 0) {
     return null
   }
 
+  // tenure: these lines were left in English (DESIGN.md 36.37 M52).
   const lineText =
     placement === 'pinned-fallback'
-      ? `Hiding ${hiddenCount} discovered ${worktreeNoun} in ${repoScopeLabel}`
-      : `Hiding ${hiddenCount} discovered ${worktreeNoun}`
+      ? hiddenCount === 1
+        ? translate('tenure.sidebar.hiddenOneIn', 'Hiding 1 discovered worktree in {{value0}}', {
+            value0: repoScopeLabel
+          })
+        : translate(
+            'tenure.sidebar.hiddenIn',
+            'Hiding {{value0}} discovered worktrees in {{value1}}',
+            { value0: String(hiddenCount), value1: repoScopeLabel }
+          )
+      : hiddenCount === 1
+        ? translate('tenure.sidebar.hiddenOne', 'Hiding 1 discovered worktree')
+        : translate('tenure.sidebar.hidden', 'Hiding {{value0}} discovered worktrees', {
+            value0: String(hiddenCount)
+          })
 
   const toggleGroupExpanded = (path: string): void => {
     const key = normalizeRuntimePathForComparison(path)
@@ -186,7 +204,10 @@ export default function ImportedWorktreesVisibilityLine({
               </Button>
             </TooltipTrigger>
             <TooltipContent side="top" sideOffset={4}>
-              {KEEP_HIDDEN_LABEL}
+              {translate(
+                'tenure.sidebar.keepHiddenTip',
+                'Keep hidden - recover from the project menu'
+              )}
             </TooltipContent>
           </Tooltip>
         ) : null}

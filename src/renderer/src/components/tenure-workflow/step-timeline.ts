@@ -20,6 +20,8 @@ export type RunEvent = {
   sec?: number
   wf_step?: string
   visit?: number
+  // The call's transcript file in the run folder (step_end only).
+  file?: string
 }
 
 export type StepCall = {
@@ -31,6 +33,7 @@ export type StepCall = {
   started: string
   sec: number | null
   outcome: string | null
+  file: string | null
 }
 export type StepTimeline = { calls: StepCall[]; logs: { seq: number; ts: string; text: string }[] }
 
@@ -88,7 +91,8 @@ export function stepTimelines(
         visit: e.visit ?? 1,
         started: e.ts,
         sec: null,
-        outcome: null
+        outcome: null,
+        file: null
       }
       at(key).calls.push(call)
       open.set(callKey(e), call)
@@ -97,6 +101,7 @@ export function stepTimelines(
       if (call) {
         call.sec = e.sec ?? 0
         call.outcome = e.outcome ?? null
+        call.file = e.file ?? null
         open.delete(callKey(e))
       }
     } else if (e.kind === 'log' && e.wf_step && ids.has(e.wf_step) && e.text) {

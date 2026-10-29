@@ -85,8 +85,8 @@ export function WorkflowPalette({
       </div>
       <div className="mt-auto px-2 text-2xs leading-relaxed text-muted-foreground">
         {translate(
-          'tenure.workflow.palette.hint',
-          "Drag a role's right connector onto a step's slot. Double-click empty space, or drop a line there, to search and add a node. To fix a line, hover it and press ×, or drag its end to another connector (empty space cuts it). Hold Z and drag across lines to tie them; drag a tie to move it, Shift-drag to turn it, double-click to undo it."
+          'tenure.workflow.palette.keysHint',
+          "Drag a role's right dot onto a step's slot. Press ? for all controls."
         )}
       </div>
     </div>

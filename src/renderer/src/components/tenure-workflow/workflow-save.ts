@@ -58,18 +58,20 @@ export async function checkCurrent(
 
 export async function saveCurrent(req: {
   project: string | null
-  name: string
+  title: string
+  // The file to write over; without it the engine makes a new file name from the title.
+  fileId: string | null
   scope: WorkflowScope
-  overwrite: boolean
   def: WorkflowDef
 }): Promise<{ id: string | null; status: EditorStatus }> {
   try {
     const res = await saveWorkflow({
       project: req.project,
-      name: req.name,
+      title: req.title,
+      id: req.fileId ?? undefined,
       scope: req.scope,
       workflow: req.def,
-      overwrite: req.overwrite
+      overwrite: !!req.fileId
     })
     return {
       id: res.id,

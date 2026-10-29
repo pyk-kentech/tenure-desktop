@@ -12,20 +12,10 @@ import {
   type WorkflowNode
 } from './workflow-model'
 import { checkLabel, kindHelp, kindLabel } from './workflow-labels'
+import { Field, ModelFields, selectClass } from './WorkflowModelFields'
 
 const ROLE_NAME_RE = /^[a-z][a-z0-9_]{0,23}$/
 const AGENTS = ['claude', 'codex']
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <label className="flex flex-col gap-1 text-xs">
-      <span className="text-muted-foreground">{label}</span>
-      {children}
-    </label>
-  )
-}
-
-const selectClass = 'h-8 rounded-md border bg-background px-2 text-xs'
 
 function RoleFields({
   name,
@@ -69,7 +59,10 @@ function RoleFields({
         <select
           className={selectClass}
           value={def.agent}
-          onChange={(e) => onChange({ ...def, agent: e.target.value })}
+          // Why: a Claude model means nothing to Codex; changing the agent goes back to settings.
+          onChange={(e) =>
+            onChange({ ...def, agent: e.target.value, model: undefined, effort: undefined })
+          }
         >
           {AGENTS.map((agent) => (
             <option key={agent} value={agent}>
@@ -78,20 +71,7 @@ function RoleFields({
           ))}
         </select>
       </Field>
-      <Field label={translate('tenure.workflow.field.model', 'Model (empty: settings)')}>
-        <Input
-          value={def.model ?? ''}
-          onChange={(e) => set('model', e.target.value)}
-          className="h-8 text-xs"
-        />
-      </Field>
-      <Field label={translate('tenure.workflow.field.effort', 'Effort (empty: settings)')}>
-        <Input
-          value={def.effort ?? ''}
-          onChange={(e) => set('effort', e.target.value)}
-          className="h-8 text-xs"
-        />
-      </Field>
+      <ModelFields def={def} onChange={onChange} />
       <Field label={translate('tenure.workflow.field.instructions', 'Extra instructions')}>
         <Textarea
           rows={6}

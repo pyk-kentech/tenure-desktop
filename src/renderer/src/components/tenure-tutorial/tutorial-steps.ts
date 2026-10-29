@@ -1,8 +1,12 @@
 import { translate } from '@/i18n/i18n'
 import { useAppStore } from '@/store'
+import { click, notFound, tourTarget } from './tutorial-dom'
+import { editorSteps } from './tutorial-editor-steps'
 
 // tenure: in-app walkthrough (DESIGN.md 36.31 M46). Each step points at one element and may offer
 // to do the step for the user. Starting a run is only ever done as a mock run.
+
+export { tourTarget }
 
 export type TutorialStep = {
   id: string
@@ -15,26 +19,6 @@ export type TutorialStep = {
   waitFor?: () => boolean
   // Next stays locked (with this hint) until it is true; for input the user is still typing.
   requires?: { check: () => boolean; hint: string }
-}
-
-export function tourTarget(id: string): Element | null {
-  return document.querySelector(`[data-tenure-tour="${id}"]`)
-}
-
-function click(id: string): string | null {
-  const el = tourTarget(id)
-  if (el instanceof HTMLElement) {
-    el.click()
-    return null
-  }
-  return notFound()
-}
-
-function notFound(): string {
-  return translate(
-    'tenure.tutorial.notFound',
-    'The item is not on screen. Finish the previous step and try again.'
-  )
 }
 
 function mockBox(): HTMLElement | null {
@@ -208,7 +192,7 @@ export function tutorialSteps(): TutorialStep[] {
       title: translate('tenure.tutorial.timeline.title', 'Round records'),
       body: translate(
         'tenure.tutorial.timeline.body',
-        "Implementation, review and fixes are recorded round by round. Expand an entry to read the agent's reply, or open it in a tab with the icon on the right. View as graph shows the run on its workflow: each step's status, and its details when you hover it."
+        "Implementation, review and fixes are recorded round by round. Expand an entry to read the agent's reply, or open it in a tab with the icon on the right. View as graph shows the run on its workflow: click a step to see its calls as they happen, and click a call to read its reply."
       ),
       target: () => tourTarget('timeline')
     },
@@ -221,48 +205,7 @@ export function tutorialSteps(): TutorialStep[] {
       ),
       target: () => tourTarget('review')
     },
-    {
-      id: 'workflow-button',
-      title: translate('tenure.tutorial.editor.title', 'Workflow editor'),
-      body: translate(
-        'tenure.tutorial.editor.body',
-        'Workflows opens an editor where you decide, as nodes, who handles which step. Click the highlighted Workflows button; the walkthrough moves on by itself.'
-      ),
-      target: () => tourTarget('workflow-button'),
-      // Why: the user asked to click the button themselves; opening the editor moves on.
-      waitFor: () => !!tourTarget('editor-canvas')
-    },
-    {
-      id: 'editor-canvas',
-      title: translate('tenure.tutorial.canvas.title', 'Nodes and connections'),
-      body: translate(
-        'tenure.tutorial.canvas.body',
-        "Role nodes on the left say which agent and model work; step nodes say what happens. Drag a role's right connector onto a step's slot to assign it, and connect a step's right connector to the next step's left connector to set the order. The light on each line travels in the run direction."
-      ),
-      target: () => tourTarget('editor-canvas')
-    },
-    {
-      id: 'editor-controls',
-      title: translate('tenure.tutorial.controls.title', 'Branch, additional fixes, parallel'),
-      body: translate(
-        'tenure.tutorial.controls.body',
-        'A branch splits the path by approval or test results. Additional fixes hands the finished implementation to another role for more rounds. Parallel runs read-only steps such as exploring and auditing at the same time. Connecting back to an earlier step makes a loop; each node limits how often it repeats.'
-      ),
-      target: () => tourTarget('editor-controls')
-    },
-    {
-      id: 'editor-check',
-      title: translate('tenure.tutorial.check.title', 'Check and save'),
-      body: translate(
-        'tenure.tutorial.check.body',
-        'Check validates the workflow with the engine’s own rules. Save it to this project or to My templates; saved workflows appear in the start form.'
-      ),
-      target: () => tourTarget('editor-check'),
-      action: {
-        label: translate('tenure.tutorial.check.action', 'Run the check'),
-        run: () => click('editor-check')
-      }
-    },
+    ...editorSteps(),
     {
       id: 'finish',
       title: translate('tenure.tutorial.finish.title', 'You are ready'),

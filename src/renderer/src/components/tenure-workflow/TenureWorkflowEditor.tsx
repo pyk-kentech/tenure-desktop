@@ -20,12 +20,8 @@ import { WorkflowToolbar, type EditorStatus } from './WorkflowToolbar'
 import { useWorkflowGraph } from './use-workflow-graph'
 import { fromGraph } from './workflow-convert'
 import { isStepNode, type WorkflowDef } from './workflow-model'
-import {
-  getWorkflow,
-  listWorkflows,
-  type WorkflowListItem,
-  type WorkflowScope
-} from './workflow-editor-api'
+import { getWorkflow, listWorkflows, type WorkflowListItem } from './workflow-editor-api'
+import { useSaveTarget } from './use-save-target'
 import { checkCurrent, saveCurrent } from './workflow-save'
 import { useEditHistory, useUndoKeys, type EditSnapshot } from './use-edit-history'
 import { WorkflowDiscardBar } from './WorkflowDiscardBar'
@@ -58,10 +54,9 @@ export function TenureWorkflowEditor({
   const ties = useWorkflowTies(graph.edges)
   const [templates, setTemplates] = useState<WorkflowListItem[]>([])
   const [template, setTemplate] = useState(initial ?? 'quick')
-  const [saveName, setSaveName] = useState('')
+  const target = useSaveTarget(project)
+  const { fromTemplate, fromRun } = target
   const [description, setDescription] = useState('')
-  const [scope, setScope] = useState<WorkflowScope>(project ? 'project' : 'user')
-  const [overwrite, setOverwrite] = useState(false)
   const [status, setStatus] = useState<EditorStatus | null>(null)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [viewKey, setViewKey] = useState(0)
@@ -86,11 +81,11 @@ export function TenureWorkflowEditor({
     (def: WorkflowDef) => {
       resetHistory()
       resetTies(load(def))
-      setSaveName(`${def.name || 'run'}-copy`.replace(/[^a-z0-9_-]/g, '-').toLowerCase())
+      fromRun(def.name || 'run')
       setDescription(def.description ?? '')
       setViewKey((k) => k + 1)
     },
-    [load, resetTies, resetHistory]
+    [load, resetTies, resetHistory, fromRun]
   )
   const onRunError = useCallback((text: string) => setStatus({ tone: 'error', text }), [])
   const runView = useRunView({ open, project, runId: run, onLoad: loadRunDef, onError: onRunError })
@@ -104,30 +99,39 @@ export function TenureWorkflowEditor({
         resetHistory()
         resetTies(load(res.definition))
         setTemplate(id)
-        setSaveName(res.source === 'project' || res.source === 'user' ? id : `my-${id}`)
+        fromTemplate(id, res.source, res.definition.name)
         setDescription(res.definition.description)
         setViewKey((k) => k + 1)
       } catch (e) {
         setStatus({ tone: 'error', text: errorText(e) })
       }
     },
-    [project, load, resetTies, resetHistory]
+    [project, load, resetTies, resetHistory, fromTemplate]
   )
+
+  const loadList = useCallback(() => {
+    listWorkflows(project)
+      .then((items) => setTemplates(items.filter((w) => w.source !== 'error')))
+      .catch((e: unknown) => setStatus({ tone: 'error', text: errorText(e) }))
+  }, [project])
 
   useEffect(() => {
     if (!open) {
       return
     }
-    listWorkflows(project)
-      .then((items) => setTemplates(items.filter((w) => w.source !== 'error')))
-      .catch((e: unknown) => setStatus({ tone: 'error', text: errorText(e) }))
+    loadList()
     if (!run) {
       void loadTemplate(initial ?? 'quick')
     }
-  }, [open, project, initial, run, loadTemplate])
+  }, [open, initial, run, loadTemplate, loadList])
 
   const current = () =>
-    fromGraph(graph.nodes, graph.edges, { name: saveName || template, description }, ties.ties)
+    fromGraph(
+      graph.nodes,
+      graph.edges,
+      { name: target.title.trim() || template, description },
+      ties.ties
+    )
 
   const runCheck = async (): Promise<boolean> => {
     const res = await checkCurrent(project, current())
@@ -139,10 +143,19 @@ export function TenureWorkflowEditor({
     if (!(await runCheck())) {
       return
     }
-    const res = await saveCurrent({ project, name: saveName, scope, overwrite, def: current().def })
+    const res = await saveCurrent({
+      project,
+      title: target.title.trim(),
+      fileId: target.fileId,
+      scope: target.scope,
+      def: current().def
+    })
     setStatus(res.status)
     if (res.id) {
       history.markSaved()
+      target.saved(res.id)
+      setTemplate(res.id)
+      loadList()
       onSaved?.(res.id)
     }
   }
@@ -197,6 +210,12 @@ export function TenureWorkflowEditor({
         // Why: React Flow measures every connector while the dialog opens. The default zoom-in
         // scaled it to 95% then, so each line ended a little above and left of its dot; fade only.
         className="flex h-[90vh] w-[95vw] max-w-none flex-col gap-0 overflow-hidden p-0 sm:max-w-none data-[state=closed]:zoom-out-100 data-[state=open]:zoom-in-100"
+        // Why: Esc in the add-node search box closes only the box, not the editor.
+        onEscapeKeyDown={(e) => {
+          if (e.target instanceof Element && e.target.closest('[data-tenure-tour="add-menu"]')) {
+            e.preventDefault()
+          }
+        }}
         // Why: the walkthrough card sits outside the dialog; clicking it must not close the editor.
         onInteractOutside={(e) => {
           if (e.target instanceof Element && e.target.closest('[data-tenure-tutorial]')) {
@@ -218,15 +237,10 @@ export function TenureWorkflowEditor({
             canRedo={history.canRedo}
             onUndo={history.undo}
             onRedo={history.redo}
-            saveName={saveName}
-            onSaveName={setSaveName}
+            target={target}
             description={description}
             onDescription={setDescription}
-            scope={scope}
-            onScope={setScope}
             canProjectScope={!!project}
-            overwrite={overwrite}
-            onOverwrite={setOverwrite}
             wire={wire}
             onWire={(next) => {
               setWire(next)

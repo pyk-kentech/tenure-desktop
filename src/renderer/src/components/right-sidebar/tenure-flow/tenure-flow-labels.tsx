@@ -1,6 +1,7 @@
 import React from 'react'
 import { translate } from '@/i18n/i18n'
 import type { TenureRunDetail } from './tenure-flow-api'
+import { workflowTitle } from '../../tenure-workflow/workflow-titles'
 
 const DOT: Record<string, string> = {
   working: 'border-2 border-agent-working/30 border-t-agent-working animate-spin',
@@ -74,7 +75,7 @@ export function flowStateLabel(detail: TenureRunDetail): string {
   const st = detail.state
   const parts = [statusLabel(detail.live ? 'running' : st.status)]
   if (st.workflow?.name) {
-    parts.push(st.workflow.name)
+    parts.push(workflowTitle(st.workflow.name, st.workflow.name))
   }
   if (detail.live && detail.current_call) {
     parts.push(`${detail.current_call.agent} · ${stepLabel(detail.current_call.step)}`)

@@ -78,16 +78,20 @@ export function RunFooter({ timeline }: { timeline: StepTimeline }): React.JSX.E
   )
 }
 
-/** Calls of a step, newest last; the running one counts up. */
+/** Calls of a step, newest last; the running one counts up. With `renderBody`, clicking a finished
+ * call opens its reply under it (DESIGN.md 36.37 M52). */
 export function RunCallList({
   timeline,
-  limit
+  limit,
+  renderBody
 }: {
   timeline: StepTimeline
   limit?: number
+  renderBody?: (file: string) => React.ReactNode
 }): React.JSX.Element {
   const live = !!running(timeline)
   const now = useNow(live)
+  const [open, setOpen] = useState<string | null>(null)
   const calls = limit ? timeline.calls.slice(-limit) : timeline.calls
   return (
     <div className="space-y-0.5">
@@ -98,24 +102,41 @@ export function RunCallList({
           })}
         </div>
       ) : null}
-      {calls.map((c) => (
-        <div
-          key={`${c.started}-${c.role}-${c.sub}-${c.round}`}
-          className="flex items-center gap-1.5"
-        >
-          <span
-            className={`size-1.5 shrink-0 rounded-full ${c.sec === null ? 'animate-pulse bg-sky-500' : (OUTCOME_DOT[c.outcome ?? ''] ?? 'bg-zinc-400')}`}
-          />
-          <span className="min-w-0 flex-1 truncate">
-            {c.role} · {callWhat(c)}
-          </span>
-          <span className="shrink-0 tabular-nums text-muted-foreground">
-            {c.sec === null
-              ? clock(secondsSince(c.started, now))
-              : `${clock(c.sec)} ${outcomeLabel(c.outcome)}`}
-          </span>
-        </div>
-      ))}
+      {calls.map((c) => {
+        const file = renderBody ? c.file : null
+        const row = (
+          <div className="flex items-center gap-1.5">
+            <span
+              className={`size-1.5 shrink-0 rounded-full ${c.sec === null ? 'animate-pulse bg-sky-500' : (OUTCOME_DOT[c.outcome ?? ''] ?? 'bg-zinc-400')}`}
+            />
+            <span className="min-w-0 flex-1 truncate">
+              {c.role} · {callWhat(c)}
+            </span>
+            <span className="shrink-0 tabular-nums text-muted-foreground">
+              {c.sec === null
+                ? clock(secondsSince(c.started, now))
+                : `${clock(c.sec)} ${outcomeLabel(c.outcome)}`}
+            </span>
+          </div>
+        )
+        return (
+          <div key={`${c.started}-${c.role}-${c.sub}-${c.round}`}>
+            {file ? (
+              <button
+                type="button"
+                className="w-full rounded text-left hover:bg-accent/60"
+                title={translate('tenure.progress.openReply', 'Show the reply')}
+                onClick={() => setOpen(open === file ? null : file)}
+              >
+                {row}
+              </button>
+            ) : (
+              row
+            )}
+            {file && open === file ? <div className="mt-1">{renderBody?.(file)}</div> : null}
+          </div>
+        )
+      })}
     </div>
   )
 }

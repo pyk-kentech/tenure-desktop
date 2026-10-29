@@ -5,22 +5,10 @@ import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
 import { tenureCall } from './tenure-flow-api'
 import { listWorkflows, type WorkflowListItem } from '../../tenure-workflow/workflow-editor-api'
+import { workflowHint, workflowTitle } from '../../tenure-workflow/workflow-titles'
+import { LoginWarnings, TenureFlowStartPreview, useLoginWarnings } from './TenureFlowStartPreview'
 
 const WORKFLOWS = ['auto', 'quick', 'race', 'classic'] as const
-type FlowWorkflow = (typeof WORKFLOWS)[number]
-
-function workflowLabel(name: FlowWorkflow): string {
-  switch (name) {
-    case 'auto':
-      return translate('tenure.flow.wf.auto', 'Auto')
-    case 'quick':
-      return translate('tenure.flow.wf.quick', 'Quick (implement + short review)')
-    case 'race':
-      return translate('tenure.flow.wf.race', 'Race (two drafts, keep the better)')
-    case 'classic':
-      return translate('tenure.flow.wf.classic', 'Debate (design debate first)')
-  }
-}
 
 /** Starts a tenure flow in this workspace folder itself: the workspace is already an isolated worktree. */
 export function TenureFlowStartForm({
@@ -36,17 +24,20 @@ export function TenureFlowStartForm({
 }): React.JSX.Element {
   const [task, setTask] = useState('')
   const [workflow, setWorkflow] = useState<string>('auto')
-  // tenure: workflows saved from the node editor (project or my templates, DESIGN.md 36.29)
-  const [saved, setSaved] = useState<WorkflowListItem[]>([])
+  // tenure: every workflow, for the preview; saved ones (project or my templates, DESIGN.md 36.29)
+  // also get their own choice.
+  const [all, setAll] = useState<WorkflowListItem[]>([])
   useEffect(() => {
     listWorkflows(path)
-      .then((items) => setSaved(items.filter((w) => w.source === 'project' || w.source === 'user')))
-      .catch(() => setSaved([]))
+      .then(setAll)
+      .catch(() => setAll([]))
   }, [path, workflowsVersion])
+  const saved = all.filter((w) => w.source === 'project' || w.source === 'user')
   const [force, setForce] = useState(false)
   const [mock, setMock] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const warnings = useLoginWarnings(path, workflow, mock)
 
   const submit = async () => {
     setBusy(true)
@@ -103,26 +94,27 @@ export function TenureFlowStartForm({
               checked={workflow === name}
               onChange={() => setWorkflow(name)}
             />
-            {workflowLabel(name)}
+            {workflowTitle(name)}
+            <span className="text-muted-foreground">{workflowHint(name)}</span>
           </label>
         ))}
         {saved.map((w) => (
-          <label
-            key={w.id}
-            className="flex cursor-pointer items-center gap-2 text-xs"
-            title={w.summary}
-          >
+          <label key={w.id} className="flex cursor-pointer items-center gap-2 text-xs">
             <input
               type="radio"
               name="tenure-workflow"
               checked={workflow === w.id}
               onChange={() => setWorkflow(w.id)}
             />
-            {w.id}
+            {workflowTitle(w.id, w.name)}
             <span className="text-muted-foreground">{w.source_label}</span>
           </label>
         ))}
       </div>
+      <TenureFlowStartPreview
+        item={all.find((w) => w.id === workflow)}
+        auto={workflow === 'auto'}
+      />
       <label className="flex cursor-pointer items-center gap-2 text-xs text-muted-foreground">
         <Checkbox checked={force} onCheckedChange={(v) => setForce(v === true)} />
         {translate('tenure.flow.force', 'Start even with uncommitted changes')}
@@ -134,6 +126,7 @@ export function TenureFlowStartForm({
         <Checkbox checked={mock} onCheckedChange={(v) => setMock(v === true)} />
         {translate('tenure.flow.mock', 'Mock run (no agent calls)')}
       </label>
+      <LoginWarnings warnings={warnings} />
       {error ? <div className="whitespace-pre-wrap text-xs text-destructive">{error}</div> : null}
       <div className="flex justify-end gap-2">
         {onCancel ? (

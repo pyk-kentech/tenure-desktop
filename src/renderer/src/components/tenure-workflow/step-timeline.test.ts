@@ -29,13 +29,27 @@ describe('step timelines', () => {
       ev('log', { text: 'implementing', wf_step: 'build' }),
       ev('step_start', { role: 'aud1', agent: 'claude', step: 'audit', wf_step: 'a1' }),
       ev('step_start', { role: 'aud2', agent: 'codex', step: 'audit', wf_step: 'a2' }),
-      ev('step_end', { role: 'dev', step: 'implement', round: 1, sec: 42, outcome: 'done' }),
+      ev('step_end', {
+        role: 'dev',
+        step: 'implement',
+        round: 1,
+        sec: 42,
+        outcome: 'done',
+        file: '03_dev_implement.md'
+      }),
       ev('step_end', { role: 'aud2', step: 'audit', sec: 7, outcome: 'blocked' }),
       ev('log', { text: 'no step' })
     ]
     const t = stepTimelines(events, STEPS)
     expect(t.get('build')?.calls).toMatchObject([
-      { role: 'dev', sub: 'implement', round: 1, sec: 42, outcome: 'done' }
+      {
+        role: 'dev',
+        sub: 'implement',
+        round: 1,
+        sec: 42,
+        outcome: 'done',
+        file: '03_dev_implement.md'
+      }
     ])
     expect(t.get('build')?.logs.map((l) => l.text)).toEqual(['implementing'])
     // Why: parallel audits keep apart; a1 is still running.

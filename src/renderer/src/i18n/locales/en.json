@@ -21156,12 +21156,7 @@
         "approved": "Approved",
         "changes": "Changes requested"
       },
-      "wf": {
-        "auto": "Auto",
-        "quick": "Quick (implement + short review)",
-        "race": "Race (two drafts, keep the better)",
-        "classic": "Debate (design debate first)"
-      },
+      "wf": {},
       "card": {
         "working": "Flow running",
         "blocked": "Flow needs you",
@@ -21204,6 +21199,23 @@
         "apply": "Bring into my branch",
         "inPlace": "This flow ran in this workspace, so its changes are already committed on the workspace's branch. Check them with Review changes.",
         "blocked": "{{value0}} changed files from {{value1}} cannot go into {{value2}} yet. Sort out the items below first."
+      },
+      "list": {
+        "unarchive": "Take out of the archive",
+        "archive": "Archive (hide from the list)",
+        "delete": "Delete the record",
+        "confirmDelete": "Delete this flow’s record? Code changes stay as they are.",
+        "deleteNow": "Delete",
+        "fewer": "Show fewer",
+        "all": "Show all {{value0}}",
+        "back": "Back to flows",
+        "archived": "Archived ({{value0}})"
+      },
+      "preview": {
+        "auto": "Reads the task and picks Quick, Race or Design debate. The pick and the reason show in the record."
+      },
+      "preflight": {
+        "how": "Log in from a terminal (claude, then /login; or codex login), or select Mock run."
       }
     },
     "relay": {
@@ -21230,11 +21242,12 @@
       "description": "Description",
       "field": {
         "agent": "Agent",
-        "effort": "Effort (empty: settings)",
         "instructions": "Extra instructions",
-        "model": "Model (empty: settings)",
         "roleName": "Role name",
-        "roleNameRule": "Lowercase letters, digits and _; start with a letter."
+        "roleNameRule": "Lowercase letters, digits and _; start with a letter.",
+        "modelPick": "Model",
+        "fromSettings": "As in settings",
+        "effortPick": "Reasoning effort"
       },
       "hasInstructions": "Has instructions",
       "help": {
@@ -21260,15 +21273,14 @@
       },
       "open": "Edit workflows as nodes",
       "optional": "optional",
-      "overwrite": "Overwrite",
       "palette": {
         "claude": "Claude role",
         "codex": "Codex role",
-        "hint": "Drag a role's right connector onto a step's slot. Double-click empty space, or drop a line there, to search and add a node. To fix a line, hover it and press ×, or drag its end to another connector (empty space cuts it). Hold Z and drag across lines to tie them; drag a tie to move it, Shift-drag to turn it, double-click to undo it.",
         "roleHelp": "An agent with its own model and instructions.",
         "roles": "Roles (who)",
         "steps": "Steps (what)",
-        "controls": "Control (branch, repeat)"
+        "controls": "Control (branch, repeat)",
+        "keysHint": "Drag a role's right dot onto a step's slot. Press ? for all controls."
       },
       "param": {
         "design": "Design source",
@@ -21296,7 +21308,6 @@
         "start": "There must be exactly one start: only the first step may have no line coming in."
       },
       "save": "Save",
-      "saveName": "Save as",
       "saved": "Saved: {{value0}}",
       "scope": {
         "project": "This project",
@@ -21357,7 +21368,34 @@
         "discard": "Discard changes"
       },
       "undo": "Undo (Ctrl+Z)",
-      "redo": "Redo (Ctrl+Shift+Z)"
+      "redo": "Redo (Ctrl+Shift+Z)",
+      "keys": {
+        "connectKey": "Drag a dot",
+        "connect": "Role's right dot → step slot; step → next step",
+        "addKey": "Double-click",
+        "add": "Search and add a node (or drop a line on empty space)",
+        "cutKey": "Hover a line → ×",
+        "cut": "Remove the line",
+        "moveKey": "Drag a line end",
+        "move": "Move it to another dot; on empty space it is cut",
+        "tieKey": "Hold Z + drag",
+        "tie": "Tie the lines you cross",
+        "tieEditKey": "Drag a tie",
+        "tieEdit": "Move it; Shift-drag turns it; double-click unties",
+        "deleteKey": "Delete",
+        "delete": "Delete the selected node or line",
+        "undoKey": "Ctrl+Z / Ctrl+Shift+Z",
+        "undo": "Undo / redo",
+        "helpKey": "?",
+        "help": "Show or hide this list",
+        "open": "Controls (?)",
+        "title": "Controls",
+        "close": "Close"
+      },
+      "saveTitle": "Name",
+      "fileHint": "File: {{value0}}.toml",
+      "saveAsNew": "Save as a new workflow",
+      "copyOf": "{{value0}} copy"
     },
     "tutorial": {
       "notFound": "The item is not on screen. Finish the previous step and try again.",
@@ -21399,7 +21437,7 @@
       },
       "timeline": {
         "title": "Round records",
-        "body": "Implementation, review and fixes are recorded round by round. Expand an entry to read the agent's reply, or open it in a tab with the icon on the right. View as graph shows the run on its workflow: each step's status, and its details when you hover it."
+        "body": "Implementation, review and fixes are recorded round by round. Expand an entry to read the agent's reply, or open it in a tab with the icon on the right. View as graph shows the run on its workflow: click a step to see its calls as they happen, and click a call to read its reply."
       },
       "review": {
         "title": "Review changes",
@@ -21439,7 +21477,21 @@
       },
       "open": "Open the guide",
       "button": "Guide",
-      "waitClick": "Click the highlighted item"
+      "waitClick": "Click the highlighted item",
+      "add": {
+        "title": "Try it: add a node",
+        "body": "Double-click an empty spot on the canvas. A search box opens; type a few letters and pick a node, or press Esc to close it. The walkthrough moves on when the box closes.",
+        "action": "Open the search box"
+      },
+      "lines": {
+        "title": "Fixing and tidying lines",
+        "body": "Hover a line and press the × near its end to remove it, or drag its end to another dot (dropping it on empty space cuts it). Hold Z and drag across several lines to tie them into a bundle. Ctrl+Z undoes any of this."
+      },
+      "keys": {
+        "title": "Try it: all controls",
+        "body": "Press ? (or click the button at the top right) to see every control in one list.",
+        "action": "Show the list"
+      }
     },
     "tours": {
       "board": {
@@ -21565,7 +21617,34 @@
       },
       "calls": "Agent calls",
       "doing": "What {{value0}} is doing now",
-      "log": "Log"
+      "log": "Log",
+      "openReply": "Show the reply"
+    },
+    "wf": {
+      "title": {
+        "auto": "Auto",
+        "quick": "Quick",
+        "race": "Race",
+        "classic": "Design debate",
+        "lean": "Lean",
+        "existing": "Change existing code",
+        "secure": "Secure"
+      },
+      "hint": {
+        "auto": "picks one that suits the task",
+        "quick": "implement + short review",
+        "race": "two drafts, keep the better",
+        "classic": "agree on a design first"
+      }
+    },
+    "sidebar": {
+      "keepHiddenAria": "Keep {{value0}} discovered worktrees hidden for {{value1}}; recover from the project menu",
+      "hiddenOneIn": "Hiding 1 discovered worktree in {{value0}}",
+      "hiddenIn": "Hiding {{value0}} discovered worktrees in {{value1}}",
+      "hiddenOne": "Hiding 1 discovered worktree",
+      "hidden": "Hiding {{value0}} discovered worktrees",
+      "keepHiddenTip": "Keep hidden - recover from the project menu",
+      "keepHiddenAriaOne": "Keep 1 discovered worktree hidden for {{value0}}; recover from the project menu"
     }
   }
 }
