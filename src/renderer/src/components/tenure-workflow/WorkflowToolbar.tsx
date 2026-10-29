@@ -1,5 +1,5 @@
 import React from 'react'
-import { CheckCircle2, LayoutGrid, Save } from 'lucide-react'
+import { CheckCircle2, LayoutGrid, Redo2, Save, Undo2 } from 'lucide-react'
 import { translate } from '@/i18n/i18n'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -28,6 +28,10 @@ export function WorkflowToolbar(props: {
   wire: WireStyle
   onWire: (v: WireStyle) => void
   onTidy: () => void
+  canUndo: boolean
+  canRedo: boolean
+  onUndo: () => void
+  onRedo: () => void
   onCheck: () => void
   onSave: () => void
   status: EditorStatus | null
@@ -76,6 +80,26 @@ export function WorkflowToolbar(props: {
             <option value="step">{translate('tenure.workflow.wire.step', 'Right-angled')}</option>
           </select>
         </label>
+        <Button
+          variant="ghost"
+          size="xs"
+          disabled={!props.canUndo}
+          aria-label={translate('tenure.workflow.undo', 'Undo (Ctrl+Z)')}
+          title={translate('tenure.workflow.undo', 'Undo (Ctrl+Z)')}
+          onClick={props.onUndo}
+        >
+          <Undo2 className="size-3.5" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="xs"
+          disabled={!props.canRedo}
+          aria-label={translate('tenure.workflow.redo', 'Redo (Ctrl+Shift+Z)')}
+          title={translate('tenure.workflow.redo', 'Redo (Ctrl+Shift+Z)')}
+          onClick={props.onRedo}
+        >
+          <Redo2 className="size-3.5" />
+        </Button>
         <Button variant="outline" size="xs" onClick={props.onTidy}>
           <LayoutGrid className="size-3" />
           {translate('tenure.workflow.tidy', 'Auto-arrange')}

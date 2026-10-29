@@ -21190,7 +21190,21 @@
       "review": "Review changes",
       "reviewEmpty": "No files changed since the flow started.",
       "reviewTab": "tenure: {{value0}}",
-      "graph": "View as graph"
+      "graph": "View as graph",
+      "merge": {
+        "merged": "Brought into {{value0}} ({{value1}})",
+        "discardedPatch": "Discarded. The changes were kept as {{value0}}",
+        "discarded": "Discarded.",
+        "title": "Use the result",
+        "summary": "{{value0}} changed files from {{value1}} can go into {{value2}}.",
+        "checking": "Checking whether it can be merged…",
+        "confirmDiscard": "Discard these changes? They are kept as a patch file.",
+        "discard": "Discard",
+        "cancel": "Cancel",
+        "apply": "Bring into my branch",
+        "inPlace": "This flow ran in this workspace, so its changes are already committed on the workspace's branch. Check them with Review changes.",
+        "blocked": "{{value0}} changed files from {{value1}} cannot go into {{value2}} yet. Sort out the items below first."
+      }
     },
     "relay": {
       "toggle": "Start a coordinator + worker relay (two Codex)",
@@ -21336,7 +21350,14 @@
       },
       "tie": {
         "title": "Cable tie"
-      }
+      },
+      "unsaved": {
+        "text": "There are unsaved changes. They will be lost if you continue.",
+        "keep": "Keep editing",
+        "discard": "Discard changes"
+      },
+      "undo": "Undo (Ctrl+Z)",
+      "redo": "Redo (Ctrl+Shift+Z)"
     },
     "tutorial": {
       "notFound": "The item is not on screen. Finish the previous step and try again.",
@@ -21358,7 +21379,8 @@
         "title": "Task",
         "body": "Describe what to build or fix as concretely as you can; clear requirements make the reviews sharper.",
         "action": "Fill in an example",
-        "sample": "Build a to-do list CLI with add, done and list commands."
+        "sample": "Build a to-do list CLI with add, done and list commands.",
+        "needText": "Write a task to go on"
       },
       "choice": {
         "title": "How the flow runs",

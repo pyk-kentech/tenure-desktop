@@ -13,6 +13,8 @@ export type TutorialStep = {
   // The user must do this step themselves: Next is hidden and the walkthrough moves on as soon as
   // this turns true (it is checked every few hundred ms).
   waitFor?: () => boolean
+  // Next stays locked (with this hint) until it is true; for input the user is still typing.
+  requires?: { check: () => boolean; hint: string }
 }
 
 export function tourTarget(id: string): Element | null {
@@ -40,6 +42,10 @@ function mockBox(): HTMLElement | null {
   return box instanceof HTMLElement ? box : null
 }
 
+function mockChecked(): boolean {
+  return mockBox()?.getAttribute('aria-checked') === 'true'
+}
+
 function setTextarea(el: Element | null, value: string): boolean {
   if (!(el instanceof HTMLTextAreaElement)) {
     return false
@@ -61,6 +67,8 @@ function flowsTab(): Element | null {
 }
 
 export function tutorialSteps(): TutorialStep[] {
+  // Why: the start step moves on only after a start made with mock run on (never a paid run).
+  let startArmed = false
   return [
     {
       id: 'welcome',
@@ -78,6 +86,8 @@ export function tutorialSteps(): TutorialStep[] {
         'The Flows tab in the right sidebar starts flows for the current workspace and shows their records.'
       ),
       target: flowsTab,
+      // tenure: steps that open or pick something move on when the user does it (DESIGN.md 36.36).
+      waitFor: () => !!tourTarget('new-flow'),
       action: {
         label: translate('tenure.tutorial.flowsTab.action', 'Open it for me'),
         run: () => {
@@ -96,6 +106,7 @@ export function tutorialSteps(): TutorialStep[] {
         'New flow opens the start form. Each workspace runs in its own git worktree, so a flow never mixes with other work.'
       ),
       target: () => tourTarget('new-flow'),
+      waitFor: () => !!tourTarget('task'),
       action: {
         label: translate('tenure.tutorial.newFlow.action', 'Open the form'),
         run: () => (tourTarget('task') ? null : click('new-flow'))
@@ -109,6 +120,13 @@ export function tutorialSteps(): TutorialStep[] {
         'Describe what to build or fix as concretely as you can; clear requirements make the reviews sharper.'
       ),
       target: () => tourTarget('task'),
+      requires: {
+        check: () => {
+          const el = tourTarget('task')
+          return el instanceof HTMLTextAreaElement && el.value.trim().length > 0
+        },
+        hint: translate('tenure.tutorial.task.needText', 'Write a task to go on')
+      },
       action: {
         label: translate('tenure.tutorial.task.action', 'Fill in an example'),
         run: () =>
@@ -140,6 +158,7 @@ export function tutorialSteps(): TutorialStep[] {
         'A mock run shows the whole process without calling any agent. Clear this box for real work; from then on the run uses your subscription.'
       ),
       target: () => tourTarget('mock'),
+      waitFor: mockChecked,
       action: {
         label: translate('tenure.tutorial.mock.action', 'Select mock run'),
         run: () => {
@@ -161,12 +180,23 @@ export function tutorialSteps(): TutorialStep[] {
         'tenure.tutorial.start.body',
         'Start runs the flow. A mock run finishes within a minute.'
       ),
-      target: () => tourTarget('start'),
+      // Why: with mock run off the highlight stays on the mock box, never on a paid Start.
+      target: () => (mockChecked() ? tourTarget('start') : tourTarget('mock')),
+      requires: {
+        check: mockChecked,
+        hint: translate('tenure.tutorial.start.needMock', 'Select mock run first.')
+      },
+      waitFor: () => {
+        if (tourTarget('start') && mockChecked()) {
+          startArmed = true
+        }
+        return startArmed && !tourTarget('start')
+      },
       action: {
         label: translate('tenure.tutorial.start.action', 'Start as a mock run'),
         run: () => {
           // Why: never start a real (paid) run on the user's behalf.
-          if (mockBox()?.getAttribute('aria-checked') !== 'true') {
+          if (!mockChecked()) {
             return translate('tenure.tutorial.start.needMock', 'Select mock run first.')
           }
           return click('start')

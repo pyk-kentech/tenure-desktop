@@ -18,17 +18,17 @@ import { WorkflowInspector } from './WorkflowInspector'
 import { WorkflowPalette } from './WorkflowPalette'
 import { WorkflowToolbar, type EditorStatus } from './WorkflowToolbar'
 import { useWorkflowGraph } from './use-workflow-graph'
-import { emptySlots, fromGraph } from './workflow-convert'
+import { fromGraph } from './workflow-convert'
 import { isStepNode, type WorkflowDef } from './workflow-model'
-import { kindLabel, orderProblemText, slotLabel } from './workflow-labels'
 import {
-  checkWorkflow,
   getWorkflow,
   listWorkflows,
-  saveWorkflow,
   type WorkflowListItem,
   type WorkflowScope
 } from './workflow-editor-api'
+import { checkCurrent, saveCurrent } from './workflow-save'
+import { useEditHistory, useUndoKeys, type EditSnapshot } from './use-edit-history'
+import { WorkflowDiscardBar } from './WorkflowDiscardBar'
 
 function errorText(e: unknown): string {
   return e instanceof Error ? e.message : String(e)
@@ -66,16 +66,31 @@ export function TenureWorkflowEditor({
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [viewKey, setViewKey] = useState(0)
   const [wire, setWire] = useState(loadWireStyle)
-  const { load } = graph
+  const { load, restore } = graph
   const resetTies = ties.reset
+  const [pending, setPending] = useState<(() => void) | null>(null)
+  const restoreSnap = useCallback(
+    (snap: EditSnapshot) => {
+      restore(snap.nodes, snap.edges)
+      resetTies(snap.ties)
+    },
+    [restore, resetTies]
+  )
+  const history = useEditHistory(
+    { nodes: graph.nodes, edges: graph.edges, ties: ties.ties },
+    open,
+    restoreSnap
+  )
+  const resetHistory = history.reset
   const loadRunDef = useCallback(
     (def: WorkflowDef) => {
+      resetHistory()
       resetTies(load(def))
       setSaveName(`${def.name || 'run'}-copy`.replace(/[^a-z0-9_-]/g, '-').toLowerCase())
       setDescription(def.description ?? '')
       setViewKey((k) => k + 1)
     },
-    [load, resetTies]
+    [load, resetTies, resetHistory]
   )
   const onRunError = useCallback((text: string) => setStatus({ tone: 'error', text }), [])
   const runView = useRunView({ open, project, runId: run, onLoad: loadRunDef, onError: onRunError })
@@ -86,6 +101,7 @@ export function TenureWorkflowEditor({
       setSelectedId(null)
       try {
         const res = await getWorkflow(project, id)
+        resetHistory()
         resetTies(load(res.definition))
         setTemplate(id)
         setSaveName(res.source === 'project' || res.source === 'user' ? id : `my-${id}`)
@@ -95,7 +111,7 @@ export function TenureWorkflowEditor({
         setStatus({ tone: 'error', text: errorText(e) })
       }
     },
-    [project, load, resetTies]
+    [project, load, resetTies, resetHistory]
   )
 
   useEffect(() => {
@@ -114,68 +130,26 @@ export function TenureWorkflowEditor({
     fromGraph(graph.nodes, graph.edges, { name: saveName || template, description }, ties.ties)
 
   const runCheck = async (): Promise<boolean> => {
-    const { def, problem } = current()
-    const orderText = orderProblemText(problem)
-    if (orderText) {
-      setStatus({ tone: 'error', text: orderText })
-      return false
-    }
-    const empty = emptySlots(def)[0]
-    if (empty) {
-      setStatus({
-        tone: 'error',
-        text: translate(
-          'tenure.workflow.problem.slot',
-          'Step {{value0}} ({{value1}}): connect a role to "{{value2}}".',
-          {
-            value0: String(empty.index),
-            value1: kindLabel(empty.kind),
-            value2: slotLabel(empty.slot)
-          }
-        )
-      })
-      return false
-    }
-    try {
-      const res = await checkWorkflow(project, def)
-      setStatus(
-        res.ok
-          ? {
-              tone: 'ok',
-              text: translate('tenure.workflow.checkOk', 'Looks good: {{value0}}', {
-                value0: res.summary ?? ''
-              })
-            }
-          : { tone: 'error', text: res.error ?? '' }
-      )
-      return res.ok
-    } catch (e) {
-      setStatus({ tone: 'error', text: errorText(e) })
-      return false
-    }
+    const res = await checkCurrent(project, current())
+    setStatus(res.status)
+    return res.ok
   }
 
   const runSave = async () => {
     if (!(await runCheck())) {
       return
     }
-    try {
-      const res = await saveWorkflow({
-        project,
-        name: saveName,
-        scope,
-        workflow: current().def,
-        overwrite
-      })
-      setStatus({
-        tone: 'ok',
-        text: translate('tenure.workflow.saved', 'Saved: {{value0}}', { value0: res.path })
-      })
+    const res = await saveCurrent({ project, name: saveName, scope, overwrite, def: current().def })
+    setStatus(res.status)
+    if (res.id) {
+      history.markSaved()
       onSaved?.(res.id)
-    } catch (e) {
-      setStatus({ tone: 'error', text: errorText(e) })
     }
   }
+
+  // Why: unsaved edits are only thrown away after the user says so (DESIGN.md 36.36 M51).
+  const guard = (fn: () => void) => (history.dirty && !runView.active ? setPending(() => fn) : fn())
+  useUndoKeys(open && !runView.active && !pending, history.undo, history.redo)
 
   const detail = runView.active ? runView.detail : null
   const events = useRunEvents(project, run ?? null, !!detail?.live, runView.active)
@@ -208,10 +182,15 @@ export function TenureWorkflowEditor({
     <Dialog
       open={open}
       onOpenChange={(next) => {
-        if (!next) {
-          runView.reset()
+        if (next) {
+          onOpenChange(true)
+          return
         }
-        onOpenChange(next)
+        guard(() => {
+          setPending(null)
+          runView.reset()
+          onOpenChange(false)
+        })
       }}
     >
       <DialogContent
@@ -234,7 +213,11 @@ export function TenureWorkflowEditor({
           <WorkflowToolbar
             templates={templates}
             template={template}
-            onTemplate={(id) => void loadTemplate(id)}
+            onTemplate={(id) => guard(() => void loadTemplate(id))}
+            canUndo={history.canUndo}
+            canRedo={history.canRedo}
+            onUndo={history.undo}
+            onRedo={history.redo}
             saveName={saveName}
             onSaveName={setSaveName}
             description={description}
@@ -258,6 +241,16 @@ export function TenureWorkflowEditor({
             status={status}
           />
         )}
+        {pending ? (
+          <WorkflowDiscardBar
+            onDiscard={() => {
+              const fn = pending
+              setPending(null)
+              fn()
+            }}
+            onKeep={() => setPending(null)}
+          />
+        ) : null}
         <div className="flex min-h-0 flex-1">
           {runView.active ? null : (
             <WorkflowPalette onAddRole={graph.addRole} onAddStep={graph.addStep} />

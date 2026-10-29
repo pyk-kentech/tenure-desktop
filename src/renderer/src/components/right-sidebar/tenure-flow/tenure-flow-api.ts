@@ -61,6 +61,14 @@ export type TenureRunDetail = {
   current_call: { agent: string; step: string; elapsed_sec: number } | null
   resume: { possible: boolean; reason: string }
   activity: { state: string; reason: string }
+  // The run's own git worktree, when it ran in one (DESIGN.md 36.36 M51).
+  worktree?: {
+    status: 'open' | 'merged' | 'discarded'
+    branch: string
+    base_branch: string
+    merged_commit?: string | null
+    patch?: string | null
+  } | null
 }
 
 export class TenureFlowError extends Error {}

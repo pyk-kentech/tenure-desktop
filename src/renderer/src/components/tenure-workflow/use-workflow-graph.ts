@@ -203,6 +203,15 @@ export function useWorkflowGraph() {
     [edges, setNodes, setEdges]
   )
 
+  // tenure: put back an earlier picture (undo / redo, DESIGN.md 36.36), nothing selected.
+  const restore = useCallback(
+    (ns: WorkflowNode[], es: Edge[]) => {
+      setNodes(ns.map((n) => ({ ...n, selected: false })))
+      setEdges(es.map((e) => ({ ...e, selected: false })))
+    },
+    [setNodes, setEdges]
+  )
+
   const tidy = useCallback(() => setNodes((ns) => layoutGraph(ns, edges)), [edges, setNodes])
 
   // tenure: search popup (DESIGN.md 36.33). Adds the picked node at `position`; when the popup came
@@ -279,6 +288,7 @@ export function useWorkflowGraph() {
     changeStep,
     deleteNode,
     tidy,
+    restore,
     addAt
   }
 }

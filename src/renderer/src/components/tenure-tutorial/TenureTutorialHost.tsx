@@ -68,14 +68,17 @@ export function TenureTutorialHost(): React.JSX.Element | null {
 
   // A step the user must do: move on when its condition turns true while the step is shown.
   // Why: coming Back to it with the condition already true must not jump straight forward again.
+  // Why: typing or ticking a box happens outside React's view here, so re-read it on a timer.
+  const [, setTick] = useState(0)
   useEffect(() => {
     const waitFor = step?.waitFor
-    if (index === null || !waitFor) {
+    if (index === null || (!waitFor && !step?.requires)) {
       return
     }
-    let was = waitFor()
+    let was = waitFor?.() ?? false
     const timer = window.setInterval(() => {
-      const now = waitFor()
+      setTick((t) => t + 1)
+      const now = waitFor?.() ?? false
       if (now && !was) {
         go(index + 1)
       }
@@ -89,6 +92,7 @@ export function TenureTutorialHost(): React.JSX.Element | null {
   }
   const last = index === steps.length - 1
   const waiting = !!step.waitFor && !step.waitFor()
+  const blocked = step.requires && !step.requires.check() ? step.requires.hint : null
   return createPortal(
     <div data-tenure-tutorial="" style={{ pointerEvents: 'none' }}>
       {rect ? (
@@ -140,9 +144,9 @@ export function TenureTutorialHost(): React.JSX.Element | null {
               {translate('tenure.tutorial.prev', 'Back')}
             </Button>
           ) : null}
-          {waiting ? (
+          {blocked || waiting ? (
             <span className="text-xs text-sky-600 dark:text-sky-400">
-              {translate('tenure.tutorial.waitClick', 'Click the highlighted item')}
+              {blocked ?? translate('tenure.tutorial.waitClick', 'Click the highlighted item')}
             </span>
           ) : (
             <Button size="xs" onClick={() => go(last ? null : index + 1)}>

@@ -7,6 +7,7 @@ import { tenureCall, type TenureRunDetail, type TenureRunSummary } from './tenur
 import { TenureFlowStartForm } from './TenureFlowStartForm'
 import { TenureFlowTimeline } from './TenureFlowTimeline'
 import { TenureFlowReviewButton } from './TenureFlowReviewButton'
+import { TenureFlowMerge } from './TenureFlowMerge'
 import { TenureFlowDrafts } from './TenureFlowDrafts'
 import { flowStateLabel, TenureFlowStateDot } from './tenure-flow-labels'
 import { TenureWorkflowEditor } from '../../tenure-workflow/TenureWorkflowEditor'
@@ -225,6 +226,15 @@ export default function TenureFlowPanel(): React.JSX.Element {
                 {detail.state.error}
               </div>
             ) : null}
+            <TenureFlowMerge
+              detail={detail}
+              project={path}
+              runId={runId!}
+              onDone={() => {
+                void loadDetail()
+                void loadRuns()
+              }}
+            />
             {detail.state.race ? (
               <TenureFlowDrafts
                 race={detail.state.race}
