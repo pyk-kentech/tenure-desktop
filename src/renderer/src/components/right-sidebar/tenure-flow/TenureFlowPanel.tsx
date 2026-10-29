@@ -76,20 +76,30 @@ export default function TenureFlowPanel(): React.JSX.Element {
     setSelected(null)
     setDetail(null)
     setStarting(false)
-    void loadRuns()
   }, [loadRuns])
 
+  const live = !!detail?.live
   useEffect(() => {
     void loadDetail()
-    const id = window.setInterval(
-      () => {
-        void loadDetail()
-        void loadRuns()
-      },
-      detail?.live ? LIVE_POLL_MS : IDLE_POLL_MS
-    )
-    return () => window.clearInterval(id)
-  }, [loadDetail, loadRuns, detail?.live])
+    // Why: while a flow runs only its detail changes quickly; the list summarises every run, so it
+    // refreshes slowly, and nothing is polled while the window is hidden (DESIGN.md 36.38).
+    const whenShown = (load: () => Promise<void>) => () => {
+      if (!document.hidden) {
+        void load()
+      }
+    }
+    const fast = window.setInterval(whenShown(loadDetail), live ? LIVE_POLL_MS : IDLE_POLL_MS)
+    const slow = window.setInterval(whenShown(loadRuns), IDLE_POLL_MS)
+    return () => {
+      window.clearInterval(fast)
+      window.clearInterval(slow)
+    }
+  }, [loadDetail, loadRuns, live])
+
+  // Why: a new folder, or a flow that just started or finished, changes the list; read it now.
+  useEffect(() => {
+    void loadRuns()
+  }, [live, loadRuns])
 
   const act = async (actionPath: string, body: Record<string, unknown>) => {
     try {
