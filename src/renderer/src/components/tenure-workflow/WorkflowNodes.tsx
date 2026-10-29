@@ -1,8 +1,10 @@
 import React, { useState } from 'react'
-import { Handle, NodeToolbar, Position, type NodeProps } from '@xyflow/react'
+import { Handle, NodeToolbar, Position, useReactFlow, type NodeProps } from '@xyflow/react'
 import {
   Bot,
   Check,
+  ChevronDown,
+  ChevronRight,
   Code2,
   Columns2,
   MessagesSquare,
@@ -146,9 +148,13 @@ export function WorkflowRoleNode({ data, selected }: NodeProps<RoleNode>): React
  * A step. Left connectors take the previous step (header) and roles (rows); right connectors lead
  * on. In the run view the ring shows its status and hovering shows what happened there.
  */
-export function WorkflowStepNode({ data, selected }: NodeProps<StepNode>): React.JSX.Element {
+export function WorkflowStepNode({ id, data, selected }: NodeProps<StepNode>): React.JSX.Element {
   const [hover, setHover] = useState(false)
+  const { updateNodeData } = useReactFlow()
+  const collapsed = !!data.collapsed
   const rows = stepRows(data.kind, data.params)
+  // Why: a collapsed node keeps every connector at header height so its lines stay attached.
+  const rowTop = (i: number) => (collapsed ? HEADER_CENTER : rowCenter(i))
   const Icon = KIND_ICON[data.kind]
   const control = data.kind === 'branch' || data.kind === 'parallel'
   const progress = data.progress
@@ -165,6 +171,18 @@ export function WorkflowStepNode({ data, selected }: NodeProps<StepNode>): React
         className={`flex items-center gap-1.5 rounded-t-[7px] px-2.5 font-medium ${control ? CONTROL_HEADER : WORK_HEADER}`}
         style={{ height: HEADER_H }}
       >
+        <button
+          type="button"
+          className="nodrag -ml-1 rounded p-0.5 hover:bg-foreground/10"
+          aria-label={
+            collapsed
+              ? translate('tenure.workflow.expand', 'Expand')
+              : translate('tenure.workflow.collapse', 'Collapse')
+          }
+          onClick={() => updateNodeData(id, { collapsed: !collapsed })}
+        >
+          {collapsed ? <ChevronRight className="size-3" /> : <ChevronDown className="size-3" />}
+        </button>
         <Icon className="size-3.5 shrink-0" />
         <span className="flex-1 truncate">{kindLabel(data.kind)}</span>
         {progress?.status === 'running' ? (
@@ -173,7 +191,7 @@ export function WorkflowStepNode({ data, selected }: NodeProps<StepNode>): React
         {progress?.status === 'done' ? <Check className="size-3.5 text-emerald-600" /> : null}
         {progress?.status === 'failed' ? <X className="size-3.5 text-rose-600" /> : null}
       </div>
-      {rows.map((row) => (
+      {(collapsed ? [] : rows).map((row) => (
         <div
           key={row.key}
           className={`flex items-center gap-2 px-2.5 text-muted-foreground ${row.type === 'value' ? 'border-t border-border/60' : ''}`}
@@ -217,7 +235,7 @@ export function WorkflowStepNode({ data, selected }: NodeProps<StepNode>): React
             type="target"
             id={row.key}
             position={Position.Left}
-            {...socket(rowCenter(i), sockets[row.key] ?? EMPTY_SLOT, !!sockets[row.key])}
+            {...socket(rowTop(i), sockets[row.key] ?? EMPTY_SLOT, !!sockets[row.key])}
           />
         ) : row.type === 'out' ? (
           <Handle
@@ -225,7 +243,7 @@ export function WorkflowStepNode({ data, selected }: NodeProps<StepNode>): React
             type="source"
             id={row.key}
             position={Position.Right}
-            {...socket(rowCenter(i), OUTPUT_COLOR[row.key] ?? EMPTY_SLOT, !!sockets[row.key])}
+            {...socket(rowTop(i), OUTPUT_COLOR[row.key] ?? EMPTY_SLOT, !!sockets[row.key])}
           />
         ) : null
       )}

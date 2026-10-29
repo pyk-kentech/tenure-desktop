@@ -73,6 +73,8 @@ export type StepNodeData = {
   params: Record<string, unknown>
   progress?: StepProgress
   sockets?: Record<string, string>
+  // view state only, never saved (DESIGN.md 36.33)
+  collapsed?: boolean
 }
 export type RoleNode = Node<RoleNodeData, 'tenureRole'>
 export type StepNode = Node<StepNodeData, 'tenureStep'>

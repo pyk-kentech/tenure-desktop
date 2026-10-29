@@ -24,6 +24,10 @@ import {
 } from './workflow-model'
 import { tailStep, toGraph } from './workflow-convert'
 import { layoutGraph } from './workflow-layout'
+import type { AddItem } from './WorkflowAddMenu'
+
+/** The connector a line was dragged from before it was dropped on empty canvas. */
+export type DragOrigin = { nodeId: string; handleId: string; handleType: 'source' | 'target' }
 
 const ROLE_NAME_RE = /^[a-z][a-z0-9_]{0,23}$/
 
@@ -189,6 +193,64 @@ export function useWorkflowGraph() {
 
   const tidy = useCallback(() => setNodes((ns) => layoutGraph(ns, edges)), [edges, setNodes])
 
+  // tenure: search popup (DESIGN.md 36.33). Adds the picked node at `position`; when the popup came
+  // from a dropped line, the new node joins that line where the engine allows it.
+  const addAt = useCallback(
+    (item: AddItem, position: { x: number; y: number }, from?: DragOrigin) => {
+      let node: WorkflowNode
+      if (item.type === 'role') {
+        const taken = new Set(nodes.filter(isRoleNode).map((n) => n.data.name))
+        let name: string = item.agent
+        for (let i = 2; taken.has(name); i++) {
+          name = `${item.agent}${i}`
+        }
+        node = {
+          id: roleNodeId(name),
+          type: 'tenureRole',
+          position,
+          data: { name, def: { agent: item.agent } }
+        }
+      } else {
+        const params: Record<string, unknown> = item.kind === 'branch' ? { check: 'approved' } : {}
+        node = {
+          id: newStepNodeId(),
+          type: 'tenureStep',
+          position,
+          data: { kind: item.kind, params }
+        }
+      }
+      setNodes((ns) => [...ns, node])
+      const origin = from ? nodes.find((n) => n.id === from.nodeId) : undefined
+      if (!from || !origin) {
+        return
+      }
+      let edge: Edge | null = null
+      if (isRoleNode(node) && from.handleType === 'target' && isStepNode(origin)) {
+        edge = slotEdge(node.data.name, origin.id, from.handleId)
+      } else if (isStepNode(node) && isRoleNode(origin) && from.handleId === ROLE_HANDLE) {
+        const slot = STEP_SLOTS[node.data.kind][0]
+        edge = slot ? slotEdge(origin.data.name, node.id, slot.key) : null
+      } else if (isStepNode(node) && isStepNode(origin) && from.handleType === 'source') {
+        const ok = from.handleId !== FORK_HANDLE || PARALLEL_BRANCH_KINDS.has(node.data.kind)
+        edge = ok ? flowEdge(origin.id, node.id, from.handleId) : null
+      } else if (isStepNode(node) && isStepNode(origin) && from.handleId === PREV_HANDLE) {
+        edge = flowEdge(node.id, origin.id, NEXT_HANDLE)
+      }
+      if (edge) {
+        const added = edge
+        // Why: single outputs (next / yes / no) lead to one step; the new line replaces the old one.
+        const single = added.sourceHandle !== FORK_HANDLE && added.sourceHandle !== ROLE_HANDLE
+        setEdges((es) => [
+          ...es.filter(
+            (e) => !(single && e.source === added.source && e.sourceHandle === added.sourceHandle)
+          ),
+          added
+        ])
+      }
+    },
+    [nodes, setNodes, setEdges]
+  )
+
   return {
     nodes,
     edges,
@@ -203,6 +265,7 @@ export function useWorkflowGraph() {
     changeRole,
     changeStep,
     deleteNode,
-    tidy
+    tidy,
+    addAt
   }
 }

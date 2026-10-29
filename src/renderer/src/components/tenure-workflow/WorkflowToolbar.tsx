@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
 import type { WorkflowListItem, WorkflowScope } from './workflow-editor-api'
+import type { WireStyle } from './WorkflowEdges'
 
 export type EditorStatus = { tone: 'ok' | 'error'; text: string }
 
@@ -24,6 +25,8 @@ export function WorkflowToolbar(props: {
   canProjectScope: boolean
   overwrite: boolean
   onOverwrite: (v: boolean) => void
+  wire: WireStyle
+  onWire: (v: WireStyle) => void
   onTidy: () => void
   onCheck: () => void
   onSave: () => void
@@ -51,6 +54,28 @@ export function WorkflowToolbar(props: {
           </select>
         </label>
         <div className="flex-1" />
+        <label className="flex items-center gap-1 text-xs text-muted-foreground">
+          {translate('tenure.workflow.wire.label', 'Lines')}
+          <select
+            className={selectClass}
+            value={props.wire}
+            onChange={(e) =>
+              props.onWire(
+                e.target.value === 'straight'
+                  ? 'straight'
+                  : e.target.value === 'step'
+                    ? 'step'
+                    : 'bezier'
+              )
+            }
+          >
+            <option value="bezier">{translate('tenure.workflow.wire.bezier', 'Curved')}</option>
+            <option value="straight">
+              {translate('tenure.workflow.wire.straight', 'Straight')}
+            </option>
+            <option value="step">{translate('tenure.workflow.wire.step', 'Right-angled')}</option>
+          </select>
+        </label>
         <Button variant="outline" size="xs" onClick={props.onTidy}>
           <LayoutGrid className="size-3" />
           {translate('tenure.workflow.tidy', 'Auto-arrange')}

@@ -1,11 +1,21 @@
 import React from 'react'
-import { BaseEdge, Position, getBezierPath, type EdgeProps } from '@xyflow/react'
+import {
+  BaseEdge,
+  Position,
+  getBezierPath,
+  getSmoothStepPath,
+  getStraightPath,
+  type EdgeProps
+} from '@xyflow/react'
 import { HANDLE_SIZE } from './workflow-node-rows'
 
 // tenure: edges of the workflow editor (DESIGN.md 36.30, 36.32). Every line starts and ends at the
 // centre of its connector; run-order and loop lines carry a bright streak moving in the run direction.
 
+export type WireStyle = 'bezier' | 'straight' | 'step'
+
 export type FlowEdgeData = {
+  wire?: WireStyle
   color?: string
   pulse?: 'normal' | 'fast' | 'none'
   dim?: boolean
@@ -14,8 +24,9 @@ export type FlowEdgeData = {
 const LOOP_DROP = 90
 const LOOP_REACH = 24
 const FLOW_COLOR = '#a1a1aa'
-// Why: white reads as a gap on the light theme; an electric blue glows on both themes.
-const STREAK = '#38bdf8'
+// Why: a line carrying a streak is drawn fainter, so the streak in the line's own colour reads as
+// that stretch lighting up (user asked for the same colour as the line).
+const CARRIER_OPACITY = 0.45
 const R = HANDLE_SIZE / 2
 
 function reducedMotion(): boolean {
@@ -37,6 +48,17 @@ function centred(p: EdgeProps) {
   }
 }
 
+/** The line shape the user picked in the toolbar (DESIGN.md 36.33). */
+function wirePath(c: ReturnType<typeof centred>, wire: WireStyle | undefined): string {
+  if (wire === 'straight') {
+    return getStraightPath(c)[0]
+  }
+  if (wire === 'step') {
+    return getSmoothStepPath({ ...c, borderRadius: 8 })[0]
+  }
+  return getBezierPath(c)[0]
+}
+
 /** A short bright streak travelling along the path (pathLength normalises any path to 100). */
 function Streak({ path, color, seconds }: { path: string; color: string; seconds: number }) {
   return (
@@ -45,10 +67,10 @@ function Streak({ path, color, seconds }: { path: string; color: string; seconds
       fill="none"
       pathLength={100}
       stroke={color}
-      strokeWidth={3.5}
+      strokeWidth={4.5}
       strokeLinecap="round"
       strokeDasharray="7 93"
-      style={{ filter: `drop-shadow(0 0 3px ${color})` }}
+      style={{ filter: `drop-shadow(0 0 4px ${color})` }}
     >
       <animate
         attributeName="stroke-dashoffset"
@@ -66,36 +88,32 @@ function seconds(dx: number, dy: number, mode: FlowEdgeData['pulse']): number {
   return mode === 'fast' ? base / 2.5 : base
 }
 
-function edgeLook(data: FlowEdgeData | undefined, fallback: string, width: number) {
-  const color = data?.color ?? fallback
-  return {
-    color,
-    style: {
-      stroke: color,
-      strokeWidth: width,
-      strokeLinecap: 'round' as const,
-      opacity: data?.dim ? 0.3 : 1
-    }
-  }
-}
-
 function showStreak(data: FlowEdgeData | undefined): boolean {
   return (data?.pulse ?? 'normal') !== 'none' && !data?.dim && !reducedMotion()
+}
+
+function edgeLook(data: FlowEdgeData | undefined, fallback: string, width: number) {
+  const color = data?.color ?? fallback
+  const opacity = data?.dim ? 0.3 : showStreak(data) ? CARRIER_OPACITY : 1
+  return {
+    color,
+    style: { stroke: color, strokeWidth: width, strokeLinecap: 'round' as const, opacity }
+  }
 }
 
 /** A run-order line (next / yes / no / fork). */
 export function WorkflowFlowEdge(props: EdgeProps): React.JSX.Element {
   const data = props.data as FlowEdgeData | undefined
   const c = centred(props)
-  const [path] = getBezierPath(c)
-  const { style } = edgeLook(data, FLOW_COLOR, 3)
+  const path = wirePath(c, data?.wire)
+  const { color, style } = edgeLook(data, FLOW_COLOR, 3)
   return (
     <>
       <BaseEdge id={props.id} path={path} style={style} />
       {showStreak(data) ? (
         <Streak
           path={path}
-          color={STREAK}
+          color={color}
           seconds={seconds(c.targetX - c.sourceX, c.targetY - c.sourceY, data?.pulse)}
         />
       ) : null}
@@ -118,14 +136,14 @@ export function WorkflowLoopEdge(props: EdgeProps): React.JSX.Element {
     `L ${targetX + r} ${low}`,
     `C ${targetX - r * 2} ${low}, ${targetX - r * 2} ${targetY}, ${targetX} ${targetY}`
   ].join(' ')
-  const { style } = edgeLook(data, '#f59e0b', 2.5)
+  const { color, style } = edgeLook(data, '#f59e0b', 2.5)
   return (
     <>
       <BaseEdge id={props.id} path={path} style={{ ...style, strokeDasharray: '6 5' }} />
       {showStreak(data) ? (
         <Streak
           path={path}
-          color={STREAK}
+          color={color}
           seconds={seconds(sourceX - targetX, LOOP_DROP * 2, data?.pulse) * 1.5}
         />
       ) : null}
@@ -133,12 +151,24 @@ export function WorkflowLoopEdge(props: EdgeProps): React.JSX.Element {
   )
 }
 
-/** A role → slot line in the agent's colour. */
+/** A role → slot line in the agent's colour; its slower streak runs from the role to the step. */
 export function WorkflowRoleEdge(props: EdgeProps): React.JSX.Element {
   const data = props.data as FlowEdgeData | undefined
-  const [path] = getBezierPath(centred(props))
-  const { style } = edgeLook(data, '#71717a', 2.5)
-  return <BaseEdge id={props.id} path={path} style={style} />
+  const c = centred(props)
+  const path = wirePath(c, data?.wire)
+  const { color, style } = edgeLook(data, '#71717a', 2.5)
+  return (
+    <>
+      <BaseEdge id={props.id} path={path} style={style} />
+      {showStreak(data) ? (
+        <Streak
+          path={path}
+          color={color}
+          seconds={seconds(c.targetX - c.sourceX, c.targetY - c.sourceY, data?.pulse) * 1.6}
+        />
+      ) : null}
+    </>
+  )
 }
 
 export const WORKFLOW_EDGE_TYPES = {

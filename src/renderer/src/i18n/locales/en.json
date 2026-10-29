@@ -21250,7 +21250,7 @@
       "palette": {
         "claude": "Claude role",
         "codex": "Codex role",
-        "hint": "Drag a role's right connector onto a step's slot on its left. Steps run left to right, and a moving light shows the direction.",
+        "hint": "Drag a role's right connector onto a step's slot. Double-click empty space, or drop a line there, to search and add a node.",
         "roleHelp": "An agent with its own model and instructions.",
         "roles": "Roles (who)",
         "steps": "Steps (what)",
@@ -21318,6 +21318,18 @@
         "rounds": "Critique rounds",
         "moreRounds": "More rounds",
         "maxVisits": "Max repeats"
+      },
+      "add": {
+        "placeholder": "Search nodes to add",
+        "empty": "No matching nodes."
+      },
+      "expand": "Expand",
+      "collapse": "Collapse",
+      "wire": {
+        "label": "Lines",
+        "bezier": "Curved",
+        "straight": "Straight",
+        "step": "Right-angled"
       }
     },
     "tutorial": {

@@ -1,5 +1,5 @@
 import type { Edge } from '@xyflow/react'
-import type { FlowEdgeData } from './WorkflowEdges'
+import type { FlowEdgeData, WireStyle } from './WorkflowEdges'
 import {
   AGENT_COLOR,
   FORK_HANDLE,
@@ -72,7 +72,8 @@ export function displayGraph(
   nodes: WorkflowNode[],
   edges: Edge[],
   progress: Map<string, StepProgress> | null,
-  decisions: Record<string, string> | undefined
+  decisions: Record<string, string> | undefined,
+  wire: WireStyle = 'bezier'
 ): { nodes: WorkflowNode[]; edges: Edge[] } {
   const byId = new Map(nodes.map((n) => [n.id, n]))
   const statusOf = (id: string): StepStatus | undefined => {
@@ -96,14 +97,19 @@ export function displayGraph(
       return {
         ...e,
         type: 'tenureRole',
-        data: { color: AGENT_COLOR[agent] } satisfies FlowEdgeData
+        // Why: in the run view only the roles working on the running step carry a streak.
+        data: {
+          color: AGENT_COLOR[agent],
+          wire,
+          pulse: !progress || statusOf(e.target) === 'running' ? 'normal' : 'none'
+        } satisfies FlowEdgeData
       }
     }
     const target = byId.get(e.target)
     const loop = (target?.position.x ?? 0) <= (source?.position.x ?? 0)
     // Why: like ComfyUI, a line takes the colour of the output it leaves (next grey, yes green, no red).
     const color = loop ? LOOP_COLOR : (OUTPUT_COLOR[e.sourceHandle ?? 'next'] ?? OUTPUT_COLOR.next)
-    let data: FlowEdgeData = { pulse: 'normal', color }
+    let data: FlowEdgeData = { pulse: 'normal', color, wire }
     if (progress && source && isStepNode(source)) {
       const t = statusOf(e.target)
       let taken = statusOf(e.source) === 'done' && !!t && REACHED.includes(t)
@@ -117,8 +123,8 @@ export function displayGraph(
           )
       }
       data = taken
-        ? { pulse: t === 'running' ? 'fast' : 'normal', color }
-        : { dim: true, pulse: 'none', color }
+        ? { pulse: t === 'running' ? 'fast' : 'normal', color, wire }
+        : { dim: true, pulse: 'none', color, wire }
     }
     return { ...e, type: loop ? 'tenureLoop' : 'tenureFlow', data }
   })

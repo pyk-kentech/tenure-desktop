@@ -1,10 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { Background, Controls, ReactFlow } from '@xyflow/react'
+import { ReactFlowProvider } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 import { translate } from '@/i18n/i18n'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
-import { WORKFLOW_NODE_TYPES } from './WorkflowNodes'
-import { WORKFLOW_EDGE_TYPES } from './WorkflowEdges'
+import { WorkflowCanvas } from './WorkflowCanvas'
+import { loadWireStyle, saveWireStyle } from './wire-style'
 import { WorkflowRunBanner } from './WorkflowRunBanner'
 import { useRunView } from './use-run-view'
 import { runProgress } from './run-progress'
@@ -59,6 +59,7 @@ export function TenureWorkflowEditor({
   const [status, setStatus] = useState<EditorStatus | null>(null)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [viewKey, setViewKey] = useState(0)
+  const [wire, setWire] = useState(loadWireStyle)
   const { load } = graph
   const loadRunDef = useCallback(
     (def: WorkflowDef) => {
@@ -183,8 +184,8 @@ export function TenureWorkflowEditor({
     [detail, graph.nodes, graph.edges]
   )
   const shown = useMemo(
-    () => displayGraph(graph.nodes, graph.edges, progress, detail?.state.graph?.decisions),
-    [graph.nodes, graph.edges, progress, detail]
+    () => displayGraph(graph.nodes, graph.edges, progress, detail?.state.graph?.decisions, wire),
+    [graph.nodes, graph.edges, progress, detail, wire]
   )
   const selected = graph.nodes.find((n) => n.id === selectedId) ?? null
   const dark = document.documentElement.classList.contains('dark')
@@ -227,6 +228,11 @@ export function TenureWorkflowEditor({
             canProjectScope={!!project}
             overwrite={overwrite}
             onOverwrite={setOverwrite}
+            wire={wire}
+            onWire={(next) => {
+              setWire(next)
+              saveWireStyle(next)
+            }}
             onTidy={() => {
               graph.tidy()
               setViewKey((k) => k + 1)
@@ -241,28 +247,21 @@ export function TenureWorkflowEditor({
             <WorkflowPalette onAddRole={graph.addRole} onAddStep={graph.addStep} />
           )}
           <div className="min-w-0 flex-1" data-tenure-tour="editor-canvas">
-            <ReactFlow
-              key={viewKey}
-              nodes={shown.nodes}
-              edges={shown.edges}
-              nodeTypes={WORKFLOW_NODE_TYPES}
-              edgeTypes={WORKFLOW_EDGE_TYPES}
-              onNodesChange={graph.onNodesChange}
-              onEdgesChange={graph.onEdgesChange}
-              onConnect={graph.onConnect}
-              nodesConnectable={!runView.active}
-              isValidConnection={graph.isValidConnection}
-              onSelectionChange={({ nodes }) => setSelectedId(nodes[0]?.id ?? null)}
-              defaultEdgeOptions={{ type: 'tenureFlow' }}
-              colorMode={dark ? 'dark' : 'light'}
-              deleteKeyCode={runView.active ? null : ['Delete', 'Backspace']}
-              fitView
-              fitViewOptions={{ padding: 0.15 }}
-              minZoom={0.2}
-            >
-              <Background gap={20} />
-              <Controls showInteractive={false} />
-            </ReactFlow>
+            <ReactFlowProvider>
+              <WorkflowCanvas
+                key={viewKey}
+                nodes={shown.nodes}
+                edges={shown.edges}
+                onNodesChange={graph.onNodesChange}
+                onEdgesChange={graph.onEdgesChange}
+                onConnect={graph.onConnect}
+                isValidConnection={graph.isValidConnection}
+                onSelect={setSelectedId}
+                onAdd={graph.addAt}
+                readOnly={runView.active}
+                dark={dark}
+              />
+            </ReactFlowProvider>
           </div>
           <div
             className={`w-72 shrink-0 overflow-y-auto border-l scrollbar-sleek ${runView.active ? 'hidden' : ''}`}
