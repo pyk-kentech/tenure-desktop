@@ -11,12 +11,15 @@ import { runProgress } from './run-progress'
 import { displayGraph, stepRefs } from './graph-display'
 import { useWorkflowTies } from './use-workflow-ties'
 import { tieRoutes } from './workflow-ties'
+import { useRunEvents } from './use-run-events'
+import { stepTimelines, withTimelines } from './step-timeline'
+import { WorkflowRunPanel } from './WorkflowRunPanel'
 import { WorkflowInspector } from './WorkflowInspector'
 import { WorkflowPalette } from './WorkflowPalette'
 import { WorkflowToolbar, type EditorStatus } from './WorkflowToolbar'
 import { useWorkflowGraph } from './use-workflow-graph'
 import { emptySlots, fromGraph } from './workflow-convert'
-import type { WorkflowDef } from './workflow-model'
+import { isStepNode, type WorkflowDef } from './workflow-model'
 import { kindLabel, orderProblemText, slotLabel } from './workflow-labels'
 import {
   checkWorkflow,
@@ -175,18 +178,15 @@ export function TenureWorkflowEditor({
   }
 
   const detail = runView.active ? runView.detail : null
-  const progress = useMemo(
-    () =>
-      detail
-        ? runProgress(
-            stepRefs(graph.nodes, graph.edges),
-            detail.state,
-            detail.live,
-            detail.current_call
-          )
-        : null,
-    [detail, graph.nodes, graph.edges]
-  )
+  const events = useRunEvents(project, run ?? null, !!detail?.live, runView.active)
+  const progress = useMemo(() => {
+    if (!detail) {
+      return null
+    }
+    const refs = stepRefs(graph.nodes, graph.edges)
+    const base = runProgress(refs, detail.state, detail.live)
+    return withTimelines(base, stepTimelines(events, refs))
+  }, [detail, graph.nodes, graph.edges, events])
   const shown = useMemo(
     () =>
       displayGraph(
@@ -201,6 +201,7 @@ export function TenureWorkflowEditor({
     [graph.nodes, graph.edges, progress, detail, wire, runView.active, ties.ties]
   )
   const selected = graph.nodes.find((n) => n.id === selectedId) ?? null
+  const runStep = runView.active ? shown.nodes.find((n) => n.id === selectedId) : undefined
   const dark = document.documentElement.classList.contains('dark')
 
   return (
@@ -294,6 +295,11 @@ export function TenureWorkflowEditor({
               }}
             />
           </div>
+          {project && run && runStep && isStepNode(runStep) ? (
+            <div className="w-80 shrink-0 border-l">
+              <WorkflowRunPanel project={project} runId={run} step={runStep} />
+            </div>
+          ) : null}
         </div>
       </DialogContent>
     </Dialog>

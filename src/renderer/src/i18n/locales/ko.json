@@ -21225,7 +21225,6 @@
       "hint": "단계에 마우스를 올리면 진행 상황을 볼 수 있습니다.",
       "live": "실시간 갱신 중",
       "noRecord": "아직 기록이 없습니다.",
-      "now": "현재: {{value0}} · {{value1}} ({{value2}}초)",
       "round": "{{value0}}회차",
       "status": {
         "done": "완료",
@@ -21242,7 +21241,27 @@
         "error": "실행 불가"
       },
       "title": "실행 보기",
-      "until": "{{value0}}회차까지 진행"
+      "until": "{{value0}}회차까지 진행",
+      "roundShort": "{{value0}}회차",
+      "outcome": {
+        "done": "완료",
+        "blocked": "막힘",
+        "failed": "실패",
+        "unconfirmed": "확인 못 함"
+      },
+      "summary": "호출 {{value0}}회 · {{value1}}",
+      "earlier": "… 앞의 {{value0}}개",
+      "act": {
+        "read": "읽기",
+        "edit": "수정",
+        "command": "명령",
+        "search": "검색",
+        "message": "메시지",
+        "tool": "도구"
+      },
+      "calls": "에이전트 호출",
+      "doing": "지금 하는 일 ({{value0}})",
+      "log": "로그"
     }
   }
 }

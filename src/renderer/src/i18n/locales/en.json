@@ -21517,14 +21517,33 @@
       "clean": "no issues",
       "check": "needs a look",
       "decision": "Pass {{value0}}: {{value1}}",
-      "now": "Now: {{value0}} · {{value1}} ({{value2}}s)",
       "status": {
         "running": "In progress",
         "done": "Done",
         "failed": "Failed",
         "skipped": "Not reached",
         "pending": "Waiting"
-      }
+      },
+      "roundShort": "(round {{value0}})",
+      "outcome": {
+        "done": "done",
+        "blocked": "blocked",
+        "failed": "failed",
+        "unconfirmed": "unconfirmed"
+      },
+      "summary": "{{value0}} calls · {{value1}}",
+      "earlier": "… {{value0}} earlier",
+      "act": {
+        "read": "Read",
+        "edit": "Edit",
+        "command": "Run",
+        "search": "Search",
+        "message": "Says",
+        "tool": "Tool"
+      },
+      "calls": "Agent calls",
+      "doing": "What {{value0}} is doing now",
+      "log": "Log"
     }
   }
 }

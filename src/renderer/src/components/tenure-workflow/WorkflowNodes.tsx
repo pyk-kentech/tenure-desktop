@@ -36,6 +36,7 @@ import {
   stepRows
 } from './workflow-node-rows'
 import { statusLabel, type StepStatus } from './run-progress'
+import { RunCallList, RunFooter, RunLogLines } from './WorkflowRunDetails'
 
 const KIND_ICON: Record<StepKind, LucideIcon> = {
   explore: Search,
@@ -214,6 +215,7 @@ export function WorkflowStepNode({ id, data, selected }: NodeProps<StepNode>): R
           ) : null}
         </div>
       ))}
+      {progress?.timeline && !collapsed ? <RunFooter timeline={progress.timeline} /> : null}
       <Handle
         type="target"
         id={PREV_HANDLE}
@@ -257,11 +259,21 @@ export function WorkflowStepNode({ id, data, selected }: NodeProps<StepNode>): R
                   {line}
                 </div>
               ))
-            ) : (
+            ) : progress.timeline?.calls.length ? null : (
               <div className="text-muted-foreground">
                 {translate('tenure.progress.noRecord', 'No record yet.')}
               </div>
             )}
+            {progress.timeline?.calls.length ? (
+              <div className="mt-2 border-t pt-2">
+                <RunCallList timeline={progress.timeline} limit={6} />
+              </div>
+            ) : null}
+            {progress.timeline?.logs.length ? (
+              <div className="mt-2 border-t pt-2">
+                <RunLogLines logs={progress.timeline.logs} limit={3} />
+              </div>
+            ) : null}
           </>
         ) : (
           <div className="leading-relaxed text-muted-foreground">{kindHelp(data.kind)}</div>

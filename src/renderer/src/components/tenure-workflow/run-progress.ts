@@ -1,11 +1,17 @@
 import { translate } from '@/i18n/i18n'
 import type { StepKind } from './workflow-model'
+import type { StepTimeline } from './step-timeline'
 
 // tenure: per-step progress of a flow run for the graph view (DESIGN.md 36.32). Reads the engine's
 // saved run state (run.json via /api/run); never guesses beyond what the state records.
 
 export type StepStatus = 'pending' | 'running' | 'done' | 'failed' | 'skipped'
-export type StepProgress = { status: StepStatus; lines: string[] }
+export type StepProgress = {
+  status: StepStatus
+  lines: string[]
+  // Live calls and log lines of this step (step-timeline.ts, DESIGN.md 36.35).
+  timeline?: StepTimeline
+}
 
 export type RunStateLike = {
   status: string
@@ -75,11 +81,11 @@ function verdictLine(st: RunStateLike, round: number): string {
   return parts.join(' · ')
 }
 
+// Why: the running call itself shows in the step's live detail (step-timeline.ts, 36.35).
 export function runProgress(
   steps: StepRef[],
   st: RunStateLike,
-  live: boolean,
-  call: CurrentCall
+  live: boolean
 ): Map<string, StepProgress> {
   const done = st.done ?? []
   const has = (k: string) => done.includes(k)
@@ -159,15 +165,6 @@ export function runProgress(
           : all.some((s) => s !== 'pending')
             ? 'running'
             : 'pending'
-    }
-    if (status === 'running' && call) {
-      lines.push(
-        translate('tenure.progress.now', 'Now: {{value0}} · {{value1}} ({{value2}}s)', {
-          value0: call.agent,
-          value1: call.step,
-          value2: String(Math.round(call.elapsed_sec))
-        })
-      )
     }
     if (status === 'running' && st.status === 'failed') {
       status = 'failed'

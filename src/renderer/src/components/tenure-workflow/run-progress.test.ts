@@ -54,7 +54,7 @@ const DONE_STATE: RunStateLike = {
 describe('run progress', () => {
   it('splits review rounds between the build and the additional fixes by done order', () => {
     const { nodes, edges } = toGraph(RESCUE)
-    const p = runProgress(stepRefs(nodes, edges), DONE_STATE, false, null)
+    const p = runProgress(stepRefs(nodes, edges), DONE_STATE, false)
     expect(p.get('build')).toMatchObject({ status: 'done' })
     expect(p.get('build')!.lines).toHaveLength(1)
     expect(p.get('rescue')!.status).toBe('done')
@@ -67,25 +67,23 @@ describe('run progress', () => {
   it('marks the running step and steps a finished run never reached', () => {
     const { nodes, edges } = toGraph(RESCUE)
     const live: RunStateLike = { status: 'running', phase: 'build', done: ['build:base', 'impl:1'] }
-    const call = { agent: 'rev', step: 'review', elapsed_sec: 12.4 }
-    const p = runProgress(stepRefs(nodes, edges), live, true, call)
+    const p = runProgress(stepRefs(nodes, edges), live, true)
     expect(p.get('build')!.status).toBe('running')
-    expect(p.get('build')!.lines.at(-1)).toContain('12')
     expect(p.get('a1')!.status).toBe('pending')
-    const stopped = runProgress(stepRefs(nodes, edges), { ...live, status: 'failed' }, false, null)
+    const stopped = runProgress(stepRefs(nodes, edges), { ...live, status: 'failed' }, false)
     expect(stopped.get('build')!.status).toBe('failed')
     expect(stopped.get('a1')!.status).toBe('skipped')
   })
 
   it('lights only the lines the run took and colours role lines by agent', () => {
     const { nodes, edges } = toGraph(RESCUE)
-    const p = runProgress(stepRefs(nodes, edges), DONE_STATE, false, null)
+    const p = runProgress(stepRefs(nodes, edges), DONE_STATE, false)
     const shown = displayGraph(nodes, edges, p, DONE_STATE.graph?.decisions)
     const roleLine = shown.edges.find((e) => e.source === 'role:dev')!
     expect(roleLine).toMatchObject({ type: 'tenureRole', data: { color: '#D85A30' } })
     const flow = shown.edges.filter((e) => e.type !== 'tenureRole')
     expect(flow.every((e) => !(e.data as { dim?: boolean }).dim)).toBe(true)
-    const unseen = runProgress(stepRefs(nodes, edges), { status: 'running', done: [] }, true, null)
+    const unseen = runProgress(stepRefs(nodes, edges), { status: 'running', done: [] }, true)
     const quiet = displayGraph(nodes, edges, unseen, {})
     expect(
       quiet.edges
