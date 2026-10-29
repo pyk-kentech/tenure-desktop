@@ -16,6 +16,9 @@ import { WorkflowAddMenu, type AddItem } from './WorkflowAddMenu'
 import type { DragOrigin } from './use-workflow-graph'
 import { PREV_HANDLE, type WorkflowNode } from './workflow-model'
 
+const MENU_W = 240
+const MENU_H = 300
+
 type MenuState = { x: number; y: number; flow: { x: number; y: number }; from?: DragOrigin }
 
 /**
@@ -44,9 +47,10 @@ export function WorkflowCanvas(props: {
       if (!box) {
         return
       }
+      // Why: keep the popup inside the canvas when opened near its right or bottom edge.
       setMenu({
-        x: clientX - box.left,
-        y: clientY - box.top,
+        x: Math.max(8, Math.min(clientX - box.left, box.width - MENU_W - 8)),
+        y: Math.max(8, Math.min(clientY - box.top, box.height - MENU_H - 8)),
         flow: screenToFlowPosition({ x: clientX, y: clientY }),
         from
       })
