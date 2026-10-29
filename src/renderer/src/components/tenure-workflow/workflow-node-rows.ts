@@ -7,6 +7,8 @@ import { FORK_HANDLE, NO_HANDLE, STEP_SLOTS, YES_HANDLE, type StepKind } from '.
 
 export const HEADER_H = 32
 export const ROW_H = 26
+// Connector diameter; edges aim at its centre (WorkflowEdges.centred).
+export const HANDLE_SIZE = 12
 
 export type NodeRow =
   | { type: 'slot'; key: string; label: string; optional: boolean }

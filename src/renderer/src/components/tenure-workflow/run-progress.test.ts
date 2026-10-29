@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { runProgress, type RunStateLike } from './run-progress'
-import { displayGraph, stepRefs } from './graph-display'
+import { connectedSockets, displayGraph, stepRefs } from './graph-display'
 import { toGraph } from './workflow-convert'
 import type { WorkflowDef } from './workflow-model'
 
@@ -92,5 +92,24 @@ describe('run progress', () => {
         .filter((e) => e.type !== 'tenureRole')
         .every((e) => (e.data as { dim?: boolean }).dim)
     ).toBe(true)
+  })
+
+  it('fills each connected connector with its line colour', () => {
+    const { nodes, edges } = toGraph(RESCUE)
+    const sockets = connectedSockets(nodes, edges)
+    const step = (id: string) =>
+      nodes.find((n) => n.data && 'params' in n.data && n.data.params.id === id)!.id
+    expect(sockets.get('role:dev')).toEqual({ out: '#D85A30' })
+    expect(sockets.get(step('build'))).toMatchObject({
+      implementer: '#D85A30',
+      reviewers: '#1D9E75',
+      next: '#a1a1aa'
+    })
+    expect(sockets.get(step('ok'))).toMatchObject({
+      prev: '#a1a1aa',
+      yes: '#10b981',
+      no: '#f43f5e'
+    })
+    expect(sockets.get(step('checks'))).toMatchObject({ fork: '#0ea5e9' })
   })
 })

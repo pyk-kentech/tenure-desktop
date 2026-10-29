@@ -17,6 +17,7 @@ import { translate } from '@/i18n/i18n'
 import {
   AGENT_COLOR,
   NEXT_HANDLE,
+  OUTPUT_COLOR,
   PREV_HANDLE,
   ROLE_HANDLE,
   type RoleNode,
@@ -24,7 +25,14 @@ import {
   type StepNode
 } from './workflow-model'
 import { kindHelp, kindLabel } from './workflow-labels'
-import { HEADER_CENTER, HEADER_H, ROW_H, rowCenter, stepRows } from './workflow-node-rows'
+import {
+  HANDLE_SIZE,
+  HEADER_CENTER,
+  HEADER_H,
+  ROW_H,
+  rowCenter,
+  stepRows
+} from './workflow-node-rows'
 import { statusLabel, type StepStatus } from './run-progress'
 
 const KIND_ICON: Record<StepKind, LucideIcon> = {
@@ -42,12 +50,6 @@ const AGENT_HEADER: Record<string, string> = {
   claude: 'bg-orange-100 text-orange-900 dark:bg-orange-950 dark:text-orange-200',
   codex: 'bg-teal-100 text-teal-900 dark:bg-teal-950 dark:text-teal-200'
 }
-const OUT_DOT: Record<string, string> = {
-  yes: '!bg-emerald-500',
-  no: '!bg-rose-500',
-  fork: '!bg-sky-500',
-  next: '!bg-zinc-400'
-}
 const STATUS_RING: Record<StepStatus, string> = {
   pending: 'opacity-80',
   running: 'ring-2 ring-sky-500 ring-offset-2 ring-offset-background',
@@ -55,7 +57,26 @@ const STATUS_RING: Record<StepStatus, string> = {
   failed: 'ring-2 ring-rose-500',
   skipped: 'opacity-45'
 }
-const dot = '!size-2.5 !border-2 !border-card'
+const EMPTY_SLOT = '#a1a1aa'
+
+/**
+ * A connector like ComfyUI's: filled with its line's colour when connected, a ring when empty.
+ * React Flow centres it on the node edge; WorkflowEdges aims each line at its centre.
+ */
+function socket(top: number, color: string, connected: boolean) {
+  return {
+    style: {
+      top,
+      width: HANDLE_SIZE,
+      height: HANDLE_SIZE,
+      minWidth: 0,
+      minHeight: 0,
+      background: connected ? color : undefined,
+      borderColor: connected ? undefined : color
+    },
+    className: connected ? '!border-2 !border-card' : '!border-2 !bg-card'
+  }
+}
 
 function HoverCard({
   visible,
@@ -101,8 +122,11 @@ export function WorkflowRoleNode({ data, selected }: NodeProps<RoleNode>): React
         type="source"
         id={ROLE_HANDLE}
         position={Position.Right}
-        style={{ top: rowCenter(0), background: AGENT_COLOR[def.agent] }}
-        className={dot}
+        {...socket(
+          rowCenter(0),
+          AGENT_COLOR[def.agent] ?? EMPTY_SLOT,
+          !!data.sockets?.[ROLE_HANDLE]
+        )}
       />
       <HoverCard visible={hover} title={name}>
         <div className="text-muted-foreground">
@@ -128,6 +152,7 @@ export function WorkflowStepNode({ data, selected }: NodeProps<StepNode>): React
   const Icon = KIND_ICON[data.kind]
   const control = data.kind === 'branch' || data.kind === 'parallel'
   const progress = data.progress
+  const sockets = data.sockets ?? {}
   return (
     <div
       className={`w-56 rounded-lg bg-card text-xs shadow-sm ${control ? 'border border-dashed border-foreground/30' : 'border'} ${
@@ -175,16 +200,14 @@ export function WorkflowStepNode({ data, selected }: NodeProps<StepNode>): React
         type="target"
         id={PREV_HANDLE}
         position={Position.Left}
-        style={{ top: HEADER_CENTER }}
-        className={`${dot} !bg-zinc-400`}
+        {...socket(HEADER_CENTER, OUTPUT_COLOR.next, !!sockets[PREV_HANDLE])}
       />
       {data.kind !== 'branch' ? (
         <Handle
           type="source"
           id={NEXT_HANDLE}
           position={Position.Right}
-          style={{ top: HEADER_CENTER }}
-          className={`${dot} ${OUT_DOT.next}`}
+          {...socket(HEADER_CENTER, OUTPUT_COLOR.next, !!sockets[NEXT_HANDLE])}
         />
       ) : null}
       {rows.map((row, i) =>
@@ -194,8 +217,7 @@ export function WorkflowStepNode({ data, selected }: NodeProps<StepNode>): React
             type="target"
             id={row.key}
             position={Position.Left}
-            style={{ top: rowCenter(i) }}
-            className={`${dot} !bg-muted-foreground`}
+            {...socket(rowCenter(i), sockets[row.key] ?? EMPTY_SLOT, !!sockets[row.key])}
           />
         ) : row.type === 'out' ? (
           <Handle
@@ -203,8 +225,7 @@ export function WorkflowStepNode({ data, selected }: NodeProps<StepNode>): React
             type="source"
             id={row.key}
             position={Position.Right}
-            style={{ top: rowCenter(i) }}
-            className={`${dot} ${OUT_DOT[row.key] ?? ''}`}
+            {...socket(rowCenter(i), OUTPUT_COLOR[row.key] ?? EMPTY_SLOT, !!sockets[row.key])}
           />
         ) : null
       )}

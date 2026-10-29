@@ -3,6 +3,9 @@ import type { FlowEdgeData } from './WorkflowEdges'
 import {
   AGENT_COLOR,
   FORK_HANDLE,
+  OUTPUT_COLOR,
+  PREV_HANDLE,
+  ROLE_HANDLE,
   isFlowEdge,
   isRoleNode,
   isStepNode,
@@ -33,6 +36,37 @@ export function stepRefs(nodes: WorkflowNode[], edges: Edge[]) {
 }
 
 const REACHED: StepStatus[] = ['done', 'running', 'failed']
+// A line back to an earlier step means "repeat"; it keeps one colour whatever output it leaves.
+const LOOP_COLOR = '#f59e0b'
+
+/** Which connectors have a line, and in what colour (a connected dot takes its line's colour). */
+export function connectedSockets(
+  nodes: WorkflowNode[],
+  edges: Edge[]
+): Map<string, Record<string, string>> {
+  const byId = new Map(nodes.map((n) => [n.id, n]))
+  const out = new Map<string, Record<string, string>>()
+  const mark = (nodeId: string, handle: string | null | undefined, color: string) => {
+    if (!handle) {
+      return
+    }
+    const rec = out.get(nodeId) ?? {}
+    rec[handle] ??= color
+    out.set(nodeId, rec)
+  }
+  for (const e of edges) {
+    const source = byId.get(e.source)
+    if (isFlowEdge(e)) {
+      mark(e.source, e.sourceHandle, OUTPUT_COLOR[e.sourceHandle ?? 'next'] ?? OUTPUT_COLOR.next)
+      mark(e.target, PREV_HANDLE, OUTPUT_COLOR.next)
+    } else if (source && isRoleNode(source)) {
+      const color = AGENT_COLOR[source.data.def.agent] ?? '#71717a'
+      mark(e.source, ROLE_HANDLE, color)
+      mark(e.target, e.targetHandle, color)
+    }
+  }
+  return out
+}
 
 export function displayGraph(
   nodes: WorkflowNode[],
@@ -45,19 +79,16 @@ export function displayGraph(
     const n = byId.get(id)
     return n && isStepNode(n) ? progress?.get(stepKey(n))?.status : undefined
   }
-  const shownNodes = progress
-    ? nodes.map((n) =>
-        isStepNode(n)
-          ? {
-              ...n,
-              data: {
-                ...n.data,
-                progress: progress.get(stepKey(n)) ?? { status: 'pending' as const, lines: [] }
-              }
-            }
-          : n
-      )
-    : nodes
+  const sockets = connectedSockets(nodes, edges)
+  const shownNodes = nodes.map((n): WorkflowNode => {
+    if (isStepNode(n)) {
+      const stepProgress = progress
+        ? (progress.get(stepKey(n)) ?? { status: 'pending' as const, lines: [] })
+        : undefined
+      return { ...n, data: { ...n.data, sockets: sockets.get(n.id) ?? {}, progress: stepProgress } }
+    }
+    return isRoleNode(n) ? { ...n, data: { ...n.data, sockets: sockets.get(n.id) ?? {} } } : n
+  })
   const shownEdges = edges.map((e): Edge => {
     const source = byId.get(e.source)
     if (!isFlowEdge(e)) {
@@ -70,7 +101,9 @@ export function displayGraph(
     }
     const target = byId.get(e.target)
     const loop = (target?.position.x ?? 0) <= (source?.position.x ?? 0)
-    let data: FlowEdgeData = { pulse: 'normal' }
+    // Why: like ComfyUI, a line takes the colour of the output it leaves (next grey, yes green, no red).
+    const color = loop ? LOOP_COLOR : (OUTPUT_COLOR[e.sourceHandle ?? 'next'] ?? OUTPUT_COLOR.next)
+    let data: FlowEdgeData = { pulse: 'normal', color }
     if (progress && source && isStepNode(source)) {
       const t = statusOf(e.target)
       let taken = statusOf(e.source) === 'done' && !!t && REACHED.includes(t)
@@ -83,7 +116,9 @@ export function displayGraph(
             ([k, v]) => k.startsWith(`${key}#`) && v === e.sourceHandle
           )
       }
-      data = taken ? { pulse: t === 'running' ? 'fast' : 'normal' } : { dim: true, pulse: 'none' }
+      data = taken
+        ? { pulse: t === 'running' ? 'fast' : 'normal', color }
+        : { dim: true, pulse: 'none', color }
     }
     return { ...e, type: loop ? 'tenureLoop' : 'tenureFlow', data }
   })

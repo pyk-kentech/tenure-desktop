@@ -65,12 +65,14 @@ export const SLOT_KEYS = new Set(
 // Route keys become edges, never params.
 export const ROUTE_KEYS = new Set(['next', 'yes', 'no', 'branches'])
 
-export type RoleNodeData = { name: string; def: RoleDef }
+// sockets: connected connector id → line colour, filled in by graph-display (DESIGN.md 36.32)
+export type RoleNodeData = { name: string; def: RoleDef; sockets?: Record<string, string> }
 // progress is set only in the run view (DESIGN.md 36.32)
 export type StepNodeData = {
   kind: StepKind
   params: Record<string, unknown>
   progress?: StepProgress
+  sockets?: Record<string, string>
 }
 export type RoleNode = Node<RoleNodeData, 'tenureRole'>
 export type StepNode = Node<StepNodeData, 'tenureStep'>
@@ -86,6 +88,13 @@ export const FLOW_HANDLES = new Set([NEXT_HANDLE, YES_HANDLE, NO_HANDLE, FORK_HA
 export const MAX_PARALLEL = 4
 // Agent colours for role headers, role connectors and role lines (DESIGN.md 36.32).
 export const AGENT_COLOR: Record<string, string> = { claude: '#D85A30', codex: '#1D9E75' }
+// Run-order connector colours by output kind.
+export const OUTPUT_COLOR: Record<string, string> = {
+  next: '#a1a1aa',
+  yes: '#10b981',
+  no: '#f43f5e',
+  fork: '#0ea5e9'
+}
 
 /** Output dots a step has on its right side, in drawing order. */
 export function flowOutputs(kind: StepKind): string[] {
