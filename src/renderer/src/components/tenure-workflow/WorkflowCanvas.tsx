@@ -16,6 +16,9 @@ import { WORKFLOW_EDGE_TYPES } from './WorkflowEdges'
 import { WorkflowAddMenu, type AddItem } from './WorkflowAddMenu'
 import type { DragOrigin } from './use-workflow-graph'
 import { PREV_HANDLE, type WorkflowNode } from './workflow-model'
+import { TieCutOverlay, WorkflowTieLayer } from './WorkflowTies'
+import { useTieCut } from './use-tie-cut'
+import type { WorkflowTiesState } from './use-workflow-ties'
 
 const MENU_W = 240
 const MENU_H = 300
@@ -36,6 +39,7 @@ export function WorkflowCanvas(props: {
   isValidConnection: (c: Connection | Edge) => boolean
   onSelect: (id: string | null) => void
   onAdd: (item: AddItem, position: { x: number; y: number }, from?: DragOrigin) => void
+  ties: WorkflowTiesState
   readOnly: boolean
   dark: boolean
 }): React.JSX.Element {
@@ -44,6 +48,7 @@ export function WorkflowCanvas(props: {
   const [menu, setMenu] = useState<MenuState | null>(null)
   // Why: React Flow reports a moved line's drop through onConnectEnd too; that must not open the menu.
   const reconnecting = useRef(false)
+  const tieCut = useTieCut(wrap, !props.readOnly, props.ties)
 
   const openAt = useCallback(
     (clientX: number, clientY: number, from?: DragOrigin) => {
@@ -89,7 +94,8 @@ export function WorkflowCanvas(props: {
   return (
     <div
       ref={wrap}
-      className="relative h-full w-full"
+      className={`relative h-full w-full ${tieCut.armed ? 'cursor-crosshair' : ''}`}
+      {...tieCut.handlers}
       onDoubleClick={(e) => {
         if (
           !props.readOnly &&
@@ -122,6 +128,10 @@ export function WorkflowCanvas(props: {
           }
         }}
         nodesConnectable={!props.readOnly}
+        // Why: while Z is held a drag draws a cut, so the canvas must not pan, drag or select.
+        panOnDrag={!tieCut.armed}
+        nodesDraggable={!tieCut.armed}
+        elementsSelectable={!tieCut.armed}
         isValidConnection={props.isValidConnection}
         onSelectionChange={({ nodes }) => props.onSelect(nodes[0]?.id ?? null)}
         defaultEdgeOptions={{ type: 'tenureFlow' }}
@@ -134,7 +144,9 @@ export function WorkflowCanvas(props: {
       >
         <Background gap={20} />
         <Controls showInteractive={false} />
+        <WorkflowTieLayer ties={props.ties} editable={!props.readOnly} />
       </ReactFlow>
+      {tieCut.cut ? <TieCutOverlay cut={tieCut.cut} /> : null}
       {menu ? (
         <WorkflowAddMenu
           x={menu.x}

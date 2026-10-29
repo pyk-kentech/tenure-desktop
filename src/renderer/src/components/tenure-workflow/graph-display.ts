@@ -13,6 +13,7 @@ import {
   type WorkflowNode
 } from './workflow-model'
 import type { StepProgress, StepStatus } from './run-progress'
+import type { Via } from './workflow-ties'
 
 // tenure: how the editor shows the graph (DESIGN.md 36.32): agent-coloured role lines, loop lines,
 // and in the run view each step's status plus which lines the run actually took.
@@ -74,7 +75,8 @@ export function displayGraph(
   progress: Map<string, StepProgress> | null,
   decisions: Record<string, string> | undefined,
   wire: WireStyle = 'bezier',
-  editable = true
+  editable = true,
+  routes = new Map<string, Via[]>()
 ): { nodes: WorkflowNode[]; edges: Edge[] } {
   const byId = new Map(nodes.map((n) => [n.id, n]))
   const statusOf = (id: string): StepStatus | undefined => {
@@ -104,6 +106,7 @@ export function displayGraph(
           color: AGENT_COLOR[agent],
           wire,
           editable,
+          vias: routes.get(e.id),
           pulse: !progress || statusOf(e.target) === 'running' ? 'normal' : 'none'
         } satisfies FlowEdgeData
       }
@@ -112,7 +115,8 @@ export function displayGraph(
     const loop = (target?.position.x ?? 0) <= (source?.position.x ?? 0)
     // Why: like ComfyUI, a line takes the colour of the output it leaves (next grey, yes green, no red).
     const color = loop ? LOOP_COLOR : (OUTPUT_COLOR[e.sourceHandle ?? 'next'] ?? OUTPUT_COLOR.next)
-    let data: FlowEdgeData = { pulse: 'normal', color, wire, editable }
+    const vias = routes.get(e.id)
+    let data: FlowEdgeData = { pulse: 'normal', color, wire, editable, vias }
     if (progress && source && isStepNode(source)) {
       const t = statusOf(e.target)
       let taken = statusOf(e.source) === 'done' && !!t && REACHED.includes(t)
@@ -126,8 +130,8 @@ export function displayGraph(
           )
       }
       data = taken
-        ? { pulse: t === 'running' ? 'fast' : 'normal', color, wire }
-        : { dim: true, pulse: 'none', color, wire }
+        ? { pulse: t === 'running' ? 'fast' : 'normal', color, wire, vias }
+        : { dim: true, pulse: 'none', color, wire, vias }
     }
     // Why: 'group' lets a hovered line reveal its remove button (WorkflowEdges.RemoveButton).
     return { ...e, type: loop ? 'tenureLoop' : 'tenureFlow', className: 'group', data }

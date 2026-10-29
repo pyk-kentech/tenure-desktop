@@ -9,6 +9,8 @@ import { WorkflowRunBanner } from './WorkflowRunBanner'
 import { useRunView } from './use-run-view'
 import { runProgress } from './run-progress'
 import { displayGraph, stepRefs } from './graph-display'
+import { useWorkflowTies } from './use-workflow-ties'
+import { tieRoutes } from './workflow-ties'
 import { WorkflowInspector } from './WorkflowInspector'
 import { WorkflowPalette } from './WorkflowPalette'
 import { WorkflowToolbar, type EditorStatus } from './WorkflowToolbar'
@@ -50,6 +52,7 @@ export function TenureWorkflowEditor({
   onSaved?: (id: string) => void
 }): React.JSX.Element {
   const graph = useWorkflowGraph()
+  const ties = useWorkflowTies(graph.edges)
   const [templates, setTemplates] = useState<WorkflowListItem[]>([])
   const [template, setTemplate] = useState(initial ?? 'quick')
   const [saveName, setSaveName] = useState('')
@@ -61,14 +64,15 @@ export function TenureWorkflowEditor({
   const [viewKey, setViewKey] = useState(0)
   const [wire, setWire] = useState(loadWireStyle)
   const { load } = graph
+  const resetTies = ties.reset
   const loadRunDef = useCallback(
     (def: WorkflowDef) => {
-      load(def)
+      resetTies(load(def))
       setSaveName(`${def.name || 'run'}-copy`.replace(/[^a-z0-9_-]/g, '-').toLowerCase())
       setDescription(def.description ?? '')
       setViewKey((k) => k + 1)
     },
-    [load]
+    [load, resetTies]
   )
   const onRunError = useCallback((text: string) => setStatus({ tone: 'error', text }), [])
   const runView = useRunView({ open, project, runId: run, onLoad: loadRunDef, onError: onRunError })
@@ -79,7 +83,7 @@ export function TenureWorkflowEditor({
       setSelectedId(null)
       try {
         const res = await getWorkflow(project, id)
-        load(res.definition)
+        resetTies(load(res.definition))
         setTemplate(id)
         setSaveName(res.source === 'project' || res.source === 'user' ? id : `my-${id}`)
         setDescription(res.definition.description)
@@ -88,7 +92,7 @@ export function TenureWorkflowEditor({
         setStatus({ tone: 'error', text: errorText(e) })
       }
     },
-    [project, load]
+    [project, load, resetTies]
   )
 
   useEffect(() => {
@@ -104,7 +108,7 @@ export function TenureWorkflowEditor({
   }, [open, project, initial, run, loadTemplate])
 
   const current = () =>
-    fromGraph(graph.nodes, graph.edges, { name: saveName || template, description })
+    fromGraph(graph.nodes, graph.edges, { name: saveName || template, description }, ties.ties)
 
   const runCheck = async (): Promise<boolean> => {
     const { def, problem } = current()
@@ -191,9 +195,10 @@ export function TenureWorkflowEditor({
         progress,
         detail?.state.graph?.decisions,
         wire,
-        !runView.active
+        !runView.active,
+        tieRoutes(ties.ties)
       ),
-    [graph.nodes, graph.edges, progress, detail, wire, runView.active]
+    [graph.nodes, graph.edges, progress, detail, wire, runView.active, ties.ties]
   )
   const selected = graph.nodes.find((n) => n.id === selectedId) ?? null
   const dark = document.documentElement.classList.contains('dark')
@@ -269,6 +274,7 @@ export function TenureWorkflowEditor({
                 isValidConnection={graph.isValidConnection}
                 onSelect={setSelectedId}
                 onAdd={graph.addAt}
+                ties={ties}
                 readOnly={runView.active}
                 dark={dark}
               />

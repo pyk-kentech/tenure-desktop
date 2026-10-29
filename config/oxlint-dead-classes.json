@@ -48,6 +48,7 @@
               "mobile-driver-banner",
               "native-chat-*",
               "nodrag",
+              "nopan",
               "orca-*",
               "pdfViewer",
               "popover-scroll-content",

@@ -1,5 +1,6 @@
 import type { Edge } from '@xyflow/react'
 import { headSteps, layoutGraph } from './workflow-layout'
+import { layoutOf, nodeKeys, tiesFromLayout, type Tie } from './workflow-ties'
 import {
   CONTROL_KINDS,
   FORK_HANDLE,
@@ -35,7 +36,11 @@ export function isGraphDef(def: WorkflowDef): boolean {
   return def.steps.some((s) => CONTROL_KINDS.includes(s.kind) || 'next' in s || 'max_visits' in s)
 }
 
-export function toGraph(def: WorkflowDef): { nodes: WorkflowNode[]; edges: Edge[] } {
+export function toGraph(def: WorkflowDef): {
+  nodes: WorkflowNode[]
+  edges: Edge[]
+  ties: Tie[]
+} {
   const nodes: WorkflowNode[] = Object.entries(def.roles).map(([name, role]) => ({
     id: roleNodeId(name),
     type: 'tenureRole',
@@ -91,7 +96,14 @@ export function toGraph(def: WorkflowDef): { nodes: WorkflowNode[]; edges: Edge[
       asList(step.branches).forEach((b) => link(ids[i], b, FORK_HANDLE))
     }
   })
-  return { nodes: layoutGraph(nodes, edges), edges }
+  // Why: nodes keep where the user left them (saved layout); the rest are auto-placed.
+  const keyOf = nodeKeys(nodes, ids)
+  const saved = def.editor?.nodes ?? {}
+  const placed = layoutGraph(nodes, edges).map((n) => {
+    const at = saved[keyOf.get(n.id) ?? '']
+    return at ? { ...n, position: { x: at[0], y: at[1] } } : n
+  })
+  return { nodes: placed, edges, ties: tiesFromLayout(def.editor, edges, keyOf) }
 }
 
 function asList(v: unknown): string[] {
@@ -149,7 +161,8 @@ function isPlainLine(steps: StepNode[], edges: Edge[]): boolean {
 export function fromGraph(
   nodes: WorkflowNode[],
   edges: Edge[],
-  meta: { name: string; description: string }
+  meta: { name: string; description: string },
+  ties?: Tie[]
 ): { def: WorkflowDef; problem: GraphProblem } {
   const roles: Record<string, RoleDef> = {}
   for (const node of nodes.filter(isRoleNode)) {
@@ -190,7 +203,22 @@ export function fromGraph(
     }
     return out
   })
-  return { def: { ...meta, roles, steps: defSteps }, problem: plain ? 'none' : problem }
+  // Why: with ties given (the editor), node positions and ties are saved too (DESIGN.md 36.34).
+  const editor = ties
+    ? layoutOf(
+        nodes,
+        edges,
+        ties,
+        nodeKeys(
+          nodes,
+          steps.map((s) => s.id)
+        )
+      )
+    : undefined
+  return {
+    def: { ...meta, roles, steps: defSteps, ...(editor ? { editor } : {}) },
+    problem: plain ? 'none' : problem
+  }
 }
 
 /** Engine step ids: keep a valid one the user gave, otherwise kind, kind2, … (unique). */

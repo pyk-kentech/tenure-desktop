@@ -10,6 +10,7 @@ import {
 } from '@xyflow/react'
 import { translate } from '@/i18n/i18n'
 import { HANDLE_SIZE } from './workflow-node-rows'
+import { viaPath, type Via } from './workflow-ties'
 
 // tenure: edges of the workflow editor (DESIGN.md 36.30, 36.32). Every line starts and ends at the
 // centre of its connector; run-order and loop lines carry a bright streak moving in the run direction.
@@ -23,6 +24,8 @@ export type FlowEdgeData = {
   dim?: boolean
   // Editor only: hovering the line shows a remove button at its middle.
   editable?: boolean
+  // Strands of the cable ties this line passes (DESIGN.md 36.34).
+  vias?: Via[]
 }
 
 const LOOP_DROP = 90
@@ -52,8 +55,12 @@ function centred(p: EdgeProps) {
   }
 }
 
-/** The line shape the user picked in the toolbar (DESIGN.md 36.33). */
-function wirePath(c: ReturnType<typeof centred>, wire: WireStyle | undefined): string {
+/** The line shape the user picked in the toolbar (DESIGN.md 36.33); a tied line goes through its ties. */
+function wirePath(c: ReturnType<typeof centred>, data: FlowEdgeData | undefined): string {
+  const wire = data?.wire
+  if (data?.vias?.length) {
+    return viaPath({ x: c.sourceX, y: c.sourceY }, { x: c.targetX, y: c.targetY }, data.vias)
+  }
   if (wire === 'straight') {
     return getStraightPath(c)[0]
   }
@@ -154,7 +161,7 @@ function edgeLook(data: FlowEdgeData | undefined, fallback: string, width: numbe
 export function WorkflowFlowEdge(props: EdgeProps): React.JSX.Element {
   const data = props.data as FlowEdgeData | undefined
   const c = centred(props)
-  const path = wirePath(c, data?.wire)
+  const path = wirePath(c, data)
   const { color, style } = edgeLook(data, FLOW_COLOR, 3)
   return (
     <>
@@ -180,12 +187,16 @@ export function WorkflowLoopEdge(props: EdgeProps): React.JSX.Element {
   const { sourceX, sourceY, targetX, targetY } = centred(props)
   const low = Math.max(sourceY, targetY) + LOOP_DROP
   const r = LOOP_REACH
-  const path = [
+  const looped = [
     `M ${sourceX} ${sourceY}`,
     `C ${sourceX + r * 2} ${sourceY}, ${sourceX + r * 2} ${low}, ${sourceX - r} ${low}`,
     `L ${targetX + r} ${low}`,
     `C ${targetX - r * 2} ${low}, ${targetX - r * 2} ${targetY}, ${targetX} ${targetY}`
   ].join(' ')
+  // Why: a tied loop line follows its ties instead of the drop below.
+  const path = data?.vias?.length
+    ? viaPath({ x: sourceX, y: sourceY }, { x: targetX, y: targetY }, data.vias)
+    : looped
   const { color, style } = edgeLook(data, '#f59e0b', 2.5)
   return (
     <>
@@ -206,7 +217,7 @@ export function WorkflowLoopEdge(props: EdgeProps): React.JSX.Element {
 export function WorkflowRoleEdge(props: EdgeProps): React.JSX.Element {
   const data = props.data as FlowEdgeData | undefined
   const c = centred(props)
-  const path = wirePath(c, data?.wire)
+  const path = wirePath(c, data)
   const { color, style } = edgeLook(data, '#71717a', 2.5)
   return (
     <>

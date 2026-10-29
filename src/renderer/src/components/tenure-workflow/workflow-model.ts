@@ -29,11 +29,15 @@ export type RoleDef = {
   step_model?: Record<string, string>
 }
 export type StepDef = { kind: StepKind; id?: string } & Record<string, unknown>
+// tenure: editor-only layout saved in the workflow's [editor] table (DESIGN.md 36.34).
+export type EditorTieDef = { x: number; y: number; angle: number; wires: string[] }
+export type EditorLayout = { nodes?: Record<string, [number, number]>; ties?: EditorTieDef[] }
 export type WorkflowDef = {
   name: string
   description: string
   roles: Record<string, RoleDef>
   steps: StepDef[]
+  editor?: EditorLayout
 }
 
 export type Slot = { key: string; min: number; max: number }
