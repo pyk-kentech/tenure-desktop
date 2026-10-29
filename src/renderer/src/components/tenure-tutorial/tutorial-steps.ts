@@ -10,6 +10,9 @@ export type TutorialStep = {
   body: string
   target?: () => Element | null
   action?: { label: string; run: () => string | null }
+  // The user must do this step themselves: Next is hidden and the walkthrough moves on as soon as
+  // this turns true (it is checked every few hundred ms).
+  waitFor?: () => boolean
 }
 
 export function tourTarget(id: string): Element | null {
@@ -193,13 +196,11 @@ export function tutorialSteps(): TutorialStep[] {
       title: translate('tenure.tutorial.editor.title', 'Workflow editor'),
       body: translate(
         'tenure.tutorial.editor.body',
-        'Workflows opens an editor where you decide, as nodes, who handles which step.'
+        'Workflows opens an editor where you decide, as nodes, who handles which step. Click the highlighted Workflows button; the walkthrough moves on by itself.'
       ),
       target: () => tourTarget('workflow-button'),
-      action: {
-        label: translate('tenure.tutorial.editor.action', 'Open the editor'),
-        run: () => (tourTarget('editor-canvas') ? null : click('workflow-button'))
-      }
+      // Why: the user asked to click the button themselves; opening the editor moves on.
+      waitFor: () => !!tourTarget('editor-canvas')
     },
     {
       id: 'editor-canvas',

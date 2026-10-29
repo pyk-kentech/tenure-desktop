@@ -66,10 +66,29 @@ export function TenureTutorialHost(): React.JSX.Element | null {
     setNote(null)
   }, [])
 
+  // A step the user must do: move on when its condition turns true while the step is shown.
+  // Why: coming Back to it with the condition already true must not jump straight forward again.
+  useEffect(() => {
+    const waitFor = step?.waitFor
+    if (index === null || !waitFor) {
+      return
+    }
+    let was = waitFor()
+    const timer = window.setInterval(() => {
+      const now = waitFor()
+      if (now && !was) {
+        go(index + 1)
+      }
+      was = now
+    }, TRACK_MS)
+    return () => window.clearInterval(timer)
+  }, [index, step, go])
+
   if (index === null || !step) {
     return null
   }
   const last = index === steps.length - 1
+  const waiting = !!step.waitFor && !step.waitFor()
   return createPortal(
     <div data-tenure-tutorial="" style={{ pointerEvents: 'none' }}>
       {rect ? (
@@ -121,11 +140,17 @@ export function TenureTutorialHost(): React.JSX.Element | null {
               {translate('tenure.tutorial.prev', 'Back')}
             </Button>
           ) : null}
-          <Button size="xs" onClick={() => go(last ? null : index + 1)}>
-            {last
-              ? translate('tenure.tutorial.done', 'Finish')
-              : translate('tenure.tutorial.next', 'Next')}
-          </Button>
+          {waiting ? (
+            <span className="text-xs text-sky-600 dark:text-sky-400">
+              {translate('tenure.tutorial.waitClick', 'Click the highlighted item')}
+            </span>
+          ) : (
+            <Button size="xs" onClick={() => go(last ? null : index + 1)}>
+              {last
+                ? translate('tenure.tutorial.done', 'Finish')
+                : translate('tenure.tutorial.next', 'Next')}
+            </Button>
+          )}
         </div>
       </div>
     </div>,

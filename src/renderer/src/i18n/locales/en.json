@@ -21385,8 +21385,7 @@
       },
       "editor": {
         "title": "Workflow editor",
-        "body": "Workflows opens an editor where you decide, as nodes, who handles which step.",
-        "action": "Open the editor"
+        "body": "Workflows opens an editor where you decide, as nodes, who handles which step. Click the highlighted Workflows button; the walkthrough moves on by itself."
       },
       "canvas": {
         "title": "Nodes and connections",
@@ -21417,7 +21416,8 @@
         "later": "Not now"
       },
       "open": "Open the guide",
-      "button": "Guide"
+      "button": "Guide",
+      "waitClick": "Click the highlighted item"
     },
     "tours": {
       "board": {
