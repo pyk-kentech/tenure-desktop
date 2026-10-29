@@ -73,7 +73,8 @@ export function displayGraph(
   edges: Edge[],
   progress: Map<string, StepProgress> | null,
   decisions: Record<string, string> | undefined,
-  wire: WireStyle = 'bezier'
+  wire: WireStyle = 'bezier',
+  editable = true
 ): { nodes: WorkflowNode[]; edges: Edge[] } {
   const byId = new Map(nodes.map((n) => [n.id, n]))
   const statusOf = (id: string): StepStatus | undefined => {
@@ -98,9 +99,11 @@ export function displayGraph(
         ...e,
         type: 'tenureRole',
         // Why: in the run view only the roles working on the running step carry a streak.
+        className: 'group',
         data: {
           color: AGENT_COLOR[agent],
           wire,
+          editable,
           pulse: !progress || statusOf(e.target) === 'running' ? 'normal' : 'none'
         } satisfies FlowEdgeData
       }
@@ -109,7 +112,7 @@ export function displayGraph(
     const loop = (target?.position.x ?? 0) <= (source?.position.x ?? 0)
     // Why: like ComfyUI, a line takes the colour of the output it leaves (next grey, yes green, no red).
     const color = loop ? LOOP_COLOR : (OUTPUT_COLOR[e.sourceHandle ?? 'next'] ?? OUTPUT_COLOR.next)
-    let data: FlowEdgeData = { pulse: 'normal', color, wire }
+    let data: FlowEdgeData = { pulse: 'normal', color, wire, editable }
     if (progress && source && isStepNode(source)) {
       const t = statusOf(e.target)
       let taken = statusOf(e.source) === 'done' && !!t && REACHED.includes(t)
@@ -126,7 +129,8 @@ export function displayGraph(
         ? { pulse: t === 'running' ? 'fast' : 'normal', color, wire }
         : { dim: true, pulse: 'none', color, wire }
     }
-    return { ...e, type: loop ? 'tenureLoop' : 'tenureFlow', data }
+    // Why: 'group' lets a hovered line reveal its remove button (WorkflowEdges.RemoveButton).
+    return { ...e, type: loop ? 'tenureLoop' : 'tenureFlow', className: 'group', data }
   })
   return { nodes: shownNodes, edges: shownEdges }
 }

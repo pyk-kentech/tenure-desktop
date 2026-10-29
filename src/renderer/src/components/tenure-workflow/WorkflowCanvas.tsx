@@ -7,6 +7,7 @@ import {
   type Connection,
   type Edge,
   type OnConnectEnd,
+  type OnReconnect,
   type OnEdgesChange,
   type OnNodesChange
 } from '@xyflow/react'
@@ -31,6 +32,7 @@ export function WorkflowCanvas(props: {
   onNodesChange: OnNodesChange<WorkflowNode>
   onEdgesChange: OnEdgesChange<Edge>
   onConnect: (c: Connection) => void
+  onReconnect: OnReconnect
   isValidConnection: (c: Connection | Edge) => boolean
   onSelect: (id: string | null) => void
   onAdd: (item: AddItem, position: { x: number; y: number }, from?: DragOrigin) => void
@@ -40,6 +42,8 @@ export function WorkflowCanvas(props: {
   const { screenToFlowPosition } = useReactFlow()
   const wrap = useRef<HTMLDivElement>(null)
   const [menu, setMenu] = useState<MenuState | null>(null)
+  // Why: React Flow reports a moved line's drop through onConnectEnd too; that must not open the menu.
+  const reconnecting = useRef(false)
 
   const openAt = useCallback(
     (clientX: number, clientY: number, from?: DragOrigin) => {
@@ -60,7 +64,13 @@ export function WorkflowCanvas(props: {
 
   const onConnectEnd: OnConnectEnd = useCallback(
     (event, state) => {
-      if (props.readOnly || state.isValid || !state.fromNode || !state.fromHandle) {
+      if (
+        reconnecting.current ||
+        props.readOnly ||
+        state.isValid ||
+        !state.fromNode ||
+        !state.fromHandle
+      ) {
         return
       }
       const point = 'changedTouches' in event ? event.changedTouches[0] : event
@@ -99,6 +109,18 @@ export function WorkflowCanvas(props: {
         onEdgesChange={props.onEdgesChange}
         onConnect={props.onConnect}
         onConnectEnd={onConnectEnd}
+        edgesReconnectable={!props.readOnly}
+        onReconnectStart={() => {
+          reconnecting.current = true
+        }}
+        onReconnect={props.onReconnect}
+        onReconnectEnd={(_event, edge, _handleType, state) => {
+          reconnecting.current = false
+          // Why: like ComfyUI, a line end dropped on empty canvas cuts the line.
+          if (!state.isValid) {
+            props.onEdgesChange([{ type: 'remove', id: edge.id }])
+          }
+        }}
         nodesConnectable={!props.readOnly}
         isValidConnection={props.isValidConnection}
         onSelectionChange={({ nodes }) => props.onSelect(nodes[0]?.id ?? null)}

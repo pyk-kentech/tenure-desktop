@@ -184,8 +184,16 @@ export function TenureWorkflowEditor({
     [detail, graph.nodes, graph.edges]
   )
   const shown = useMemo(
-    () => displayGraph(graph.nodes, graph.edges, progress, detail?.state.graph?.decisions, wire),
-    [graph.nodes, graph.edges, progress, detail, wire]
+    () =>
+      displayGraph(
+        graph.nodes,
+        graph.edges,
+        progress,
+        detail?.state.graph?.decisions,
+        wire,
+        !runView.active
+      ),
+    [graph.nodes, graph.edges, progress, detail, wire, runView.active]
   )
   const selected = graph.nodes.find((n) => n.id === selectedId) ?? null
   const dark = document.documentElement.classList.contains('dark')
@@ -257,6 +265,7 @@ export function TenureWorkflowEditor({
                 onNodesChange={graph.onNodesChange}
                 onEdgesChange={graph.onEdgesChange}
                 onConnect={graph.onConnect}
+                onReconnect={graph.reconnect}
                 isValidConnection={graph.isValidConnection}
                 onSelect={setSelectedId}
                 onAdd={graph.addAt}

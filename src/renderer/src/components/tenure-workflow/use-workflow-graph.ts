@@ -97,6 +97,16 @@ export function useWorkflowGraph() {
     [nodes, setEdges]
   )
 
+  // tenure: dragging a line's end onto another connector moves it (DESIGN.md 36.33); the same
+  // rules as a new line apply, so a full slot or single output still keeps one line.
+  const reconnect = useCallback(
+    (old: Edge, c: Connection) => {
+      setEdges((es) => es.filter((e) => e.id !== old.id))
+      onConnect(c)
+    },
+    [onConnect, setEdges]
+  )
+
   const addRole = useCallback(
     (agent: 'claude' | 'codex') => {
       setNodes((ns) => {
@@ -257,6 +267,7 @@ export function useWorkflowGraph() {
     onNodesChange,
     onEdgesChange,
     onConnect,
+    reconnect,
     isValidConnection,
     load,
     addRole,

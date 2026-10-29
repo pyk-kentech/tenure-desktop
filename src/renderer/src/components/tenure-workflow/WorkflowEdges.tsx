@@ -1,12 +1,14 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import {
   BaseEdge,
   Position,
   getBezierPath,
   getSmoothStepPath,
   getStraightPath,
+  useReactFlow,
   type EdgeProps
 } from '@xyflow/react'
+import { translate } from '@/i18n/i18n'
 import { HANDLE_SIZE } from './workflow-node-rows'
 
 // tenure: edges of the workflow editor (DESIGN.md 36.30, 36.32). Every line starts and ends at the
@@ -19,6 +21,8 @@ export type FlowEdgeData = {
   color?: string
   pulse?: 'normal' | 'fast' | 'none'
   dim?: boolean
+  // Editor only: hovering the line shows a remove button at its middle.
+  editable?: boolean
 }
 
 const LOOP_DROP = 90
@@ -57,6 +61,51 @@ function wirePath(c: ReturnType<typeof centred>, wire: WireStyle | undefined): s
     return getSmoothStepPath({ ...c, borderRadius: 8 })[0]
   }
   return getBezierPath(c)[0]
+}
+
+// How far before the connector a line enters its remove button sits, along the line.
+const REMOVE_BEFORE_END = 28
+
+/** A point on `path` just before its end (the middle of a line shorter than twice that). */
+function nearEnd(path: string): { x: number; y: number } {
+  const el = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+  el.setAttribute('d', path)
+  const len = el.getTotalLength()
+  const p = el.getPointAtLength(Math.max(len / 2, len - REMOVE_BEFORE_END))
+  return { x: p.x, y: p.y }
+}
+
+/**
+ * A remove button shown while the line is hovered or selected (DESIGN.md 36.33). It sits on the line
+ * right before the connector the line enters, so it is clear which line it removes even where
+ * lines cross (user found a button at the middle appeared at random spots). Hidden, it ignores the
+ * pointer so clicking a line still only selects it.
+ */
+function RemoveButton(props: { id: string; path: string; selected?: boolean }) {
+  const { deleteElements } = useReactFlow()
+  const at = useMemo(() => nearEnd(props.path), [props.path])
+  const shown = props.selected
+    ? 'opacity-100'
+    : 'pointer-events-none opacity-0 group-hover:pointer-events-auto group-hover:opacity-100'
+  return (
+    <g
+      transform={`translate(${at.x} ${at.y})`}
+      className={`cursor-pointer transition-opacity ${shown}`}
+      onClick={(e) => {
+        e.stopPropagation()
+        void deleteElements({ edges: [{ id: props.id }] })
+      }}
+    >
+      <title>{translate('tenure.workflow.edge.remove', 'Remove line')}</title>
+      <circle r={9} className="fill-card stroke-border" strokeWidth={1.5} />
+      <path
+        d="M -3.5 -3.5 L 3.5 3.5 M 3.5 -3.5 L -3.5 3.5"
+        className="stroke-muted-foreground"
+        strokeWidth={1.8}
+        strokeLinecap="round"
+      />
+    </g>
+  )
 }
 
 /** A short bright streak travelling along the path (pathLength normalises any path to 100). */
@@ -117,6 +166,7 @@ export function WorkflowFlowEdge(props: EdgeProps): React.JSX.Element {
           seconds={seconds(c.targetX - c.sourceX, c.targetY - c.sourceY, data?.pulse)}
         />
       ) : null}
+      {data?.editable ? <RemoveButton id={props.id} path={path} selected={props.selected} /> : null}
     </>
   )
 }
@@ -147,6 +197,7 @@ export function WorkflowLoopEdge(props: EdgeProps): React.JSX.Element {
           seconds={seconds(sourceX - targetX, LOOP_DROP * 2, data?.pulse) * 1.5}
         />
       ) : null}
+      {data?.editable ? <RemoveButton id={props.id} path={path} selected={props.selected} /> : null}
     </>
   )
 }
@@ -167,6 +218,7 @@ export function WorkflowRoleEdge(props: EdgeProps): React.JSX.Element {
           seconds={seconds(c.targetX - c.sourceX, c.targetY - c.sourceY, data?.pulse) * 1.6}
         />
       ) : null}
+      {data?.editable ? <RemoveButton id={props.id} path={path} selected={props.selected} /> : null}
     </>
   )
 }
