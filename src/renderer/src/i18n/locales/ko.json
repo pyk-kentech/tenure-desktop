@@ -20952,7 +20952,8 @@
       "start": "지휘자 시작",
       "launchFailed": "지휘자 Codex 를 실행하지 못했습니다.",
       "remoteUnsupported": "중계는 현재 로컬 작업공간에서만 사용할 수 있습니다.",
-      "agentNote": "지휘자 Codex 가 여기 뜨고, 일꾼 Codex 는 지휘자가 직접 띄웁니다."
+      "agentNote": "지휘자 Codex 가 여기서 실행되고, 작업자 Codex 는 지휘자가 직접 실행합니다.",
+      "trustHint": "처음 쓰는 폴더라면 Codex 가 먼저 이 폴더를 신뢰할지 묻습니다. 지휘자 창에서 수락하면 중계가 이어집니다. 답이 Codex 설정에 저장되기 때문에 tenure 가 대신 답하지 않습니다."
     },
     "workflow": {
       "button": "워크플로",

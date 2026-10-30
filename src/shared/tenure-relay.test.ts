@@ -56,6 +56,10 @@ describe('tenure relay (DESIGN.md 36.24, 36.25)', () => {
     expect(prompt).toContain("과제: say 'hi' CLI")
     expect(prompt).toContain('orca-dev skills get orchestration')
     expect(prompt).toContain(`[${tenureRelayWorkerCommand(options)}]`)
+    // Why: with no window there is no active terminal, and with one it may be another tab.
+    expect(prompt).toContain('orca-dev terminal split --terminal <네 터미널 handle>')
+    expect(prompt).toContain('ORCA_TERMINAL_HANDLE')
+    expect(prompt).toContain('폴더 신뢰 질문')
     expect(tenureRelayWorkerCommand(options)).toBe('codex -m gpt-5.2-codex')
     expect(tenureRelayWorkerCommand(options, '--full-auto')).toBe(
       'codex --full-auto -m gpt-5.2-codex'

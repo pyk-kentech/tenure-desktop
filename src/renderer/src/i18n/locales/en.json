@@ -21234,7 +21234,8 @@
       "start": "Start coordinator",
       "launchFailed": "Could not start the coordinator Codex.",
       "remoteUnsupported": "The relay runs only in local workspaces for now.",
-      "agentNote": "The coordinator Codex starts here and opens the worker Codex itself."
+      "agentNote": "The coordinator Codex starts here and opens the worker Codex itself.",
+      "trustHint": "In a folder Codex has not seen, it first asks whether to trust the folder. Accept in the coordinator terminal and the relay carries on. tenure does not answer for you, because the answer is saved in your Codex settings."
     },
     "workflow": {
       "button": "Workflows",

@@ -93,7 +93,7 @@ export function buildTenureRelayCoordinatorPrompt(args: {
       : '아직 과제가 없다. 사용자가 이 창에 과제와 참고 자료(링크·첨부 파일·대화 내용)를 줄 때까지 아무 명령도 실행하지 말고 기다린다. 받으면 그 자료를 읽고 아래 순서로 진행한다.',
     `순서: (1) ${orca} skills get orchestration 으로 지침을 읽고 그대로 따른다(명령 이름은 ${orca}).`,
     `(2) ${orca} status --json, ${orca} orchestration run-create --objective <과제 한 줄> --json.`,
-    `(3) 일꾼 띄우기: ${orca} terminal split --command <일꾼 명령> --json 을 실행한다. 일꾼 명령은 [${worker}] 이고 대괄호 안 전체를 따옴표로 감싸 한 인자로 넘긴다. 결과의 handle 을 일꾼으로 쓰고, ${orca} terminal wait --terminal <handle> --for tui-idle --timeout-ms 120000 --json.`,
+    `(3) 일꾼 띄우기: ${orca} terminal split --terminal <네 터미널 handle> --command <일꾼 명령> --json 을 실행한다. 네 handle 은 환경 변수 ORCA_TERMINAL_HANDLE 에 있다(없으면 ${orca} terminal list 로 찾는다). 일꾼 명령은 [${worker}] 이고 대괄호 안 전체를 따옴표로 감싸 한 인자로 넘긴다. 결과의 handle 을 일꾼으로 쓰고, ${orca} terminal wait --terminal <handle> --for tui-idle --timeout-ms 120000 --json. 일꾼 창에 폴더 신뢰 질문이 떠 있으면 대신 수락하지 말고, 그 창에서 수락해 달라고 사용자에게 알린 뒤 기다린다.`,
     `(4) 회차마다: ${orca} orchestration task-create --spec <명세: 대상·변경·제약·소유·완료 확인> --json → ${orca} orchestration worker-start --task <task id> --terminal <일꾼 handle> --json → check --wait 로 worker_done 기다리기 → worker-read 와 git diff 로 직접 확인 → 부족하면 다음 회차, 충분하면 끝. 사용자가 이 창에 새 지시를 주면 그것을 먼저 반영한다.`,
     ...(options.maxRounds !== null
       ? [

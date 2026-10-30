@@ -150,6 +150,12 @@ export function NewWorkspaceComposerTenureRelaySettings({
           'The coordinator does not edit files. It opens a worker Codex beside itself, hands it each round and checks the result. Leave the task empty to give it the task, links and files in its own terminal. Stop the coordinator to stop the relay.'
         )}
       </p>
+      <p className="text-xs text-muted-foreground">
+        {translate(
+          'tenure.relay.trustHint',
+          'In a folder Codex has not seen, it first asks whether to trust the folder. Accept in the coordinator terminal and the relay carries on. tenure does not answer for you, because the answer is saved in your Codex settings.'
+        )}
+      </p>
     </div>
   )
 }
