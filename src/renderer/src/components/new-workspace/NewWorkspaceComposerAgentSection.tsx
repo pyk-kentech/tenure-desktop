@@ -23,6 +23,8 @@ type NewWorkspaceComposerAgentSectionProps = Pick<
   | 'onToggleAdvanced'
 > & {
   advancedLocked?: boolean
+  // tenure: a flow or relay starts instead of the agent, so the picker is replaced by this note.
+  agentReplacedNote?: string
   visibleQuickAgents: React.ComponentProps<typeof AgentCombobox>['agents']
   defaultTuiAgent: React.ComponentProps<typeof AgentCombobox>['defaultAgent']
   handleSetDefaultAgent: (
@@ -41,6 +43,7 @@ export function NewWorkspaceComposerAgentSection({
   onCreate,
   advancedOpen,
   advancedLocked = false,
+  agentReplacedNote,
   onToggleAdvanced,
   visibleQuickAgents,
   defaultTuiAgent,
@@ -91,7 +94,13 @@ export function NewWorkspaceComposerAgentSection({
             </TooltipContent>
           </Tooltip>
         </div>
-        <AgentCombobox {...comboboxProps} surfaceRows={agentSurfaceRows} />
+        {agentReplacedNote ? (
+          <div className="flex min-h-9 items-center rounded-md border border-dashed px-3 py-1.5 text-xs text-muted-foreground">
+            {agentReplacedNote}
+          </div>
+        ) : (
+          <AgentCombobox {...comboboxProps} surfaceRows={agentSurfaceRows} />
+        )}
       </div>
 
       <div className="!mb-2">

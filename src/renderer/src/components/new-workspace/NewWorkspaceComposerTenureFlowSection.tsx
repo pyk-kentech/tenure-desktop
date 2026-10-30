@@ -8,6 +8,25 @@ import {
   type TenureRelayOptions
 } from '../../../../shared/tenure-relay'
 
+/** tenure: what replaces the agent picker while a flow or relay is chosen (none otherwise). */
+export function tenureAgentNote(
+  tenureFlow: boolean | undefined,
+  tenureRelay: TenureRelayOptions | null | undefined
+): string | undefined {
+  if (tenureRelay) {
+    return translate(
+      'tenure.relay.agentNote',
+      'The coordinator Codex starts here and opens the worker Codex itself.'
+    )
+  }
+  return tenureFlow
+    ? translate(
+        'tenure.flow.composer.agentNote',
+        'The tenure flow calls the agents set in its workflow. No agent starts here.'
+      )
+    : undefined
+}
+
 /**
  * tenure: start an orchestrated flow (implement → review → fix) in the new workspace, or a
  * coordinator + worker relay (DESIGN.md 36.24), using the note as the task. The two are exclusive.

@@ -21179,7 +21179,8 @@
       },
       "composer": {
         "toggle": "Start a tenure flow instead of an agent",
-        "failed": "Could not start the flow: {{value0}}"
+        "failed": "Could not start the flow: {{value0}}",
+        "agentNote": "The tenure flow calls the agents set in its workflow. No agent starts here."
       },
       "openTab": "Open in a tab",
       "review": "Review changes",
@@ -21232,7 +21233,8 @@
       "dialogDescription": "Starts a coordinator Codex in a new tab of this workspace.",
       "start": "Start coordinator",
       "launchFailed": "Could not start the coordinator Codex.",
-      "remoteUnsupported": "The relay runs only in local workspaces for now."
+      "remoteUnsupported": "The relay runs only in local workspaces for now.",
+      "agentNote": "The coordinator Codex starts here and opens the worker Codex itself."
     },
     "workflow": {
       "button": "Workflows",

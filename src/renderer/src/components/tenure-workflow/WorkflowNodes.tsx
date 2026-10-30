@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { Handle, NodeToolbar, Position, useReactFlow, type NodeProps } from '@xyflow/react'
 import {
   Bot,
@@ -81,6 +81,27 @@ function socket(top: number, color: string, connected: boolean) {
   }
 }
 
+// Why: the card only shows after a short pause, so passing over a node on the way to a group's
+// title bar (just above it) does not cover that bar; it never takes clicks either.
+const CARD_DELAY_MS = 450
+
+function useCardHover() {
+  const [hover, setHover] = useState(false)
+  const timer = useRef<number | undefined>(undefined)
+  useEffect(() => () => window.clearTimeout(timer.current), [])
+  return {
+    hover,
+    onMouseEnter: () => {
+      window.clearTimeout(timer.current)
+      timer.current = window.setTimeout(() => setHover(true), CARD_DELAY_MS)
+    },
+    onMouseLeave: () => {
+      window.clearTimeout(timer.current)
+      setHover(false)
+    }
+  }
+}
+
 function HoverCard({
   visible,
   title,
@@ -91,7 +112,12 @@ function HoverCard({
   children: React.ReactNode
 }) {
   return (
-    <NodeToolbar isVisible={visible} position={Position.Top} offset={10}>
+    <NodeToolbar
+      isVisible={visible}
+      position={Position.Top}
+      offset={10}
+      style={{ pointerEvents: 'none' }}
+    >
       <div className="pointer-events-none w-64 rounded-md border bg-popover p-3 text-xs text-popover-foreground shadow-lg">
         <div className="mb-1 font-medium">{title}</div>
         {children}
@@ -101,15 +127,19 @@ function HoverCard({
 }
 
 /** A role: which agent and model do the work. Its right connector goes into a step's slot. */
-export function WorkflowRoleNode({ data, selected }: NodeProps<RoleNode>): React.JSX.Element {
+export function WorkflowRoleNode({
+  data,
+  selected,
+  dragging
+}: NodeProps<RoleNode>): React.JSX.Element {
   const { name, def } = data
-  const [hover, setHover] = useState(false)
+  const card = useCardHover()
   const detail = [def.model, def.effort].filter(Boolean).join(' · ')
   return (
     <div
       className={`w-40 rounded-lg border bg-card text-xs shadow-sm ${selected ? 'ring-2 ring-ring' : ''}`}
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
+      onMouseEnter={card.onMouseEnter}
+      onMouseLeave={card.onMouseLeave}
     >
       <div
         className={`flex items-center gap-1.5 rounded-t-[calc(var(--radius-lg)-1px)] px-2.5 font-medium ${AGENT_HEADER[def.agent] ?? CONTROL_HEADER}`}
@@ -131,7 +161,7 @@ export function WorkflowRoleNode({ data, selected }: NodeProps<RoleNode>): React
           !!data.sockets?.[ROLE_HANDLE]
         )}
       />
-      <HoverCard visible={hover} title={name}>
+      <HoverCard visible={card.hover && !dragging} title={name}>
         <div className="text-muted-foreground">
           {def.agent}
           {def.model ? ` · ${def.model}` : ''}
@@ -149,8 +179,13 @@ export function WorkflowRoleNode({ data, selected }: NodeProps<RoleNode>): React
  * A step. Left connectors take the previous step (header) and roles (rows); right connectors lead
  * on. In the run view the ring shows its status and hovering shows what happened there.
  */
-export function WorkflowStepNode({ id, data, selected }: NodeProps<StepNode>): React.JSX.Element {
-  const [hover, setHover] = useState(false)
+export function WorkflowStepNode({
+  id,
+  data,
+  selected,
+  dragging
+}: NodeProps<StepNode>): React.JSX.Element {
+  const card = useCardHover()
   const { updateNodeData } = useReactFlow()
   const collapsed = !!data.collapsed
   const rows = stepRows(data.kind, data.params)
@@ -165,8 +200,8 @@ export function WorkflowStepNode({ id, data, selected }: NodeProps<StepNode>): R
       className={`w-56 rounded-lg bg-card text-xs shadow-sm ${control ? 'border border-dashed border-foreground/30' : 'border'} ${
         progress ? STATUS_RING[progress.status] : ''
       } ${selected ? 'outline outline-2 outline-ring' : ''}`}
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
+      onMouseEnter={card.onMouseEnter}
+      onMouseLeave={card.onMouseLeave}
     >
       <div
         className={`flex items-center gap-1.5 rounded-t-[calc(var(--radius-lg)-1px)] px-2.5 font-medium ${control ? CONTROL_HEADER : WORK_HEADER}`}
@@ -249,7 +284,7 @@ export function WorkflowStepNode({ id, data, selected }: NodeProps<StepNode>): R
           />
         ) : null
       )}
-      <HoverCard visible={hover} title={kindLabel(data.kind)}>
+      <HoverCard visible={card.hover && !dragging} title={kindLabel(data.kind)}>
         {progress ? (
           <>
             <div className="mb-1 text-muted-foreground">{statusLabel(progress.status)}</div>
